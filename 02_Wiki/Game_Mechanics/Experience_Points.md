@@ -1,0 +1,103 @@
+# 経験点 (EXP) システム
+
+FEAR 系の特性: **経験点はプレイヤーに付与**され、キャスト (cast) は消費・計算の単位。
+
+## データ構造
+
+### cast.exp
+
+| フィールド | 管理 | 説明 |
+|---|---|---|
+| additional | 独立 | 追加経験点 (シート直接入力) |
+| total | 派生 | additional + historyTotal |
+| spent | 派生 | realSpent - 170 |
+| value | 派生 | (total + 170) - realSpent |
+
+### history (オブジェクトマップ)
+
+```javascript
+{
+  [randomId]: { id, date, title, exp, rl, players }
+}
+```
+
+- 追加: `system.history.${newId}`
+- 削除: `system.history.-=${targetId}`
+- Foundry EmbeddedDocument ではなく plain object
+
+### 権威モデル (移行中)
+
+| データ | 旧権威 | 新権威 (フェーズ2) |
+|---|---|---|
+| history | player Actor | User flag |
+| exp.total (履歴合計) | player Actor | User flag |
+| exp.spent/value (cast 側) | cast (計算結果) | cast (変更なし) |
+
+## 計算: updateCastExp
+
+`TokyoNovaCastSheet.updateCastExp(actor)` — static, async
+
+**呼び出し元**: createItem/deleteItem/updateItem (cast 親), updateActor (cast), 履歴変更後
+
+```
+historyTotal = ownerUserId あり → User flag exp.total
+             = なし           → Σ cast.system.history[*].exp
+
+abilityExpCost = Σ (growth × 段階コスト)  // value系閾値11, control系閾値17
+itemExpCost    = generalSkill/styleSkill の level × カテゴリコスト
+
+newTotal = additional + historyTotal
+newSpent = (abilityExpCost + itemExpCost) - 170
+newValue = (newTotal + 170) - (abilityExpCost + itemExpCost)
+```
+
+更新時 `{ calcExp: false }` で再帰防止。
+
+## 同期 (フェーズ2-2 完了)
+
+### 二フック構成
+
+| フック | 方向 | 処理 |
+|---|---|---|
+| updateActor (cast) | cast → User | overflow 合計を User flag に書き込み |
+| updateUser | User → cast | flag 変更を紐づく全 cast へ配布 + updateCastExp |
+
+### 無限ループ防止
+
+`{ syncing: true }` フラグ — 各フック先頭でガード。
+
+### cast ↔ User 紐付け
+
+- `cast.system.ownerUserId` — ownership 変更時に最初の非 GM User を記録 (2-1)
+- `cast.system.playerId` — 旧 player Actor 参照 (2-5 廃止予定)
+
+## 履歴 UI
+
+| UI | 実装 |
+|---|---|
+| cast シート | TnxHistoryMixin + history-list.hbs |
+| レコードシート | User flag 直接編集 (ApplicationV2) |
+| player シート | TnxHistoryMixin (player 廃止で消滅予定) |
+
+履歴変更時: cast シート → User flag へキー変換 (`system.history.X` → `flags.TNX.history.X`)
+
+## 能力値コスト (表示用)
+
+`getData()` → `_getAbilitiesData()` — 永続化しない都度計算:
+
+```
+totalValue   = growth + (Σ styleLevel × styleValue) + mod + effectMod
+totalControl = controlGrowth + (Σ styleLevel × styleControl) + controlMod + controlEffectMod
+```
+
+## 既知の設計課題
+
+| ID | 内容 | 担当 |
+|---|---|---|
+| KI-008 | 一括更新時の updateCastExp 競合リスク | 表出後に対処 |
+| KI-005 | handMaxSizeMod 未定義 | フェーズ2 |
+
+## 参照
+
+- 実装: `scripts/actor/tnx-cast-sheet.mjs`, `scripts/module/exp-sync.mjs`
+- 調査: `01_Raw/B4_INVESTIGATION.md`, `01_Raw/PHASE_2_INVESTIGATION.md`

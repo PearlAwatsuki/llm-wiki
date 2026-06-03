@@ -1,0 +1,222 @@
+{
+  "main": {
+    "id": "50b49dd09bebbc1f",
+    "type": "split",
+    "children": [
+      {
+        "id": "a3414f68f3e1c0ea",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "beace40921b7a9df",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "README.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "README"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "498f98bc2c2232e0",
+    "type": "split",
+    "children": [
+      {
+        "id": "d6c7ab16503129e4",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "a43147be865ad08c",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "ファイルエクスプローラ"
+            }
+          },
+          {
+            "id": "2039768fa8840a7c",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "検索"
+            }
+          },
+          {
+            "id": "09fb8ea8d5fe6c1a",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "ブックマーク"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "10a7c01ce673210d",
+    "type": "split",
+    "children": [
+      {
+        "id": "d9a336cd4febc986",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "f1be886564ea85e1",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "バックリンク"
+            }
+          },
+          {
+            "id": "47c8f60cfa61ba6a",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "アウトゴーイングリンク"
+            }
+          },
+          {
+            "id": "0a10de096ce65125",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "タグ"
+            }
+          },
+          {
+            "id": "19715cab157c2796",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "すべてのプロパティ"
+            }
+          },
+          {
+            "id": "f23519aaa147f86f",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "アウトライン"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:クイックスイッチャーを開く": false,
+      "graph:グラフビューを開く": false,
+      "canvas:新規キャンバスを作成": false,
+      "daily-notes:今日のデイリーノートを開く": false,
+      "templates:テンプレートを挿入": false,
+      "command-palette:コマンドパレットを開く": false,
+      "bases:新規ベースを作成": false
+    }
+  },
+  "active": "beace40921b7a9df",
+  "lastOpenFiles": [
+    "01_Raw/DESIGN_REVIEW.md",
+    "README.md",
+    "01_Raw/README.md",
+    "03_System/00_Index.md",
+    "03_System/Documentation_Map.md",
+    "03_System/Roles_and_Workflow.md",
+    "03_System/Release_Process.md",
+    "03_System/Audit_and_Review.md",
+    "01_Raw/B4_INVESTIGATION.md",
+    "03_System/Phase_Operations.md",
+    "03_System/Roadmap.md",
+    "03_System/Development_Rules.md",
+    "03_System/Project_Overview.md",
+    "02_Wiki/Phases/Phase_2_User_Migration.md",
+    "02_Wiki/Phases/Completed_Phases.md",
+    "02_Wiki/Issues/Resolved_Issues.md",
+    "02_Wiki/Issues/Active_Issues.md",
+    "02_Wiki/Migration/Foundry_v13.md",
+    "02_Wiki/Game_Mechanics/Usage_System.md",
+    "02_Wiki/Game_Mechanics/Experience_Points.md",
+    "02_Wiki/Game_Mechanics/Card_Operations.md",
+    "02_Wiki/UI/Templates.md",
+    "02_Wiki/UI/HUD_and_Dialogs.md",
+    "02_Wiki/UI/Sheets.md",
+    "02_Wiki/Documents/Card_Types.md",
+    "02_Wiki/Documents/Item_Types.md",
+    "02_Wiki/Phases",
+    "02_Wiki/Issues",
+    "02_Wiki/Migration",
+    "02_Wiki/Game_Mechanics",
+    "02_Wiki/UI",
+    "02_Wiki/Documents",
+    "02_Wiki/Architecture",
+    "03_System",
+    "02_Wiki",
+    "01_Raw"
+  ]
+}
