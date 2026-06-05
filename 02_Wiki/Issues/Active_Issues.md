@@ -1,6 +1,6 @@
 # 未解消の既知課題
 
-`01_Raw/KNOWN_ISSUES.md` から**現在有効**な項目のみ抽出。
+[Known_Issues_Detail.md](Known_Issues_Detail.md) から**現在有効**な項目のみ抽出。
 
 ## KI-002: usage-list edit ハンドラ不在
 

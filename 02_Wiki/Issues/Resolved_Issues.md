@@ -67,4 +67,4 @@
 - `_getHistoryData` / `_saveHistoryData` に ownerUserId 分岐追加 (2-2)
 - 完全整理はフェーズ3
 
-詳細は `01_Raw/KNOWN_ISSUES.md` を参照。
+詳細は [Known_Issues_Detail.md](Known_Issues_Detail.md) を参照。

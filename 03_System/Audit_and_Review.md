@@ -31,9 +31,9 @@
 - 1エントリ = Claude Code 1プロンプト単位
 - **ルール本文引用・特技名網羅リスト化禁止** (著作権)
 
-### 原本
+### エントリ追記先
 
-`01_Raw/MECHANICS_AUDIT.md` (テンプレートのみ、エントリは実装に伴い追記)
+エントリは本ファイル下部に追記する。
 
 ## 設計レビュー (DESIGN_REVIEW)
 
@@ -63,7 +63,7 @@
 | フェーズ1-0/1/2 | v13 UI 対応 |
 | 2-0〜2-2 | User 移行 |
 
-詳細: `01_Raw/DESIGN_REVIEW.md`
+詳細: [Design_Review_Entries.md](Design_Review_Entries.md)
 
 ## 実施タイミング
 
