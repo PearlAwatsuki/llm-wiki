@@ -48,7 +48,7 @@
 
 サイバーパンク基調。HUD デザイン含む (構造はフェーズ2 完了前提)。
 
-→ `01_Raw/PHASE_5_TASKS.md`
+→ [Phase_5_Tasks_Detail.md](../02_Wiki/Phases/Phase_5_Tasks_Detail.md)
 
 ### フェーズ6: 未実装シート
 

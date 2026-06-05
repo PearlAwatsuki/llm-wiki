@@ -100,4 +100,4 @@ totalControl = controlGrowth + (Σ styleLevel × styleControl) + controlMod + co
 ## 参照
 
 - 実装: `scripts/actor/tnx-cast-sheet.mjs`, `scripts/module/exp-sync.mjs`
-- 調査: `01_Raw/B4_INVESTIGATION.md`, `01_Raw/PHASE_2_INVESTIGATION.md`
+- 調査: [B4_Investigation_Detail.md](../Phases/B4_Investigation_Detail.md), [Phase_2_User_Migration.md#設計過程検討記録](../Phases/Phase_2_User_Migration.md#設計過程検討記録)

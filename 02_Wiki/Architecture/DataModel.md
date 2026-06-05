@@ -106,5 +106,5 @@ CONFIG.Actor.dataModels.cast = CastDataModel;
 
 ## 参照
 
-- 詳細レビュー: `01_Raw/DESIGN_REVIEW.md` (B-0〜B-9 エントリ)
-- 移行計画: `01_Raw/PHASE_B_TASKS.md`
+- 詳細レビュー: [Design_Review_Entries.md](../../03_System/Design_Review_Entries.md) (B-0〜B-9 エントリ)
+- 移行計画: [Phase_B_Tasks_Detail.md](../Phases/Phase_B_Tasks_Detail.md)

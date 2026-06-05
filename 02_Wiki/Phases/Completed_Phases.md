@@ -15,7 +15,7 @@
 
 **保留**: P0-07 → フェーズ1-1 で本格対応
 
-詳細: `01_Raw/PHASE_0_TASKS.md`
+詳細: [Phase_0_Tasks_Detail.md](Phase_0_Tasks_Detail.md)
 
 ---
 
@@ -51,7 +51,7 @@
 
 **テスト**: 544 件グリーン (B-10 時点)
 
-詳細: `01_Raw/PHASE_B_TASKS.md`, `01_Raw/DESIGN_REVIEW.md`
+詳細: [Phase_B_Tasks_Detail.md](Phase_B_Tasks_Detail.md), [Design_Review_Entries.md](../../03_System/Design_Review_Entries.md)
 
 ---
 

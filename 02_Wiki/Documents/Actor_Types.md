@@ -80,4 +80,4 @@
 
 - DataModel: `scripts/data/actor/*.mjs`
 - cast シート: `scripts/actor/tnx-cast-sheet.mjs`
-- EXP 調査: `01_Raw/B4_INVESTIGATION.md`
+- EXP 調査: [B4_Investigation_Detail.md](../Phases/B4_Investigation_Detail.md)

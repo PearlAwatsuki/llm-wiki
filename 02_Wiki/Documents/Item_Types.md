@@ -63,4 +63,4 @@
 ## 参照
 
 - DataModel: `scripts/data/item/*.mjs`
-- 設計レビュー: `01_Raw/DESIGN_REVIEW.md` (B-5〜B-7)
+- 設計レビュー: [Design_Review_Entries.md](../../03_System/Design_Review_Entries.md) (B-5〜B-7)

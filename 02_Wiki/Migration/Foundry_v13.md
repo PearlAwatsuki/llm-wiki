@@ -1,6 +1,6 @@
 # Foundry VTT v13 移行
 
-v13 実機観測に基づく移行メモの要約。詳細は `01_Raw/V13_MIGRATION_NOTES.md`。
+v13 実機観測に基づく移行メモの要約。詳細は [V13_Migration_Notes_Detail.md](../Phases/V13_Migration_Notes_Detail.md)。
 
 ## 互換性
 

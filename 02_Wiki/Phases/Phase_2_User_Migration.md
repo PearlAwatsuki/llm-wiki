@@ -4,7 +4,55 @@
 
 **完了日**: 2026-06-03
 
-詳細原本: `01_Raw/PHASE_2_INVESTIGATION.md`
+詳細原本: [設計過程・検討記録](#設計過程検討記録)
+
+## 設計過程・検討記録
+
+*調査期間: 2026-05-24〜25*
+
+### User が DataModel を持てないことの一次確認
+
+フェーズ2 着手前の調査で、Foundry VTT v13 でカスタム DataModel を持てるドキュメントは
+ActiveEffect / Actor / Card / Cards / ChatMessage / Combat / Combatant / Item /
+JournalEntryPage のみであることを確認。**User はこのリストに含まれない。**
+
+User にシステム固有データを保持する手段は **flag のみ**（型検証・スキーマ定義・
+TypeDataModel の prepare* ライフサイクルなし）。
+`CONFIG.User.dataModels` への登録は実現不可能であることも一次情報で確定。
+
+### 所有モデルの選択肢検討と棄却理由
+
+| 選択肢 | 概要 | 判断 |
+|---|---|---|
+| **A: User flag 移行** | history / exp / 手札を User flags に格納。型検証はコード側責任 | **採用** |
+| B: player Actor 維持 | DataModel を維持し cast との関係を別アプローチで整理 | 棄却 |
+| C: 別ドキュメント型 | カスタム Item(playerRecord 等)に格納。型付きを維持できる | 棄却 |
+
+選択肢 B は DataModel の型安全性を維持できるが、「余分な Actor が UI に残る」「所有モデルの
+確立が後回しになる」問題を解消しない。  
+選択肢 C は Item が DataModel を持てるため型付きを維持できるが、「プレイヤーに紐付く Item」
+という設計は Foundry 慣行から外れるとして棄却。
+
+### トレードオフの記録
+
+User 移行は **型付き Actor → 型なし flag への移行**という側面を持つ。
+フェーズB で確立した「DataModel で型を持つ」流儀から、User だけ外れることになる。
+
+| 観点 | 旧: player Actor | 新: User flags |
+|---|---|---|
+| 型保証 | ObjectField / SchemaField で型付き | 型なし(任意 JSON) |
+| スキーマ定義 | DataModel で一元管理 | 実装者の自己管理 |
+| Foundry 慣行 | DataModel が v13 推奨 | flags は補助的な用途が本来の意図 |
+| 意味的正しさ | Actor が余分に存在 | FEAR 系「EXP はプレイヤーに帰属」をデータ構造で表現 |
+
+### 選択肢 A を採用した判断根拠
+
+1. **所有モデルを先に据える**: cast シートより先に所有モデルを確立することで二度手間を避ける
+2. **player Actor の廃止**: 余分な Actor が UI に残ることの解消
+3. **意味的正しさ**: FEAR 系「EXP はプレイヤーに付与」をデータ構造で表現するなら User が自然
+4. **型安全性の妥協**: flag 運用の型なしは受け入れ、型検証はコード側責任で管理する設計とした
+
+---
 
 ## 設計確定 (2026-05-25)
 
@@ -102,4 +150,4 @@ updateUser         → User → cast (全紐づき cast)
 
 - [Experience_Points.md](../Game_Mechanics/Experience_Points.md)
 - [HUD_and_Dialogs.md](../UI/HUD_and_Dialogs.md)
-- 設計レビュー: `01_Raw/DESIGN_REVIEW.md` (2-0〜2-2 エントリ)
+- 設計レビュー: [Design_Review_Entries.md](../../03_System/Design_Review_Entries.md) (2-0〜2-2 エントリ)

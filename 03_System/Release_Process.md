@@ -69,10 +69,6 @@ git push origin main --tags
 | v0.1.0 | フェーズA | — |
 | v0.2.0 | フェーズB | 2026-05-24 |
 
-## 原本
-
-`01_Raw/RELEASE_CHECKLIST.md`
-
 ## 関連
 
 - [Roadmap.md](Roadmap.md)
