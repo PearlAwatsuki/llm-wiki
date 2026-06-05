@@ -108,27 +108,23 @@ getData() で `system.comboSkill = ensureArray(...)` として扱っており、
 
 ---
 
-## KI-005: handMaxSizeMod フィールドが DataModel に未定義
+## KI-005 [解消済み(ベース連携)]: handMaxSize 所有モデル確定 + ゲーム設定連携
 
-**概要**
-`scripts/tnx.mjs:893` で ActiveEffect の変更キーとして `'system.handMaxSizeMod'` を参照しているが、
-このフィールドはいずれの DataModel にも定義されていない。コメントに
-「このキーはアクターのデータモデルに合わせてください」と明記されている。
+**解消**: 2026-06-05、フェーズ2 締めジョブ(v0.3.1)にて以下を実施し、層①②を解消。
 
-**該当ファイル・箇所**
-- `scripts/tnx.mjs:893` (ready フック内の手札上限計算)
+- **所有モデル確定**: 手札上限の権威を User flag に一本化。`ActorBaseTemplate.handMaxSize`
+  フィールドを削除し、全 Actor type(cast / guest / troop / extra)から手札上限フィールドが消えた。
+- **ゲーム設定連携**: `resolveEffectiveHandMaxSize(user)` を新設。User flag に個別値が明示設定
+  されていればその値、未設定の場合はゲーム設定 `defaultHandMaxSize` を返す。
+  `FLAG_DEFAULTS` 経由ではなく生 flag を参照することで「未設定」と「明示的に設定した 4」を
+  正しく区別する。
+- **消費側統一**: `tnx-action-handler.mjs` の全 handMaxSize 参照(drawCard・takeFromDiscard・
+  dealInitialHands・drawMultipleCardsFromDeck)をリゾルバ経由に張り替え。
+  cast Actor の `system.handMaxSize` 直接参照は完全に除去済み。
 
-**影響範囲**
-その他。手札上限の ActiveEffect 修正が機能しない（ゼロ扱いになる）。
-基本的な手札上限機能自体は動作する。
-
-**修正の難易度**: 中（handMaxSize の所有モデルが cast / player / User のいずれかという上流設計の
-確定が必要。フィールド追加自体は低コストだが、設計決定なしに追加すると誤った場所に定義するリスクがある）
-
-**フェーズ0 で扱うべきか**: No
-
-**担当フェーズ**: フェーズ2(Player Actor → User DataModel 移行)。`handMaxSize` の所有モデル
-(cast / player / User)の決定はフェーズ2 の User 移行と連動し、ここで決着する。
+**残存する課題 → KI-020 へ移管**:
+ActiveEffect による handMaxSize 修正(層③)は、効果を載せる Actor と権威たる User flag の合流
+方式の設計が前提となるため、本ジョブでは実装しない。
 
 ---
 
@@ -486,4 +482,28 @@ styleSkill の書き換え神業 ID 参照機能。現状は一貫して命名�
 
 ---
 
-*最終更新: 2026-05-24(フェーズ1 完了に伴い KI-011/013 を解消済みにクローズ。KI-011 のページ化申し送りを不採用確定に訂正)*
+## KI-020: handMaxSize への ActiveEffect 修正が未実装
+
+**発見**: 2026-06-05(フェーズ2 締め調査 — KI-005 三層分析の層③)
+
+**概要**
+ゲーム設定 `defaultHandMaxSize` → User flag フォールバック → User 個別値 という三層設計
+のうち、層③「ActiveEffect による修正」が設計・実装ともに存在しない。
+
+コードベースに `handMaxSizeMod` への参照は現状 0 件・未定義。
+
+**申し送り**:
+- 効果を載せる Actor(キャスト等)と権威たる User flag の合流方式の設計が前提。
+- `handMaxSizeMod` フィールドの要否・配置・型はその設計で確定する。
+- 派生値計算パイプライン(`prepareDerivedData` 等)の整備と連動する。
+
+**影響範囲**
+手札上限バフが機能しない。デフォルト上限と個別設定は正常動作する。
+
+**修正の難易度**: 高(派生値計算パイプラインの設計変更が必要)
+
+**担当フェーズ**: ActiveEffect フェーズ(フェーズ4〜6 の間に新設、位置は今後確定)
+
+---
+
+*最終更新: 2026-06-05(フェーズ2 締め — KI-005 をベース連携解消でクローズ。KI-020 を新規起票(ActiveEffect 修正層③))*
