@@ -26,6 +26,6 @@ FVTT 実装の技術詳細は [02_Wiki](../02_Wiki/00_Index.md) を参照。
 
 ## 現在フェーズ
 
-**フェーズ2**: Player Actor → User flag 移行 (2-3 以降未着手)
+**フェーズ3**: 既存シート ApplicationV2 移行
 
-→ [Phase_2_User_Migration.md](../02_Wiki/Phases/Phase_2_User_Migration.md)
+→ [Roadmap.md](Roadmap.md)

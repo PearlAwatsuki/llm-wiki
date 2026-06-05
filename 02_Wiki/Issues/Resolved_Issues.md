@@ -52,6 +52,14 @@
 - **解消**: フェーズB-9 (2026-05-24)
 - exclusive/hide は StringField 維持で確定
 
+## KI-005: handMaxSize 所有モデル確定 + ゲーム設定連携 (ベース連携)
+
+- **解消**: フェーズ2 締め v0.3.1 (2026-06-05)
+- `ActorBaseTemplate.handMaxSize` 削除 → 権威を User flag に一本化
+- `resolveEffectiveHandMaxSize(user)` 新設 → User flag → ゲーム設定フォールバック
+- 全消費箇所(drawCard / takeFromDiscard / dealInitialHands / drawMultipleCardsFromDeck)をリゾルバ経由に統一
+- **残存 → KI-020**: ActiveEffect 修正層(層③)は ActiveEffect フェーズへ
+
 ## フェーズ2 で部分的解消
 
 ### KI-017 (部分)

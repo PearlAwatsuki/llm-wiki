@@ -69,15 +69,32 @@
 
 ---
 
+## フェーズ2: Player Actor → User flag 移行 ✅ (v0.3.1)
+
+**目標**: player Actor の全役割を User flag へ移行し、player Actor を廃止する。
+
+| サブ | 内容 | 状態 |
+|---|---|---|
+| 2-0 | User flag スキーマ + レコードシート | ✅ 完了 |
+| 2-1 | cast → User 紐付け (`ownerUserId`) | ✅ 完了 |
+| 2-2 | EXP・履歴二フック同期 | ✅ 完了 |
+| 2-3 | 手札・切り札 User flag + HUD 張替 + cast 手札削除 | ✅ 完了 |
+| 2-4 | 既存 player データ → User flag 移行 | スキップ (pre-production) |
+| 2-5 | player Actor 廃止 + handMaxSize 連携締め | ✅ 完了 |
+
+詳細: [Phase_2_User_Migration.md](Phase_2_User_Migration.md)
+
+---
+
 ## 今後のフェーズ (概要)
 
 | フェーズ | 内容 | 状態 |
 |---|---|---|
-| 2 | Player → User flag 移行 | **進行中** |
-| 3 | 既存シート ApplicationV2 移行 | 未着手 |
+| 3 | 既存シート ApplicationV2 移行 | **進行中** |
 | 4 | シート内容追加 (combatSpeed 等) | 未着手 |
 | 5 | CSS リファクタ + デザイン刷新 | 未着手 |
 | 6 | 未実装シート追加 | 未着手 |
+| (新設) | ActiveEffect フェーズ(KI-020 含む) | 未着手・位置未確定 |
 | 7-8 | 判定システム 設計→実装 | 未着手 |
 | 9-10 | 神業システム 設計→実装 | 未着手 |
 | 11 | 戦闘進行/サブシーン | 未着手 |

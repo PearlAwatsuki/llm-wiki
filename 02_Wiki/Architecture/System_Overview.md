@@ -9,7 +9,7 @@
 - **判定**: カード (Foundry Cards API) ベース。`Roll` クラス・ダイスロールは未使用
 - **進行**: 1アクト = シーンの連なり (シーン制)
 - **神業 (miracle)**: ゲーム進行を書き換える強力な効果。数値計算だけでは表現困難
-- **経験点**: キャストではなく**プレイヤー**に付与 (FEAR 系)。フェーズ2 で User flag へ移行中
+- **経験点**: キャストではなく**プレイヤー**に付与 (FEAR 系)。フェーズ2 で User flag へ移行完了
 
 ## エントリポイント
 
@@ -59,7 +59,7 @@ tests/                    # Vitest ユニットテスト
 
 - **能力値表示**: `TokyoNovaCastSheet.getData()` → `_getAbilitiesData()` (永続化しない)
 - **EXP**: `TokyoNovaCastSheet.updateCastExp()` — `ready` フックの CRUD 連動
-- **手札上限**: `ready` フックで一括更新
+- **手札上限**: `resolveEffectiveHandMaxSize(user)` — User flag 個別値 → ゲーム設定の順で解決
 
 ## Compendium Packs
 

@@ -5,7 +5,7 @@
 | API | 使用状況 |
 |---|---|
 | ApplicationV1 | **全既存シート** (ActorSheet, ItemSheet, JournalSheet, Application) |
-| ApplicationV2 | **レコードシートのみ** (`tnx-record-sheet.mjs`) — フェーズ2-0 |
+| ApplicationV2 | **レコードシートのみ** (`tnx-record-sheet.mjs`) — フェーズ2-0 完了 |
 
 v13 deprecation 警告は出るが v15 まで動作保証。ApplicationV2 全面移行はフェーズ3 (シート) / フェーズ2 (HUD)。
 
@@ -14,7 +14,7 @@ v13 deprecation 警告は出るが v15 まで動作保証。ApplicationV2 全面
 | クラス | 継承 | 対象 type | ファイル |
 |---|---|---|---|
 | TokyoNovaCastSheet | ActorSheet | cast | `scripts/actor/tnx-cast-sheet.mjs` |
-| TokyoNovaPlayerSheet | ActorSheet | player | `scripts/actor/tnx-player-sheet.mjs` |
+| TokyoNovaPlayerSheet | ActorSheet | player | `scripts/actor/tnx-player-sheet.mjs` | (v0.3.0 廃止)
 | TokyoNovaItemSheet | ItemSheet | 基底 (直接登録なし) | `scripts/item/tnx-item-sheet.mjs` |
 | TokyoNovaStyleSheet | TokyoNovaItemSheet | style | `scripts/item/tnx-style-sheet.mjs` |
 | TokyoNovaMiracleSheet | TokyoNovaItemSheet | miracle | `scripts/item/tnx-miracle-sheet.mjs` |
@@ -28,7 +28,7 @@ v13 deprecation 警告は出るが v15 まで動作保証。ApplicationV2 全面
 
 **Actor**: guest, troop, extra — フェーズ6 で追加予定
 
-**Item**: weapon, armor, ianus, cyborg, tron, tap, vehicle, residence, housingArea, combiner, general, lifePath — フェーズ6
+**Item**: weapon, armor, ianus, cyborg, tron, tap, vehicle, residence, housingArea, combiner, general, lifePath — フェーズ6 ( cast 含む全既存シートはフェーズ3 で ApplicationV2 移行予定)
 
 ## 共通 UI パターン
 

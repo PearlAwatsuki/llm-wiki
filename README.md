@@ -23,4 +23,4 @@
 
 ## 現在フェーズ
 
-**フェーズ2** — User flag 移行 ([詳細](02_Wiki/Phases/Phase_2_User_Migration.md))
+**フェーズ3** — 既存シート ApplicationV2 移行 ([詳細](03_System/Roadmap.md))

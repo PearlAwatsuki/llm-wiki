@@ -11,8 +11,8 @@
 ✅ フェーズA   開発基盤整備 (v0.1.0)
 ✅ フェーズB   DataModel 完全移行 (v0.2.0)
 ✅ フェーズ1   v13 UI 整合
-▶  フェーズ2   Player → User flag 移行 ← 現在
-⬜ フェーズ3   既存シート ApplicationV2 移行
+✅ フェーズ2   Player → User flag 移行 (v0.3.1) [2026-06-05]
+▶  フェーズ3   既存シート ApplicationV2 移行 ← 現在 [2026-06-04]
 ⬜ フェーズ4   シート内容追加 (combatSpeed 等)
 ⬜ フェーズ5   CSS リファクタ + デザイン刷新
 ⬜ フェーズ6   未実装シート追加
@@ -26,16 +26,17 @@
 
 ## フェーズ詳細
 
-### フェーズ2: User 移行 (現在)
+### フェーズ2: User 移行 (完了)
 
-プレイヤーの EXP・履歴・手札を User flag へ。player Actor 廃止。
+プレイヤーの EXP・履歴・手札を User flag へ移行し、player Actor を廃止した。
 
-- HUD ApplicationV2 化もここ
-- KI-005 決着
+- HUD ApplicationV2 化はここでは行わず、参照先の書き換えのみ実施
+- KI-005 ベース連携決着 (`resolveEffectiveHandMaxSize` 新設)
+- ActiveEffect 修正 (KI-020) は新設 ActiveEffect フェーズへ
 
 → [Phase_2_User_Migration.md](../02_Wiki/Phases/Phase_2_User_Migration.md)
 
-### フェーズ3: シート ApplicationV2 移行
+### フェーズ3: シート ApplicationV2 移行 (現在)
 
 構造のみ。cast 含む全既存シート。デザインは含まない。
 
@@ -52,6 +53,11 @@
 ### フェーズ6: 未実装シート
 
 outfit 系 Item 11 種 + guest/troop/extra Actor 3 種。
+
+### ActiveEffect フェーズ (新設・位置未確定)
+
+派生値計算パイプライン設計 + KI-020 (handMaxSize ActiveEffect 修正) を含む。
+フェーズ6 で対象フィールドが固まった後、判定システム設計の前を想定。
 
 ### フェーズ7-8: 判定システム
 
