@@ -1,4 +1,4 @@
-# 完了フェーズ概要
+﻿# 完了フェーズ概要
 
 ## フェーズ0: 土台を v13 で動かす ✅
 
@@ -51,7 +51,7 @@
 
 **テスト**: 544 件グリーン (B-10 時点)
 
-詳細: [Phase_B_Tasks_Detail.md](Phase_B_Tasks_Detail.md), [Design_Review_Entries.md](../../03_System/Design_Review_Entries.md)
+詳細: [Phase_B_Tasks_Detail.md](Phase_B_Tasks_Detail.md), [Design_Review_Entries.md](../../02_System/Design_Review_Entries.md)
 
 ---
 
@@ -100,4 +100,4 @@
 | 11 | 戦闘進行/サブシーン | 未着手 |
 | 12 | 公開準備 → v1.0.0 | 未着手 |
 
-ロードマップ詳細: `../03_System/Roadmap.md`
+ロードマップ詳細: `../02_System/Roadmap.md`

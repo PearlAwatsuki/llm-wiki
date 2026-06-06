@@ -1,8 +1,8 @@
-# システムドキュメント (03_System)
+﻿# システムドキュメント (02_System)
 
 開発の**全体方針・運用・ロードマップ**を集約。
 
-FVTT 実装の技術詳細は [02_Wiki](../02_Wiki/00_Index.md) を参照。
+FVTT 実装の技術詳細は [01_Wiki](../01_Wiki/00_Index.md) を参照。
 
 ## 目次
 
@@ -21,8 +21,8 @@ FVTT 実装の技術詳細は [02_Wiki](../02_Wiki/00_Index.md) を参照。
 
 1. 本フォルダの [Roadmap.md](Roadmap.md) で現フェーズ確認
 2. ルート `CLAUDE.md` §2.2 と照合
-3. 現フェーズの Wiki → [02_Wiki/Phases/](../02_Wiki/Phases/)
-4. 実装詳細 → [02_Wiki/00_Index.md](../02_Wiki/00_Index.md)
+3. 現フェーズの Wiki → [01_Wiki/Phases/](../01_Wiki/Phases/)
+4. 実装詳細 → [01_Wiki/00_Index.md](../01_Wiki/00_Index.md)
 
 ## 現在フェーズ
 

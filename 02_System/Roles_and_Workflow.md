@@ -1,4 +1,4 @@
-# 役割分担とワークフロー
+﻿# 役割分担とワークフロー
 
 ## 3者体制
 
@@ -40,9 +40,8 @@ Claude Code (実装・テスト・ドキュメント)
 
 | 読者 | 入口 |
 |---|---|
-| LLM (Claude Code) | `CLAUDE.md` → `03_System/` → `02_Wiki/` |
-| 人間 (開発者) | `02_Wiki/00_Index.md` |
-| 原本参照 | `01_Raw/` |
+| LLM (Claude Code) | `CLAUDE.md` → `02_System/` → `01_Wiki/` |
+| 人間 (開発者) | `01_Wiki/00_Index.md` |
 
 ## 関連
 

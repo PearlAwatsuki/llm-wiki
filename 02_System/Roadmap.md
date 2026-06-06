@@ -1,4 +1,4 @@
-# ロードマップ
+﻿# ロードマップ
 
 完走志向版。各フェーズはサブフェーズに細分して着実に仕上げる。
 
@@ -34,7 +34,7 @@
 - KI-005 ベース連携決着 (`resolveEffectiveHandMaxSize` 新設)
 - ActiveEffect 修正 (KI-020) は新設 ActiveEffect フェーズへ
 
-→ [Phase_2_User_Migration.md](../02_Wiki/Phases/Phase_2_User_Migration.md)
+→ [Phase_2_User_Migration.md](../01_Wiki/Phases/Phase_2_User_Migration.md)
 
 ### フェーズ3: シート ApplicationV2 移行 (現在)
 
@@ -48,7 +48,7 @@
 
 サイバーパンク基調。HUD デザイン含む (構造はフェーズ2 完了前提)。
 
-→ [Phase_5_Tasks_Detail.md](../02_Wiki/Phases/Phase_5_Tasks_Detail.md)
+→ [Phase_5_Tasks_Detail.md](../01_Wiki/Phases/Phase_5_Tasks_Detail.md)
 
 ### フェーズ6: 未実装シート
 
@@ -106,4 +106,4 @@ v1.0.0 リリース。
 ## 関連
 
 - [Release_Process.md](Release_Process.md)
-- [Completed_Phases.md](../02_Wiki/Phases/Completed_Phases.md)
+- [Completed_Phases.md](../01_Wiki/Phases/Completed_Phases.md)

@@ -1,4 +1,4 @@
-# プロジェクト概要
+﻿# プロジェクト概要
 
 ## 名称
 
@@ -46,15 +46,13 @@
 
 ```
 llm-wiki/
-  01_Raw/       # docs/ の原本アーカイブ
-  02_Wiki/      # FVTT 開発向け再構成 Wiki
-  03_System/    # 本フォルダ — 全体方針・運用
+  01_Wiki/      # FVTT 開発向け Wiki (正本)
+  02_System/    # 本フォルダ — 全体方針・運用 (正本)
 CLAUDE.md       # Claude Code 向け指針 (ルート)
-docs/           # 作業中の原本 (01_Raw と同期推奨)
 ```
 
 ## 関連
 
 - [Development_Rules.md](Development_Rules.md)
 - [Roadmap.md](Roadmap.md)
-- Wiki 入口: [../02_Wiki/00_Index.md](../02_Wiki/00_Index.md)
+- Wiki 入口: [../01_Wiki/00_Index.md](../01_Wiki/00_Index.md)

@@ -1,4 +1,4 @@
-# フェーズ2: User 移行 ✅ (完了)
+﻿# フェーズ2: User 移行 ✅ (完了)
 
 **目標**: player Actor の全役割を User flag へ移行し、player Actor を廃止する。
 
@@ -150,4 +150,4 @@ updateUser         → User → cast (全紐づき cast)
 
 - [Experience_Points.md](../Game_Mechanics/Experience_Points.md)
 - [HUD_and_Dialogs.md](../UI/HUD_and_Dialogs.md)
-- 設計レビュー: [Design_Review_Entries.md](../../03_System/Design_Review_Entries.md) (2-0〜2-2 エントリ)
+- 設計レビュー: [Design_Review_Entries.md](../../02_System/Design_Review_Entries.md) (2-0〜2-2 エントリ)

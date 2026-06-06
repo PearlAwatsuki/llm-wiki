@@ -1,4 +1,4 @@
-# DataModel 設計
+﻿# DataModel 設計
 
 フェーズB (v0.2.0) で `template.json` から Foundry v13 推奨の **TypeDataModel** へ完全移行済。
 
@@ -106,5 +106,5 @@ CONFIG.Actor.dataModels.cast = CastDataModel;
 
 ## 参照
 
-- 詳細レビュー: [Design_Review_Entries.md](../../03_System/Design_Review_Entries.md) (B-0〜B-9 エントリ)
+- 詳細レビュー: [Design_Review_Entries.md](../../02_System/Design_Review_Entries.md) (B-0〜B-9 エントリ)
 - 移行計画: [Phase_B_Tasks_Detail.md](../Phases/Phase_B_Tasks_Detail.md)

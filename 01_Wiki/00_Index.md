@@ -1,12 +1,11 @@
-# TNX Foundry システム Wiki
+﻿# TNX Foundry システム Wiki
 
 トーキョーN◎VA THE AXLERATION 用 Foundry VTT システム (`tokyo-nova-axleration`) の開発向けリファレンス。
 
 ## この Wiki の目的
 
 - FVTT システム開発時に必要な**実装情報**をトピック別に参照できるようにする
-- 原本 (`llm-wiki/01_Raw/`) から要点を抽出・再構成した読みやすい版
-- 全体方針・ロードマップは `llm-wiki/03_System/` を参照
+- 全体方針・ロードマップは `llm-wiki/02_System/` を参照
 
 ## クイックリファレンス
 
@@ -72,19 +71,7 @@
 | [Completed_Phases.md](Phases/Completed_Phases.md) | フェーズ0/A/B/1 の完了内容 |
 | [Phase_2_User_Migration.md](Phases/Phase_2_User_Migration.md) | 現在フェーズの設計・進捗 |
 
-## 原本との対応
-
-| Wiki | 原本 (`01_Raw/`) |
-|---|---|
-| Architecture/* | INVENTORY_REPORT, DESIGN_REVIEW (B-0) |
-| Documents/* | INVENTORY_REPORT §2, PHASE_B_TASKS |
-| UI/* | INVENTORY_REPORT §4 |
-| Game_Mechanics/* | INVENTORY_REPORT §3,5, B4_INVESTIGATION |
-| Migration/Foundry_v13.md | V13_MIGRATION_NOTES |
-| Issues/* | KNOWN_ISSUES |
-| Phases/* | PHASE_*_TASKS, PHASE_2_INVESTIGATION |
-
 ## 関連
 
-- 開発方針・ロードマップ → `../03_System/`
+- 開発方針・ロードマップ → `../02_System/`
 - Claude Code 向け指針 → プロジェクトルート `CLAUDE.md`

@@ -1,4 +1,4 @@
-# 監査と設計レビュー
+﻿# 監査と設計レビュー
 
 2種類の品質管理を**混同しない**。
 
@@ -84,7 +84,7 @@
 - 継承: Mixin パターン
 - シート接続: 既存維持 (フェーズB スコープ外)
 
-→ Wiki: [DataModel.md](../02_Wiki/Architecture/DataModel.md)
+→ Wiki: [DataModel.md](../01_Wiki/Architecture/DataModel.md)
 
 ## 関連
 

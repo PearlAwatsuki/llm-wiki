@@ -1,4 +1,4 @@
-# Item 型定義
+﻿# Item 型定義
 
 全 17 type が `scripts/data/item/` に DataModel 化済。
 
@@ -63,4 +63,4 @@
 ## 参照
 
 - DataModel: `scripts/data/item/*.mjs`
-- 設計レビュー: [Design_Review_Entries.md](../../03_System/Design_Review_Entries.md) (B-5〜B-7)
+- 設計レビュー: [Design_Review_Entries.md](../../02_System/Design_Review_Entries.md) (B-5〜B-7)
