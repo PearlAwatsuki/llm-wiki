@@ -47,20 +47,25 @@
 
 ---
 
-## V1 → V2 API 対応表
+## V1 → V2 API 対応表 (3-0 で確定)
 
 | V1 | V2 |
 |---|---|
 | `static get defaultOptions()` | `static DEFAULT_OPTIONS = {...}` |
-| `getData()` | `_prepareContext()` |
+| `getData()` | `async _prepareContext(options)` |
 | `activateListeners(html)` | `static DEFAULT_OPTIONS.actions` + `_onRender()` |
-| `options.tabs` | `TabsApplicationMixin` または手動タブ切替 |
-| `ActorSheet` / `ItemSheet` 継承 | `DocumentSheetV2` 継承 |
-| `JournalSheet` 継承 | `DocumentSheetV2` (要確認 — 3-0 で調査) |
+| `options.tabs` | V2 組み込みの `static TABS` + `tabGroups` プロパティ |
+| `ActorSheet` 継承 | `HandlebarsApplicationMixin(ActorSheetV2)` (`foundry.applications.sheets`) |
+| `ItemSheet` 継承 | `HandlebarsApplicationMixin(ItemSheetV2)` (`foundry.applications.sheets`) |
+| `JournalSheet` 継承 | `HandlebarsApplicationMixin(DocumentSheetV2)` + `DocumentSheetConfig.registerSheet` |
+| `Application` 継承 | `HandlebarsApplicationMixin(ApplicationV2)` |
 | `FormApplication` 継承 | `HandlebarsApplicationMixin(ApplicationV2)` |
-| `new Dialog({...})` | `foundry.applications.api.DialogV2` |
-| `render(true)` | `render({force: true})` |
-| `jQuery` 前提のハンドラ | ネイティブ DOM |
+| `new Dialog({...})` | `foundry.applications.api.DialogV2.wait({...})` |
+| `render(true)` | `render({ force: true })` |
+| `jQuery` 前提のハンドラ | ネイティブ DOM `addEventListener` |
+| `_getHeaderButtons()` | `static DEFAULT_OPTIONS` の `window.controls` |
+
+`TabsApplicationMixin` は v13 に**存在しない**。タブは V2 基底クラス (`ActorSheetV2` 等) に組み込みサポートがある。
 
 ---
 
@@ -78,15 +83,15 @@
 
 ## サブフェーズ
 
-### 3-0: 移行方針・設計確定
+### 3-0: 移行方針・設計確定 ✅ (2026-06-06)
 
-- [ ] `DocumentSheetV2` の確認 (Actor/Item 用)
-- [ ] `JournalSheet` の V2 相当確認 (TnxScenarioSheet 用)
-- [ ] `foundry.applications.api.DialogV2` の API 確認
-- [ ] `EffectsSheetMixin` の V2 統一設計決定 (KI-009)
-- [ ] Item シート継承ツリーの設計決定 (V2 でも継承を維持するか)
-- [ ] TabsApplicationMixin の使用可否確認
-- [ ] 設計内容を wiki / Design_Review_Entries に記録
+- [x] `ActorSheetV2` / `ItemSheetV2` の確認 → `foundry.applications.sheets` に存在
+- [x] `JournalSheet` の V2 相当確認 → `DocumentSheetV2` 直継承 + `registerSheet`
+- [x] `foundry.applications.api.DialogV2` の API 確認 → `DialogV2.wait()` で移行
+- [x] `EffectsSheetMixin` の V2 統一設計決定 → `ACTIONS` オブジェクト方式で KI-009 解消
+- [x] Item シート継承ツリーの設計決定 → V2 でも `ItemSheetV2` 基底の継承ツリーを維持
+- [x] `TabsApplicationMixin` の確認 → v13 に存在しない。V2 組み込みの `TABS`/`tabGroups` を使用
+- [x] 設計内容を wiki / Design_Review_Entries に記録 → DR エントリ「3-0」追記済み
 
 ### 3-1: Item シート基底 + EffectsSheetMixin V2 化
 

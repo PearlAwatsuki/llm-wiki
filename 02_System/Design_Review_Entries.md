@@ -889,6 +889,172 @@ B-5〜B-7 の全サブフェーズで Item 全 17 type の DataModel 化が完�
 
 ---
 
+### 3-0 ApplicationV2 全面移行 設計確定(フェーズ3)
+
+**日付**: 2026-06-06
+**レビュー対象**: フェーズ3 全体の ApplicationV2 移行方針
+**ステータス**: レビュー済(問題なし)
+
+#### レビュー観点
+
+- 保守性: V2 移行後のコードが読みやすく、フェーズ4 以降の機能追加に耐えるか
+- 拡張性: EffectsSheetMixin の統一が KI-009 を根本解消するか
+- FVTT 慣行: v13 で提供される V2 API を正しく使えているか
+- 既存設計との整合: TnxRecordSheet(既存 V2 参照実装)のパターンと一致するか
+
+#### 確認した API(v13)
+
+`foundry.applications.api` モジュールに含まれるクラス:
+- `ApplicationV2` — 基底
+- `DocumentSheetV2` — ドキュメントシート基底
+- `DialogV2` — ダイアログ
+- `HandlebarsApplicationMixin` — Handlebars テンプレート対応 Mixin
+
+`foundry.applications.sheets` モジュールに含まれるクラス:
+- `ActorSheetV2` — DocumentSheetV2 サブクラス。DnD・ポートレート対応組み込み
+- `ItemSheetV2` — DocumentSheetV2 サブクラス。`item` / `actor` アクセサ組み込み
+
+`foundry.applications.sheets.journal` モジュールに含まれるクラス:
+- `JournalEntrySheet` — `HandlebarsApplicationMixin(DocumentSheetV2)` 継承。ページ管理専用
+
+`TabsApplicationMixin` は v13 に**存在しない**。タブは V2 基底クラスに組み込みのサポートがある。
+
+#### 決定事項
+
+##### 論点1: 各シートの V2 基底クラス
+
+**決定**: 下表の通り確定。すべて `HandlebarsApplicationMixin(...)` でラップする。
+
+| V1 クラス | V2 基底 | 名前空間 |
+|---|---|---|
+| `ActorSheet` | `ActorSheetV2` | `foundry.applications.sheets` |
+| `ItemSheet` | `ItemSheetV2` | `foundry.applications.sheets` |
+| `JournalSheet` | `DocumentSheetV2` | `foundry.applications.api` |
+| `Application` | `ApplicationV2` | `foundry.applications.api` |
+| `FormApplication` | `ApplicationV2` | `foundry.applications.api` |
+
+`Dialog` は `DialogV2` (`foundry.applications.api`) に移行する。
+
+`JournalSheet` の V2 相当である `JournalEntrySheet` はページ管理に特化しており、
+`TnxScenarioSheet` の独自 UI と相容れないため、直接 `DocumentSheetV2` を継承する。
+アクトシートとしての登録は `DocumentSheetConfig.registerSheet(JournalEntry, ...)` で行う。
+
+決定理由: `ActorSheetV2` / `ItemSheetV2` はそれぞれ Actor/Item 固有の DnD・アクセサが
+組み込まれており、直接使うことで手動実装を省ける。`JournalEntrySheet` は逆に機能過多のため回避。
+
+##### 論点2: V1 → V2 主要 API 対応
+
+**決定**: 下表の変換を全シートに適用する。
+
+| V1 | V2 |
+|---|---|
+| `static get defaultOptions()` | `static DEFAULT_OPTIONS = {...}` |
+| `getData(options)` | `async _prepareContext(options)` |
+| `activateListeners(html)` | `static DEFAULT_OPTIONS.actions` + `_onRender()` |
+| `options.tabs` | V2 組み込みの `static TABS` + `tabGroups` プロパティ |
+| jQuery `.find().on(...)` | ネイティブ DOM `addEventListener` |
+| `render(true)` | `render({ force: true })` |
+| `_getHeaderButtons()` | `static DEFAULT_OPTIONS` の `window.controls` |
+
+##### 論点3: タブ実装方法
+
+**決定**: V2 基底クラス組み込みの `TABS` + `tabGroups` を使う。
+
+`TabsApplicationMixin` が v13 に存在しないため、V2 基底が提供する以下の仕組みを使う:
+- `static TABS = { primary: { tabs: [...], initial: 'abilities' } }` でタブグループを定義
+- `tabGroups = { primary: 'abilities' }` でアクティブタブの初期値を指定
+- `changeTab(tabName, groupName)` でタブ切替
+- HTML 側では `data-tab-group` / `data-tab` 属性を使う
+
+既存テンプレートのタブ構造はそのまま維持し、クラス名・属性のみ V2 形式に調整する。
+
+##### 論点4: EffectsSheetMixin の V2 統一(KI-009 解消)
+
+**決定**: `activateEffectListListeners` を削除し、ハンドラを V2 `actions` 形式に統一する。
+
+**現状の問題 (KI-009)**:
+- `CastSheet`: インスタンスプロパティ代入 (`_onXxx = EffectsSheetMixin._onXxx`)
+- `ItemSheet`: 静的メソッド呼び出し (`EffectsSheetMixin.activateEffectListListeners(...)`)
+
+**V2 統一後の構造**:
+```js
+export const EffectsSheetMixin = {
+    // _prepareContext から呼ぶ (変更なし)
+    prepareEffectsContext(document, context) { ... },
+
+    // DEFAULT_OPTIONS.actions に展開する関数群
+    ACTIONS: {
+        createEffect: async function(event, target) { ... },  // this = sheet instance
+        editEffect:   async function(event, target) { ... },
+        deleteEffect: async function(event, target) { ... },
+        toggleEffect: async function(event, target) { ... },
+    }
+};
+```
+
+各シートの `DEFAULT_OPTIONS`:
+```js
+static DEFAULT_OPTIONS = {
+    actions: {
+        ...EffectsSheetMixin.ACTIONS,
+        // シート固有の actions
+    }
+};
+```
+
+HTML 側の `data-action` 属性値を対応する名前(`createEffect` 等)に揃える。
+
+この統一により KI-009 を完全解消する。
+
+##### 論点5: TnxHud の V2 化
+
+**決定**: `HandlebarsApplicationMixin(ApplicationV2)` を基底とし、ウィンドウフレームなしで常駐描画する。
+
+`popOut: false` の V2 相当は `window: { frame: false }` で実現。
+CSS の `position: fixed` による配置は既存のまま維持。
+`_onRender` でイベントリスナーを登録。
+
+`render({ force: true })` が既存の `render(true)` に相当する。
+
+##### 論点6: ダイアログの V2 化
+
+**決定**: 既存 8 ダイアログの内部実装を `DialogV2.wait()` に置き換える。外部 API (`static async prompt(...)`) は変更しない。
+
+`DialogV2.wait()` のシグネチャ:
+```js
+await foundry.applications.api.DialogV2.wait({
+    window: { title: "タイトル" },
+    content: "<p>...</p>",   // または renderTemplate() の結果
+    buttons: [
+        { action: "ok", label: "OK",
+          callback: async (event, button, dialog) => { /* 戻り値が wait() の resolve 値 */ } },
+        { action: "cancel", label: "キャンセル", default: true }
+    ],
+    close: () => null  // ×ボタンや Escape での解決値
+});
+```
+
+各ダイアログの現在の `new Dialog({...}).render(true)` を上記パターンで置き換える。
+
+`TnxScenarioSettingWizard` (FormApplication) は `HandlebarsApplicationMixin(ApplicationV2)` で再実装し、マルチステップ進行はインスタンスプロパティ (`this.step`) で管理する(変更なし)。
+
+#### 良かった点
+
+- `ActorSheetV2` / `ItemSheetV2` が v13 で提供されており、DnD 等の共通機能を手動実装する必要がない
+- `TnxRecordSheet` が既存の V2 参照実装として使えるため、移行パターンが明確
+- `EffectsSheetMixin` の統一設計が V2 移行を機に KI-009 を根本解消できる
+
+#### 課題
+
+- `TnxHud` の `window: { frame: false }` の挙動は v13 で実機確認が必要 (3-4 サブフェーズで確認)
+- V2 の `TABS` / `tabGroups` の具体的な記述形式は実装時に公式 API を都度参照する
+
+#### 推奨アクション
+
+3-1(Item シート基底 + EffectsSheetMixin V2 化)に進む。本エントリの設計方針に従って実装する。
+
+---
+
 ### B-8 Card type の DataModel 化(フェーズB)
 
 **日付**: 2026-05-23
