@@ -1,6 +1,6 @@
 # フェーズ3: 既存シート ApplicationV2 移行
 
-**目標**: ApplicationV1 を完全廃止。プロジェクト内の全 Application を V2 に移行する。デザイン変更は含まない（フェーズ5 担当）。
+**目標**: ApplicationV1 を完全廃止。プロジェクト内の全 Application を V2 に移行する。**V2 移行で生じた CSS 回帰バグ修正と、旧フェーズ5（CSS リファクタ + デザイン刷新）の全作業をフェーズ3 に統合して並走させる**（2026-06-06 方針変更）。
 
 **方針確定日**: 2026-06-06
 
@@ -110,39 +110,67 @@
 - [x] 各テンプレート: `<form>` → `<section>`、nav `<a>` に `data-group="primary"`、`data-action="editImage"`、action 名キャメルケース化
 - [x] テスト全通過確認 (625/625)
 
-### 3-3: CastSheet V2 化 + KI 解消
+### 3-2b: アイテムシート CSS 修正 ✅ (2026-06-06)
+
+> フェーズ5 CSS 作業のフェーズ3 統合に伴い新設。V2 移行で生じた回帰バグ修正が中心。
+
+- [x] `.edit-mode-toggle` に `display: inline-block; flex-shrink: 0;` 追加（V2 フレックスヘッダー対応）
+- [x] `.editor` / `.editor-edit` / `.editor-content` 向け CSS を削除し `prose-mirror` カスタム要素向けに書き換え
+- [x] `min-width: 513px` 除去（オーバーフロー原因）
+- [x] `.tnx-editor-section .prosemirror` (小文字) dead CSS ルール削除
+- [x] `.suit-selection input:checked + .suit-icon` → `+ i` 修正（セレクタ構造不一致）
+- [x] Design_Review_Entries.md に 3-2 / 3-2b エントリ追記
+
+### 3-CSS-0: デザインシステム基盤確立（設計セッション）
+
+> 旧フェーズ5-0 + 5-1 相当。コード実装前にユーザーが設計方針を確定する。
+
+- [ ] 基調トーン確定（クラシックサイバーパンク / モダン / ミニマル）
+- [ ] カラーパレット確定（既存 `--tnx-color-*` 変数を継承・拡張）
+- [ ] タイポグラフィ確定（見出し・本文・特殊用途フォント）
+- [ ] 装飾要素方針確定（ボーダー・グリッチ・スキャンライン・アイコン体系）
+- [ ] アニメーション方針確定（あり / なし / 最小限）
+- [ ] CSS ファイル構成確定（単一 `tnx.css` 維持 or 分割）
+- [ ] 上記決定を受けてコード実装: CSS 変数整理、dead CSS 削除（`.hotbar-is-collapsed` 等）
+
+### 3-3: CastSheet V2 化 + CSS デザイン適用
 
 - [ ] `TokyoNovaCastSheet` を `DocumentSheetV2` 基底に移行
 - [ ] KI-017: デッドコード (`_getHistoryData` / `_saveHistoryData` / `_sortHistory`) 削除
 - [ ] KI-018: `RewritedTarget` → `RewrittenTarget` 修正
 - [ ] KI-019: `RewritingMiracle_ID` → `rewritingMiracleId` 修正
+- [ ] キャストシートに 3-CSS-0 デザインシステムを適用
 - [ ] テスト更新・通過確認
 
-### 3-4: TnxHud V2 化
+### 3-4: TnxHud V2 化 + HUD CSS デザイン
 
 - [ ] `TnxHud` を `HandlebarsApplicationMixin(ApplicationV2)` に移行
 - [ ] サイドバー連動 JS 死コード削除
 - [ ] `popOut: false` 相当を V2 で実現
+- [ ] HUD に 3-CSS-0 デザインシステムを適用
 - [ ] テスト更新・通過確認
 
-### 3-5: TnxScenarioSheet V2 化
+### 3-5: TnxScenarioSheet V2 化 + CSS デザイン適用
 
 - [ ] `TnxScenarioSheet` を V2 相当に移行
 - [ ] JournalSheet 特有機能(ドラッグ&ドロップ等)の V2 対応
+- [ ] シナリオシートに 3-CSS-0 デザインシステムを適用
 - [ ] テスト更新・通過確認
 
-### 3-6: ダイアログ系 V2 化
+### 3-6: ダイアログ系 V2 化 + CSS デザイン適用
 
 - [ ] `TnxScenarioSettingWizard` (FormApplication → ApplicationV2)
 - [ ] `tnx-dialog.mjs` の 8 ダイアログ (`Dialog` → `DialogV2`)
+- [ ] ダイアログ群に 3-CSS-0 デザインシステムを適用
 - [ ] テスト更新・通過確認
 
-### 3-7: 検証・記録
+### 3-7: 最終検証・CSS 最終調整・記録
 
 - [ ] 全テスト通過確認
 - [ ] 実機確認 (各シートの基本操作)
+- [ ] CSS 最終調整・全シートの視覚的一貫性確認（旧フェーズ 5-4 相当）
 - [ ] KI-009/017/018/019 → Resolved_Issues.md に移動
-- [ ] Design_Review_Entries.md に V2 移行エントリ追記
+- [ ] Design_Review_Entries.md に各サブフェーズエントリ追記
 - [ ] Roadmap.md のフェーズ3 完了マーク + Completed_Phases.md 追記
 
 ---

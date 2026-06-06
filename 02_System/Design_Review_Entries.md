@@ -1076,17 +1076,85 @@ await foundry.applications.api.DialogV2.wait({
 - **V1 → V2 直訳**: `getData` → `_prepareContext`、`activateListeners` → `_onRender` + `ACTIONS` の対応が明確。TnxRecordSheet と同パターンで実装できた。
 - **EffectsSheetMixin ACTIONS 方式 (KI-009 解消)**: V1 の二系統(インスタンス代入 / 静的呼び出し)を `ACTIONS` オブジェクトの `...EffectsSheetMixin.ACTIONS` で統一。KI-009 を根本解消した。V1 メソッドは `@deprecated` を付けて CastSheet 移行 (3-3) まで維持。
 - **usage-list.hbs 保護対応**: `data-action` を変更できないため、`_onRender` で `.action-create` / `.action-delete[data-index]` に `addEventListener` を直接添付する方式を採用。V2 の「毎レンダー後に `_onRender` が呼ばれる」特性を活かしてリスナーを毎回再登録することで、PART 再構築後も正常動作する。
-- **cssClass / owner の互換補完**: V2 の `_prepareContext` は `cssClass` を提供しないため、`this.element.className` から補完した。V1 テンプレートとの互換を維持しつつ、フェーズ5 での CSS 整理に道を開けた。
+- **cssClass / owner の互換補完**: V2 の `_prepareContext` は `cssClass` を提供しないため、`this.element.className` から補完した。V1 テンプレートとの互換を維持しつつ、CSS 整理に道を開けた。なお 3-2 での回帰バグ対応で `context.cssClass = ""` に変更済み(下記 3-2 エントリ参照)。
 - **_isEditMode のスコープ**: インスタンスフィールドとして持ち、`context.editable` と AND してテンプレートに渡す。オーナーでない場合に自動的に無効化される。
 
 #### 課題
 
 - `static PARTS` は基底クラスに定義しない設計のため、基底クラス単体では `render()` できない。これは意図的な制約だが、将来的に `PARTS` 未定義のまま呼ばれた場合にエラーになる。フレームワーク側のガードを信頼する。
-- `context.cssClass` は V2 フレームワークが `this.element` にクラスを付与した後に取得するため、初回レンダー時(`this.element` が存在しない段階)は空文字になる。実害なし(フォームにクラスが付かないだけ)だが、フェーズ5 で CSS を整理する際に考慮が必要。
+- `context.cssClass` タイミング問題 → 3-2 で `context.cssClass = ""` に変更して解消。root 要素のクラスは `_onRender` で直接操作するため PARTS には不要だった。
 
 #### 推奨アクション
 
 3-2(Item 派生シート 5 本 V2 化)に進む。すべて `TokyoNovaItemSheet` を基底とし、`static PARTS` と `_prepareContext` のオーバーライドを追加するだけで移行できる見通し。
+
+---
+
+### 3-2 Item 派生シート 5 本 V2 化 + 回帰バグ修正(フェーズ3)
+
+**日付**: 2026-06-06 〜 2026-06-06
+**レビュー対象**:
+- `scripts/item/tnx-item-sheet.mjs`
+- `scripts/item/tnx-style-sheet.mjs` / `tnx-miracle-sheet.mjs` / `tnx-general-skill-sheet.mjs` / `tnx-style-skill-sheet.mjs` / `tnx-organization-sheet.mjs`
+- `templates/item/*.hbs`（5 枚全）
+**ステータス**: レビュー済(問題なし)
+
+#### レビュー観点
+
+- 保守性: 基底 `TokyoNovaItemSheet` パターンを 5 派生シートが一貫して踏襲しているか
+- FVTT 慣行: V2 の tab 機構・フォーム自動送信・`_onRender` パターンを正しく使えているか
+- 既存設計との整合: `usage-list.hbs` 保護制約を維持できているか
+
+#### 良かった点
+
+- **`changeTab` を `_onRender` で明示呼び出し**: V2 はレンダー後に `active` クラスを自動付与しない。`for...of this.tabGroups` でループして `changeTab(tab, group, {force: true})` を呼ぶパターンで解決。テンプレートが `context.tabs` を使わない静的 HTML 構造であるため毎レンダーで再適用する必要があった。
+- **`data-action="tab"` 追記**: V2 の `#onClickAction` は `data-action="tab"` がある要素のみ `_onClickTab` に到達する。5 枚全テンプレートの `<a class="item">` に属性を追加した。
+- **`context.cssClass = ""` (stale クラス問題の根本解消)**: 3-1 時点では `this.element.className` から取得していたが、2 回目以降のレンダー時に `edit-mode` / `view-mode` が混入して `.tnx-button` の `pointer-events: none` が常時かかるバグが発覚。PARTS に渡さず root 要素で `classList.toggle` のみで管理する設計に変更。
+- **`{{editor button=true}}` → `<prose-mirror toggled>` 置換**: V2 には V1 の `_activateEditor` 相当がない。`customElements.get("prose-mirror")` で `HTMLProseMirrorElement` を取得し、`.editor` div をカスタム要素に置換する方式を採用。保存は `change` イベント → V2 `submitOnChange` が自動処理するため `onSave` コールバック不要。
+
+#### 課題
+
+- `window-header` への `.edit-mode-toggle` ボタン追加は `_onRender` 毎に `remove → prepend` で処理。V2 では header も PART として管理可能だが、現状は JS で動的に挿入している。将来的に window controls として `DEFAULT_OPTIONS.window.controls` に移行できる。
+- `<prose-mirror>` カスタム要素の内部スタイルは Foundry が管理するが、外側コンテナ (`tnx-editor-section__content`) との協調はブラウザ確認ベース。3-2b の CSS 作業で対処。
+
+#### 推奨アクション
+
+3-2b (アイテムシート CSS 修正) を実施後、3-3 (CastSheet V2 化) に進む。
+
+---
+
+### 3-2b アイテムシート CSS 修正(フェーズ3)
+
+**日付**: 2026-06-06
+**レビュー対象**: `css/tnx.css`（エディタ領域・トグルボタン・suit-selection セレクタ）
+**ステータス**: レビュー済(問題なし)
+
+#### 背景
+
+フェーズ3 の V2 移行に伴う視覚的退行が累積したこと、およびフェーズ5 CSS 作業全体をフェーズ3 に前倒しする方針決定により、アイテムシートの CSS 修正サブフェーズを新設。
+
+#### 修正内容と技術的判断
+
+1. **`.edit-mode-toggle` に `display: inline-block; flex-shrink: 0;` 追加**
+   V2 の `.window-header` はフレックスコンテナ。`<a>` 要素はデフォルトインライン扱いで `width: 36px; height: 20px` が無効化される場合があるため `inline-block` でブロックサイズを保証した。
+
+2. **`.editor` / `.editor-edit` / `.editor-content` ルール削除 → `prose-mirror` 要素対応**
+   3-2 で `{{editor button=true}}` が生成する V1 スタイル `div.editor` を `<prose-mirror>` カスタム要素に置換したため、旧 CSS は dead code となった。`min-width: 513px` もオーバーフロー原因として除去。新たに `prose-mirror { display: block; width: 100%; ... }` および `prose-mirror .ProseMirror { min-height: 200px; ... }` を追加。
+
+3. **`.tnx-editor-section .prosemirror` (小文字) ルール削除**
+   ProseMirror の実クラス名は `.ProseMirror`（混在ケース）。小文字 `.prosemirror` は CSS クラスセレクタとして一致しないため実質 dead code だった。
+
+4. **`.suit-selection input:checked + .suit-icon` → `+ i` 修正**
+   HTML 構造が `label.suit-icon > input + i`（label が親、input と i は兄弟）のため、親を対象とする `+ .suit-icon` は常に不一致だった。スキルシート固有ブロック（行 2806〜）は元から `+ i` で正しかった。汎用ブロックのみ修正。
+
+#### 課題
+
+- `<prose-mirror>` 要素の内部構造（ツールバー・メニュー等）の詳細スタイリングは、実機確認後に 3-CSS-0 (デザインシステム基盤) で体系的に対処予定。
+- `.edit-mode-toggle` のアイコン描画は `::after` 疑似要素 + Font Awesome 5 依存。Foundry が FA6 に移行した場合は Unicode コードポイントの更新が必要。
+
+#### 推奨アクション
+
+実機でアイテムシートを確認後、3-CSS-0 (デザインシステム設計セッション) を実施。その後 3-3 に進む。
 
 ---
 
