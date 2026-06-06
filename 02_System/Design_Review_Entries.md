@@ -1055,6 +1055,41 @@ await foundry.applications.api.DialogV2.wait({
 
 ---
 
+### 3-1 TokyoNovaItemSheet + EffectsSheetMixin V2 化(フェーズ3)
+
+**日付**: 2026-06-06
+**レビュー対象**:
+- `scripts/item/tnx-item-sheet.mjs`
+- `scripts/module/effects-sheet-mixin.mjs`
+- `templates/parts/active-effects-list.hbs`
+**ステータス**: レビュー済(問題なし)
+
+#### レビュー観点
+
+- 保守性: V2 パターンが `TnxRecordSheet` の参照実装と一致しているか
+- 拡張性: 派生シート(Style/Miracle 等)が基底を継承するだけで動くか
+- FVTT 慣行: `_onRender` / `DEFAULT_OPTIONS.actions` の使い方が正しいか
+- 既存設計との整合: `usage-list.hbs` 保護制約を守りながらイベント処理を実現できているか
+
+#### 良かった点
+
+- **V1 → V2 直訳**: `getData` → `_prepareContext`、`activateListeners` → `_onRender` + `ACTIONS` の対応が明確。TnxRecordSheet と同パターンで実装できた。
+- **EffectsSheetMixin ACTIONS 方式 (KI-009 解消)**: V1 の二系統(インスタンス代入 / 静的呼び出し)を `ACTIONS` オブジェクトの `...EffectsSheetMixin.ACTIONS` で統一。KI-009 を根本解消した。V1 メソッドは `@deprecated` を付けて CastSheet 移行 (3-3) まで維持。
+- **usage-list.hbs 保護対応**: `data-action` を変更できないため、`_onRender` で `.action-create` / `.action-delete[data-index]` に `addEventListener` を直接添付する方式を採用。V2 の「毎レンダー後に `_onRender` が呼ばれる」特性を活かしてリスナーを毎回再登録することで、PART 再構築後も正常動作する。
+- **cssClass / owner の互換補完**: V2 の `_prepareContext` は `cssClass` を提供しないため、`this.element.className` から補完した。V1 テンプレートとの互換を維持しつつ、フェーズ5 での CSS 整理に道を開けた。
+- **_isEditMode のスコープ**: インスタンスフィールドとして持ち、`context.editable` と AND してテンプレートに渡す。オーナーでない場合に自動的に無効化される。
+
+#### 課題
+
+- `static PARTS` は基底クラスに定義しない設計のため、基底クラス単体では `render()` できない。これは意図的な制約だが、将来的に `PARTS` 未定義のまま呼ばれた場合にエラーになる。フレームワーク側のガードを信頼する。
+- `context.cssClass` は V2 フレームワークが `this.element` にクラスを付与した後に取得するため、初回レンダー時(`this.element` が存在しない段階)は空文字になる。実害なし(フォームにクラスが付かないだけ)だが、フェーズ5 で CSS を整理する際に考慮が必要。
+
+#### 推奨アクション
+
+3-2(Item 派生シート 5 本 V2 化)に進む。すべて `TokyoNovaItemSheet` を基底とし、`static PARTS` と `_prepareContext` のオーバーライドを追加するだけで移行できる見通し。
+
+---
+
 ### B-8 Card type の DataModel 化(フェーズB)
 
 **日付**: 2026-05-23

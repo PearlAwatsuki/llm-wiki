@@ -93,11 +93,12 @@
 - [x] `TabsApplicationMixin` の確認 → v13 に存在しない。V2 組み込みの `TABS`/`tabGroups` を使用
 - [x] 設計内容を wiki / Design_Review_Entries に記録 → DR エントリ「3-0」追記済み
 
-### 3-1: Item シート基底 + EffectsSheetMixin V2 化
+### 3-1: Item シート基底 + EffectsSheetMixin V2 化 ✅ (2026-06-06)
 
-- [ ] `TokyoNovaItemSheet` を `DocumentSheetV2` 基底に移行
-- [ ] `EffectsSheetMixin` を V2 対応に統一 (KI-009 解消)
-- [ ] テスト更新・通過確認
+- [x] `TokyoNovaItemSheet` を `ItemSheetV2` 基底に移行 (`HandlebarsApplicationMixin(ItemSheetV2)`)
+- [x] `EffectsSheetMixin` を V2 対応に統一 (KI-009 解消、ACTIONS オブジェクト方式)
+- [x] `active-effects-list.hbs` の data-action 値を V2 用に更新 (`createEffect` 等)
+- [x] テスト全通過確認 (625/625)
 
 ### 3-2: Item 派生シート 5 本 V2 化
 
