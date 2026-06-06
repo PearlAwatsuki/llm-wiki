@@ -1625,3 +1625,223 @@ cast ローカルの `system.history` も同時に更新することで、TnxHis
   history 表示を User flag 参照に完全移行することで解消する予定。
 - `_performHistoryUpdate` の key 変換ロジックは、TnxHistoryMixin が生成するパス形式に依存している。
   Mixin の実装変更時はこの翻訳ロジックの追従が必要。
+
+---
+
+### CSS 全体監査 (3-CSS-0 前提)(フェーズ3)
+
+**日付**: 2026-06-06
+**レビュー対象**: `css/tnx.css` (3,723 行)
+**ステータス**: レビュー済(課題あり) → 3-CSS-0 で対処予定
+
+#### 概要
+
+3-CSS-0（CSSリファクタリング）着手前の全行監査。ファイル変更は行っていない。
+課題を A〜M の分類と、「外見同一・クラス別」のコンポーネント化候補グループ 1〜8 に整理した。
+
+---
+
+#### 分類A: セクション番号の不整合
+
+ファイル先頭の Section 6 ヘッダーが Section 2〜5 より前に出現している。
+番号付けコメント体系が複数混在（`/* === */`、`/* --- */`、全角バナー等）。
+
+---
+
+#### 分類B: ハードコードカラー（CSS変数バイパス）
+
+主な箇所（フェーズ4の視覚デザイン刷新前に変数化しておく必要がある）:
+
+- `#555` (トグルボタン背景, HUDパネル枠)
+- `#fff` (トグルノブ, 履歴ヘッダー文字)
+- `#a2f3ff` (ホバー色)
+- `#333`, `#333a41`, `#2a2a2e`, `#444` (サイドバー・メニュー)
+- `#f0f0f0`, `#ccc` (作成メニュー)
+- `#222`, `#888` (HUDカード・プレースホルダー)
+- **`white`, `#ccc`, `#000`** (L2754–2756) — ダークテーマ中にライトテーマ値が混入
+- `rgba(255,255,255,0.3)` (履歴リストラッパー背景)
+- `#444`, `#fff` (履歴ヘッダー)
+- `#4a5057`, `#3e444a`, `#888` (view-mode グレーアウトボタン)
+- `#777`, `#e0e0e0`, `#d0d0d0` (`.tnx-bs-button` — ライトテーマの配色が混入)
+- `#858585`, `#999`, `#3e444a` (各所)
+
+---
+
+#### 分類C: 重複ルール（15ペア以上）
+
+| 重複対象 | 1回目 | 2回目 | 備考 |
+|---|---|---|---|
+| `.style-skill-display` | L2830 | L2929 | 完全重複 |
+| `.style-skill-display-grid` | L2837 | L2936 | 完全重複 |
+| `.style-skill-display label` | L2842 | L2949 | 2回目に `flex-shrink: 0` 追加 |
+| `.style-skill-inputs`（grid定義）| L2869 | L2956 | 完全重複 |
+| `.style-skill-inputs .full-width-row` | L2874 | L2962 | 完全重複 |
+| `.tnx.sheet.item .style-skill-inputs .form-group` | L2877 | L2965 | 完全重複 |
+| `.array-row` | L3037 | L3107 | 完全重複 |
+| `.array-row select` | L3044 (`flex: 0 0 auto`) | L3115 (`flex: 1`) | **値が矛盾**。コメントに「ここを変更」とあるが前の定義が残留 |
+| `.row-controls` | L3069 | L3126 | 2回目に `flex: 0 0 auto` 追加 |
+| `.add-array-item, .delete-array-item` | L3079 | L3135 | 2回目は不完全 (`/* ... 他のスタイルはそのまま ... */`) |
+| `.handout-item` | L2398 | L2454 | 2回目がリファクタ版（flex追加）、1回目は旧版 |
+| `.skills-list-edit .item-list .item` | L2717 | L3170 | 2回目に `gap: 10px` 追加 |
+| `.abilities-grid.edit-mode-layout` | L574 | L1364 | 完全重複 |
+| `.number-input-spinner input` | L325 | L341 | プレフィックス違いで重複 |
+| `.number-input-spinner .tnx-button` | 同上 | 同上 | 同上 |
+
+---
+
+#### 分類D: スコープなしセレクター
+
+`.tokyo-nova` 親セレクターを持たないルールが大量に存在し、Foundry 全体またはサードパーティと衝突するリスクがある。主な対象クラス:
+
+- カード系: `.deck-card`, `.card-in-hand`, `.main-area`, `.neuro-area`, `.hand-area`, `.trump-area`, `.card-empty-placeholder`
+- スキル系: `.skills-section`, `.suit-selection`（後半にスコープ付き版と共存）、`.suit-icon`, `.basic-info`, `.cell`（非常に汎用的な名前）
+- 履歴系: `.history-list-wrapper`, `.history-grid`, `.history-header`, `.history-row`
+- ハンドアウト系: `.handout-item`, `.handout-row` 等
+- シナリオシート全体: `.scenes-container`, `.phase-section`, `.scene-table`, `.scene-item` 等
+- その他: `.tnx-create-menu`, `.mirror-character`, `.cardpool-sheet`, `.abilities-section`
+
+加えて、**スコープなし版とスコープあり版が共存**している例:
+- `.suit-selection` (L2759, unscoped) と `.tokyo-nova.sheet.item.skill .suit-selection` (L2797, scoped)
+- `.level-display input` (L2749, unscoped) と `.tokyo-nova.sheet.item.skill .level-display input[readonly]` (L2822, scoped)
+  → unscoped 版は scoped 版の登場後は実質死コード
+
+---
+
+#### 分類E: ベンダープレフィックス不備
+
+`-webkit-appearance: none` が `appearance: none` の対応なしに使用されている箇所が4件（L223, L595, L782, L1697 付近）。
+
+---
+
+#### 分類F: `!important` 乱用
+
+- `.small-button` に4件（L2448–2452）
+- `.usage-limit-group { align-items: end !important }` (L2899)
+- ダイアログカード選択の width/height
+- `.window-content` の background-image/color
+- view-mode 入力欄の複数箇所
+- 表示切り替え `display: none !important`
+
+---
+
+#### 分類G: 死コード・ステールコメント
+
+- 変更経緯コメントが残存: `▼▼▼ 変更: ...`, `▼▼▼【重要】...` が本文中2〜3箇所
+- 不完全ルールブロック: `.add-array-item` の2回目定義 (L3135) が `/* ... 他のスタイルはそのまま ... */` のまま
+- `.abilities-section` (旧フィールドセットパターン)。現在は `.tnx-fieldset` が使われており実質不使用
+- unscoped `.suit-selection`, `.level-display` の初期定義はスコープ付き版で上書きされ死コード化
+- stale コメント: `.history-row .cell-title { justify-content: center; /* テキストの長い項目は左寄せ */ }` — コメントと値が矛盾 (L3487)
+
+---
+
+#### 分類H: 命名不統一
+
+- `.cell` (L3333) — Foundry・他ライブラリと衝突リスクのある汎用名
+- `.array-row`, `.checkbox-row`, `.form-fields-stack`, `.row-controls` 等に `.tnx-` プレフィックスなし
+- コメントスタイルが混在: `/* === */`, `/* --- */`, 全角バナー, 日本語見出し
+
+---
+
+#### 分類I: CSS カスタムプロパティ名の混乱
+
+- `--tnx-color-text-dim-sheet: #353535`（暗い背景向けの**暗い**テキスト色）が `--tnx-color-text-dim: #cecece`（暗い背景向けの**明るい**テキスト色）と紛らわしい命名
+
+---
+
+#### 分類J: 初期指摘の再利用性ギャップ
+
+- `.texts-header .add-text-button` と `.info-header .add-info-button` がほぼ同一（後述グループ2）
+- `.tnx-fieldset` と旧 `.abilities-section` の重複パターン
+
+---
+
+#### 分類L: ライトテーマ値のダークテーマへの混入
+
+- `.sheet-header .level-display input` (L2754): `background-color: white; border: 1px solid #ccc; color: #000;` — 明示的なライトテーマ配色
+- `.tnx-bs-button` (L3581): `background: #e0e0e0; border: 1px solid #777;` — ライト背景のボタンが全体のダークテーマと乖離
+
+---
+
+#### 分類M: スート選択パターンの乱立
+
+同一UI（隠しチェックボックス＋アイコン選択）が3パターン存在:
+1. `.suit-selection` (L2759, unscoped, レガシー)
+2. `.tokyo-nova.sheet.item.skill .suit-selection` (L2797, scoped, 改善版)
+3. `.suit-checkbox-tiny` (L3156, 別実装)
+
+---
+
+#### コンポーネント化候補（外見同一・クラス別）
+
+同一の見た目を定義しながらクラス名が異なるケース。統一コンポーネントへの整理候補。
+
+**グループ1: 丸型アイコンボタン**（ユーザー確認済み、揃えるなら `.skill-control` 方式）
+
+| クラス | サイズ | ボーダー |
+|---|---|---|
+| `.skill-control` (L2299) | 22×22px | `1px solid border-accent` |
+| `.add-handout-button` (L2437) | 26×26px | `1px solid border-accent` |
+| `.add-scene-button` (L1908) | 26×26px | なし(`border: none`, `line-height`で中央揃え) |
+
+**グループ2: ピル型セクション追加ボタン**（`.add-text-button` と `.add-info-button` はほぼ完全一致）
+
+共通定義:
+```css
+display: inline-flex; align-items: center; gap: 8px;
+height: 32px; padding: 0 12px; font-size: 13px; font-weight: bold;
+background-color: var(--tnx-color-primary-darker);
+border: 1px solid var(--tnx-color-primary-dark);
+border-radius: var(--tnx-border-radius-md);
+cursor: pointer; transition: all 0.2s;
+```
+
+差異: `.add-text-button` のみ `flex-shrink: 0`。
+
+**グループ3: インラインアイコンコントロール**
+
+`.text-control` (L2056)、`.info-control` (L2183)、`.handout-control` (L2426)、`.scene-control` (L1946) が全て `font-size: 1.2em; color: text-muted; cursor: pointer; transition: color 0.2s` + data-action 別のホバー色という同一パターン。`.scene-control` のみ `transition` なし。
+
+**グループ4: セクションヘッダー行**（`.texts-header` と `.info-header` は完全一致）
+
+```css
+display: flex; justify-content: space-between; align-items: center;
+border-bottom: 1px solid var(--tnx-color-border-accent); padding-bottom: 8px;
+```
+
+配下の `h3` スタイルも同一。
+
+**グループ5: カード型アイテムコンテナ**
+
+`.text-item` (L2017) と `.info-item` (L2142) がほぼ同一（`.info-item` のみ `transition: all 0.3s ease-out` 追加）。
+
+**グループ6: カードアイテムヘッダー行**（完全一致）
+
+`.text-item-header` (L2025) と `.info-item-header` (L2151) が完全同一。
+
+**グループ7: カードアイテム内テキストエリア**（完全一致）
+
+`.text-item-body textarea` (L2071) と `.info-item-body textarea` (L2198) が完全同一。
+
+**グループ8: コントロールアイコン行**
+
+`.text-item-controls` (L2051)、`.info-item-controls` (L2177)、`.handout-controls` (L2425) がほぼ同一（`display: flex; gap: 15px; align-items: center; flex-shrink: 0`）。
+
+---
+
+#### 推奨アクション
+
+**3-CSS-0 で対処（優先度順）**:
+
+1. **分類C の矛盾重複を先行解消** — `.array-row select` の値矛盾は機能バグの原因になりうる
+2. **分類D: スコープ付与** — 全セレクターに `.tokyo-nova` 親を追加
+3. **分類C: 完全重複の除去** — 後出し定義を正として前の定義を削除
+4. **グループ 4・6・7（完全一致）の統一** — 共通クラスに一本化
+5. **グループ 1・2・3・8 のコンポーネント化** — `.tnx-` プレフィックス付き共通クラス新設
+6. **分類G: 死コード・ステールコメント除去**
+7. **分類E: ベンダープレフィックス補完**
+8. **分類F: `!important` 削減**（削除できないものは注釈を付ける）
+9. **分類B: ハードコードカラーの変数化**（フェーズ4 デザイン刷新の準備）
+
+**フェーズ4 で対処**:
+- 分類L（ライトテーマ値）、分類M（スートパターン統一）の視覚的側面
+- 分類I（変数名の整理）はフェーズ4 のカラーパレット再設計と同時に行う
