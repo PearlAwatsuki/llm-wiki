@@ -38,7 +38,9 @@
 
 ### フェーズ3: シート ApplicationV2 移行 (現在)
 
-構造のみ。cast 含む全既存シート。デザインは含まない。
+ApplicationV1 を完全廃止。cast を含む全既存シート・HUD・ダイアログ群すべてを V2 に移行する。デザインは含まない。
+
+→ [Phase_3_Tasks_Detail.md](../01_Wiki/Phases/Phase_3_Tasks_Detail.md)
 
 ### フェーズ4: シート内容追加
 

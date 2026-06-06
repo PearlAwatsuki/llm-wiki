@@ -68,8 +68,9 @@
 
 | ファイル | 内容 |
 |---|---|
-| [Completed_Phases.md](Phases/Completed_Phases.md) | フェーズ0/A/B/1 の完了内容 |
-| [Phase_2_User_Migration.md](Phases/Phase_2_User_Migration.md) | 現在フェーズの設計・進捗 |
+| [Completed_Phases.md](Phases/Completed_Phases.md) | フェーズ0/A/B/1/2 の完了内容 |
+| [Phase_2_User_Migration.md](Phases/Phase_2_User_Migration.md) | フェーズ2 設計・進捗 (完了) |
+| [Phase_3_Tasks_Detail.md](Phases/Phase_3_Tasks_Detail.md) | **現在フェーズ3** — ApplicationV2 全面移行 |
 
 ## 関連
 

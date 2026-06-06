@@ -4,10 +4,10 @@
 
 | API | 使用状況 |
 |---|---|
-| ApplicationV1 | **全既存シート** (ActorSheet, ItemSheet, JournalSheet, Application) |
-| ApplicationV2 | **レコードシートのみ** (`tnx-record-sheet.mjs`) — フェーズ2-0 完了 |
+| ApplicationV1 | フェーズ3 で**全廃予定**。現在も全既存シートが V1 のまま |
+| ApplicationV2 | `TnxRecordSheet` のみ完了 (フェーズ2-0)。フェーズ3 で全面移行 |
 
-v13 deprecation 警告は出るが v15 まで動作保証。ApplicationV2 全面移行はフェーズ3 (シート) / フェーズ2 (HUD)。
+**方針**: このプロジェクトでは ApplicationV1 は一切使用しない。フェーズ3 完了後は V1 クラス (ActorSheet, ItemSheet, JournalSheet, Application, FormApplication, Dialog) をコード内から完全排除する。
 
 ## 実装済みシート
 
