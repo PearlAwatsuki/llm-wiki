@@ -100,14 +100,15 @@
 - [x] `active-effects-list.hbs` の data-action 値を V2 用に更新 (`createEffect` 等)
 - [x] テスト全通過確認 (625/625)
 
-### 3-2: Item 派生シート 5 本 V2 化
+### 3-2: Item 派生シート 5 本 V2 化 ✅ (2026-06-06)
 
-- [ ] `TokyoNovaStyleSheet`
-- [ ] `TokyoNovaMiracleSheet`
-- [ ] `TokyoNovaGeneralSkillSheet`
-- [ ] `TokyoNovaStyleSkillSheet`
-- [ ] `TokyoNovaOrganizationSheet`
-- [ ] テスト更新・通過確認
+- [x] `TokyoNovaStyleSheet` — DEFAULT_OPTIONS / PARTS / TABS / ContextMenu / dragDrop V2 化
+- [x] `TokyoNovaMiracleSheet` — EffectsSheetMixin.activateEffectListListeners 呼び出しを削除(基底 ACTIONS で代替)
+- [x] `TokyoNovaGeneralSkillSheet` — select/isInitial checkbox に stopPropagation パターン適用
+- [x] `TokyoNovaStyleSkillSheet` — getData() 依存を _normalizeSystem() 静的ヘルパーで代替、スピナーを static actions に変換
+- [x] `TokyoNovaOrganizationSheet` — ItemSheet 直継承 → TokyoNovaItemSheet 継承に統一
+- [x] 各テンプレート: `<form>` → `<section>`、nav `<a>` に `data-group="primary"`、`data-action="editImage"`、action 名キャメルケース化
+- [x] テスト全通過確認 (625/625)
 
 ### 3-3: CastSheet V2 化 + KI 解消
 
