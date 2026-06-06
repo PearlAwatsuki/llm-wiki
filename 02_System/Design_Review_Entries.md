@@ -1147,10 +1147,22 @@ await foundry.applications.api.DialogV2.wait({
 4. **`.suit-selection input:checked + .suit-icon` → `+ i` 修正**
    HTML 構造が `label.suit-icon > input + i`（label が親、input と i は兄弟）のため、親を対象とする `+ .suit-icon` は常に不一致だった。スキルシート固有ブロック（行 2806〜）は元から `+ i` で正しかった。汎用ブロックのみ修正。
 
+#### 追加修正 (2026-06-06 コミット 102ebd7)
+
+初回実装後に以下の不具合を修正:
+
+5. **`prose-mirror` CSS レイアウト修正**
+   Foundry V13 の `<prose-mirror>` は `display: flex; position: relative` が前提で、内部の `.editor-content` が `position: absolute; inset: 0` でコンテナを埋め尽くす設計。初回実装では `display: block; padding: 10px; min-height: 120px` で上書きしていたため、120px のコンテナにツールバー + エディタが収まらず編集フィールドにアクセス不能だった。修正: `--min-height: 300px`（Foundry 定義済み変数）を使用し、`display/padding` の上書きを廃止。
+
+6. **エディタ開閉ボタンをヘッダーへ移動**
+   Foundry の `button.toggle` は `position: absolute; top: 0; right: 0` でコンテンツ領域内部に表示される。ユーザーの要求はヘッダー行と同高さにアイコン単体で表示すること。対処: Foundry の `button.toggle` を `display: none !important` で非表示にし、各テンプレートの `.tnx-editor-section__header` にアイコン専用の `<a class="tnx-editor-open">` を追加。`_onRender` でクリック時に `pm.open = true` を呼び出すワイヤーアップを実施。
+
+7. **`toggled: !context.isEditMode` 誤適用の取り消し**
+   「編集不可」の原因を edit/view モード切替と誤解した修正を revert し、`toggled: true` に戻した。
+
 #### 課題
 
-- `<prose-mirror>` 要素の内部構造（ツールバー・メニュー等）の詳細スタイリングは、実機確認後に 3-CSS-0 (デザインシステム基盤) で体系的に対処予定。
-- `.edit-mode-toggle` のアイコン描画は `::after` 疑似要素 + Font Awesome 5 依存。Foundry が FA6 に移行した場合は Unicode コードポイントの更新が必要。
+- `.edit-mode-toggle` のアイコン描画は `::after` 疑似要素 + Font Awesome 依存。FA バージョン変更時はコードポイントの更新が必要。
 
 #### 推奨アクション
 
