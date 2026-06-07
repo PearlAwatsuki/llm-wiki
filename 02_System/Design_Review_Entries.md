@@ -1999,3 +1999,40 @@ CSS 全体監査（前エントリ）で特定した分類 B〜H を複数セッ
 #### 推奨アクション
 
 3-5（TnxScenarioSheet V2 化）に進む。ContextMenu の実機動作は 3-7 最終検証で一括確認する。
+
+---
+
+### 3-5 TnxScenarioSheet ApplicationV2 移行（フェーズ3）
+
+**日付**: 2026-06-07
+**レビュー対象**: `scripts/journal/tnx-scenario-sheet.mjs`, `templates/journal/scenario-sheet.hbs`
+**ステータス**: レビュー済(問題なし)
+
+#### レビュー観点
+
+- 保守性: V1（JournalSheet）から V2 への変換が完全かつ一貫しているか
+- 拡張性: 24 アクションの静的メソッド分割が将来の機能追加で扱いやすい形か
+- FVTT慣行: `HandlebarsApplicationMixin(DocumentSheetV2)` 継承・`Journal.registerSheet()` による登録が正しいか
+- 既存設計との整合: UnlinkConfirmDialog / TnxScenarioSettingWizard との接続が維持されているか
+
+#### 良かった点
+
+- `HandlebarsApplicationMixin(DocumentSheetV2)` 継承で JournalSheet 相当の V2 移行を実現。`Journal.registerSheet()` は V1/V2 ともに有効で引き続き使用
+- `getData()` → `_prepareContext()` への変換が完全。`this.object` → `this.document` の全面置換も漏れなし
+- 動的 import（`user-flag-schema.mjs`）をトップレベル静的 import に移動し、アクションごとの非同期 import を排除。コードが簡潔になった
+- jQuery 依存を完全排除。ContextMenu / change イベントリスナーともネイティブ DOM で統一
+- `Dialog.confirm()` → `DialogV2.confirm()` への移行を全 4 箇所で実施
+- `_handleActionClick()` switch 文（24 case）を 24 の静的メソッドに分割。各アクションの責務が独立し、テストや個別デバッグが容易
+- `_onSendInfoToChat()` の重複ロジック（開示済み版・未開示版の同一ループ処理）を `buildSkillHtml()` ヘルパーで統一し、約 30 行のコード削減
+- `_onDrop()` は V2 でも同名メソッドのオーバーライドで継続動作
+- シナリオシート CSS は 3-CSS-0 で実施済みのため追加作業不要
+
+#### 課題
+
+- ⚠️ `TnxScenarioSettingWizard` はまだ V1（FormApplication）。`render(true)` での呼び出しは動作するが、3-6 での V2 化で正式対応予定
+- ⚠️ `Journal.registerSheet()` が V2 ベースクラスに対して正しく機能するかは実機確認が必要（3-7 最終検証で確認）
+- ⚠️ ContextMenu の `condition` コールバックが V13 ネイティブ DOM（`el.dataset.uuid`）で正しく機能するかは実機確認が必要
+
+#### 推奨アクション
+
+3-6（ダイアログ系 V2 化）に進む。Journal.registerSheet の実機動作と ContextMenu は 3-7 最終検証で一括確認する。

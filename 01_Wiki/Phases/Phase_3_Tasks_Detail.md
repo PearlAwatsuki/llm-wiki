@@ -187,12 +187,21 @@ V2 移行と並走して **CSS リファクタリング**（デッドコード�
 
 **実装コミット**: ab03084 (2026-06-07)
 
-### 3-5: TnxScenarioSheet V2 化 + CSS デザイン適用
+### 3-5: TnxScenarioSheet V2 化 + CSS デザイン適用 ✅ (2026-06-07)
 
-- [ ] `TnxScenarioSheet` を V2 相当に移行
-- [ ] JournalSheet 特有機能(ドラッグ&ドロップ等)の V2 対応
-- [ ] シナリオシートに 3-CSS-0 デザインシステムを適用
-- [ ] テスト更新・通過確認
+- [x] `TnxScenarioSheet` を `HandlebarsApplicationMixin(DocumentSheetV2)` 基底に移行
+- [x] JournalSheet 特有機能（dragDrop / _onDrop）の V2 対応
+- [x] `getData()` → `_prepareContext()`、`this.object` → `this.document` に全面置換
+- [x] jQuery 依存を完全排除（ContextMenu / change リスナーはネイティブ DOM）
+- [x] `Dialog.confirm()` → `DialogV2.confirm()` に移行
+- [x] 24 アクションを `_handleActionClick()` switch → 静的メソッド群に分割
+- [x] 動的 import（user-flag-schema）をトップレベル静的 import に移動
+- [x] `_onSendInfoToChat()` をヘルパー関数で重複排除
+- [x] scenario-sheet.hbs: `<form>` → `<section>`、nav `<a>` に `data-action="tab"` 追加、全 data-action camelCase 化
+- [x] シナリオシート CSS: 3-CSS-0 で実施済み（スコープ付与・重複解消完了）
+- [x] テスト全通過確認 (625/625)
+
+**実装コミット**: a5a51a2 (2026-06-07)
 
 ### 3-6: ダイアログ系 V2 化 + CSS デザイン適用
 
