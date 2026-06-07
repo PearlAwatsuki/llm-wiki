@@ -174,13 +174,18 @@ V2 移行と並走して **CSS リファクタリング**（デッドコード�
 - [x] 再描画時スクロールリセット対策: `_preRender` でスクロール位置保存・`_onRender` の `requestAnimationFrame` で復元
 - [x] 再描画時サイドバーチラツキ対策: `_preRender` で `.tnx-no-transitions` 付与・rAF コールバックで除去（CSS トランジション再生抑制）
 
-### 3-4: TnxHud V2 化 + HUD CSS デザイン
+### 3-4: TnxHud V2 化 + HUD CSS デザイン ✅ (2026-06-07)
 
-- [ ] `TnxHud` を `HandlebarsApplicationMixin(ApplicationV2)` に移行
-- [ ] サイドバー連動 JS 死コード削除
-- [ ] `popOut: false` 相当を V2 で実現
-- [ ] HUD に 3-CSS-0 デザインシステムを適用
-- [ ] テスト更新・通過確認
+- [x] `TnxHud` を `HandlebarsApplicationMixin(ApplicationV2)` に移行
+- [x] サイドバー連動 JS 死コード削除（sidebar collapse リスナー・`accessCardPileId` / `gmTrumpDiscardId` 未使用変数を除去）
+- [x] `popOut: false` 相当を V2 で実現（`window: { frame: false, positioned: false }`）
+- [x] jQuery 依存を完全排除（ContextMenu / dragDrop はネイティブ DOM、`data-action` キャメルケース化）
+- [x] hud.hbs: `id="tnx-hud"` 削除（DEFAULT_OPTIONS で付与）、data-action を camelCase 化
+- [x] tnx.mjs: `render(true)` → `render({ force: true })` 更新
+- [x] テスト全通過確認 (625/625)
+- [x] HUD CSS: 3-CSS-0 で実施済み（スコープ付与・重複解消完了）
+
+**実装コミット**: ab03084 (2026-06-07)
 
 ### 3-5: TnxScenarioSheet V2 化 + CSS デザイン適用
 

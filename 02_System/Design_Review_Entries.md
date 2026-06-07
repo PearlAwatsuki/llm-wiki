@@ -1964,3 +1964,38 @@ CSS 全体監査（前エントリ）で特定した分類 B〜H を複数セッ
 #### 推奨アクション
 
 3-4（TnxHud V2 化）に進む。ContextMenu の実機動作とサイドバーチラツキは 3-7 最終検証で確認する。
+
+---
+
+### 3-4 TnxHud ApplicationV2 移行（フェーズ3）
+
+**日付**: 2026-06-07
+**レビュー対象**: `scripts/module/tnx-hud.mjs`, `templates/hud/hud.hbs`, `scripts/tnx.mjs`
+**ステータス**: レビュー済(問題なし)
+
+#### レビュー観点
+
+- 保守性: V1（Application）から V2 への変換が完全かつ一貫しているか
+- 拡張性: static ACTIONS パターンで将来のハンドラ追加が容易か
+- FVTT慣行: `window: { frame: false, positioned: false }` が正しい `popOut: false` 相当か
+- 既存設計との整合: TnxActionHandler / ContextMenu との接続が維持されているか
+
+#### 良かった点
+
+- `HandlebarsApplicationMixin(ApplicationV2)` 継承、`window: { frame: false, positioned: false }` による `popOut: false` 相当の実現。CSS `position: fixed` での自己管理も既存のまま維持
+- `getData()` → `_prepareContext()` への変換が完全。`accessCardPileId` / `gmTrumpDiscardId` 未使用変数を同時に削除
+- jQuery 依存を完全排除。ContextMenu / dragDrop ともネイティブ DOM（`this.element`）を直接利用
+- sidebar collapse 連動リスナー（V12 時代の死コード）を削除。コードが簡潔になった
+- hud.hbs の `id="tnx-hud"` を DEFAULT_OPTIONS に移管し、V2 の外側要素が ID を保持する正しい構造を確立（テンプレート内での重複 ID を回避）
+- `data-action` を camelCase（`drawFromDeck` / `takeFromDiscard` / `drawNeuro` / `playCard` / `useTrump`）に統一し、V2 の命名規則に準拠
+- `tnx.mjs` の `render(true)` → `render({ force: true })` により呼び出し側も V2 準拠
+- lint 警告が移行前比 -4 件（tnx-hud.mjs 由来の未使用変数 `actor` / 未使用パラメータ `header` / `event` が解消）
+
+#### 課題
+
+- ⚠️ V2 で `window: { positioned: false }` が実際に Foundry の位置管理を無効化するかは実機確認が必要。CSS `position: fixed` で自己管理している想定（3-7 最終検証で確認）
+- ⚠️ ContextMenu の動作: V13 ContextMenu へのネイティブ DOM 渡しが正しく機能するかは実機確認が必要（3-7 最終検証で確認）
+
+#### 推奨アクション
+
+3-5（TnxScenarioSheet V2 化）に進む。ContextMenu の実機動作は 3-7 最終検証で一括確認する。
