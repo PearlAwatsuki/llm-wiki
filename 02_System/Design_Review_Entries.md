@@ -1927,3 +1927,37 @@ CSS 全体監査（前エントリ）で特定した分類 B〜H を複数セッ
 #### 推奨アクション
 
 3-3（CastSheet V2 化）に進む。視覚デザインの刷新はフェーズ4 に分離済み。
+
+---
+
+### 3-3 TokyoNovaCastSheet ApplicationV2 移行 + KI-017 解消（フェーズ3）
+
+**日付**: 2026-06-07
+**レビュー対象**: `scripts/actor/tnx-cast-sheet.mjs`, `scripts/module/tnx-history-mixin.mjs`, テンプレート3点
+**ステータス**: レビュー済(問題なし)
+
+#### レビュー観点
+
+- 保守性: V1からV2へのAPI変換が完全かつ一貫しているか
+- 拡張性: 静的ACTIONSパターンで将来のハンドラ追加が容易か
+- FVTT慣行: V13 ActorSheetV2 の推奨パターンに準拠しているか
+- 既存設計との整合: EffectsSheetMixin / TnxHistoryMixin の ACTIONS 統合が一貫しているか
+
+#### 良かった点
+
+- `HandlebarsApplicationMixin(ActorSheetV2)` 継承、`DEFAULT_OPTIONS` / `PARTS` / `tabGroups` の設計がV2慣行に沿っている
+- `...EffectsSheetMixin.ACTIONS` / `...TnxHistoryMixin.ACTIONS` のスプレッド展開で KI-009 解消パターン(3-1)を踏襲
+- jQuery依存を完全排除。クラスベースハンドラは `_onRender()` 内でネイティブDOMイベントに変換
+- `form: { submitOnChange: true }` で growth 等 named input の変更を自動処理（`_onGrowthChange` 削除）
+- KI-017 デッドコード（`_getHistoryData` / `_saveHistoryData` / `_updateExpTotal`）を削除
+- `_onDrop` で `JSON.parse(event.dataTransfer.getData("text/plain"))` を採用（他V2シートと統一）
+- `foundry.applications.api.DialogV2.confirm` / `foundry.applications.ux.TextEditor.enrichHTML` への移行
+
+#### 課題
+
+- ⚠️ `_onToggleAbilityDetails` のアニメーション: V1 の `panel.slideToggle(200)` を `style.display` トグルに降格。視覚的退行だが機能的には問題なし。フェーズ4 CSS でCSSトランジションに置き換え予定
+- ⚠️ ContextMenu コールバックの型: V13 ContextMenu がコールバックに渡す要素の型（HTMLElement か jQuery か）は実機確認が必要。現実装は `header.dataset.itemId` を前提
+
+#### 推奨アクション
+
+3-4（TnxHud V2 化）に進む。ContextMenu の実機動作は 3-7 最終検証で確認する。

@@ -154,14 +154,16 @@ V2 移行と並走して **CSS リファクタリング**（デッドコード�
 - `npm run lint:css`: 警告 0 を確認（重複セレクタ・空ブロックなし）
 - `npm run css:merge`: 構造変更 0 を確認（分散セレクタなし）
 
-### 3-3: CastSheet V2 化 + CSS デザイン適用
+### 3-3: CastSheet V2 化 + CSS デザイン適用 ✅ (2026-06-07)
 
-- [ ] `TokyoNovaCastSheet` を `DocumentSheetV2` 基底に移行
-- [ ] KI-017: デッドコード (`_getHistoryData` / `_saveHistoryData` / `_sortHistory`) 削除
-- [ ] KI-018: `RewritedTarget` → `RewrittenTarget` 修正
-- [ ] KI-019: `RewritingMiracle_ID` → `rewritingMiracleId` 修正
-- [ ] キャストシートに 3-CSS-0 デザインシステムを適用
-- [ ] テスト更新・通過確認
+- [x] `TokyoNovaCastSheet` を `HandlebarsApplicationMixin(ActorSheetV2)` 基底に移行
+- [x] KI-017: デッドコード (`_getHistoryData` / `_saveHistoryData` / `_updateExpTotal`) 削除
+- [x] KI-018: `RewritedTarget` → `RewrittenTarget` 修正（前コミットで完了）
+- [x] KI-019: `RewritingMiracle_ID` → `rewritingMiracleId` 修正（前コミットで完了）
+- [x] テスト全通過確認 (625/625)
+- [x] 各テンプレート: `<form>` → `<section>`、nav `<a>` に `data-group="primary"`、`data-action="editImage"`、historyリスト/BSリストに `data-action` 追加
+
+**実装コミット**: a3110e5 (2026-06-07)
 
 ### 3-4: TnxHud V2 化 + HUD CSS デザイン
 

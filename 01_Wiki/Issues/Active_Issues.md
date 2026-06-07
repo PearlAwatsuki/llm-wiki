@@ -47,31 +47,6 @@
 | 難易度 | 中 (ルール解釈必要) |
 | 担当 | フェーズ4 |
 
-## KI-017: cast シートのデッドコード
-
-| 項目 | 内容 |
-|---|---|
-| 症状 | `_getHistoryData` / `_saveHistoryData` — 2-2 で一部解消。`_sortHistory` 未定義 |
-| 影響 | 現状なし (呼び出し元なし) |
-| 難易度 | 低 |
-| 担当 | フェーズ3 |
-
-## KI-018: RewritedTarget タイポ
-
-| 項目 | 内容 |
-|---|---|
-| 症状 | 正しくは RewrittenTarget。一貫して誤綴り使用 |
-| 影響 | 動作に影響なし |
-| 担当 | フェーズ3 (シート全体整理時) |
-
-## KI-019: RewritingMiracle_ID 命名規約違反
-
-| 項目 | 内容 |
-|---|---|
-| 症状 | camelCase 違反 + 先頭大文字。正: rewritingMiracleId |
-| 影響 | 動作に影響なし |
-| 担当 | フェーズ3 |
-
 ## KI-020: handMaxSize への ActiveEffect 修正が未実装
 
 | 項目 | 内容 |

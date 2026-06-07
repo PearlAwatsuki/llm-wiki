@@ -60,11 +60,29 @@
 - 全消費箇所(drawCard / takeFromDiscard / dealInitialHands / drawMultipleCardsFromDeck)をリゾルバ経由に統一
 - **残存 → KI-020**: ActiveEffect 修正層(層③)は ActiveEffect フェーズへ
 
+## フェーズ3 で解消
+
+### KI-017: cast シートのデッドコード
+
+- `_getHistoryData` / `_saveHistoryData` / `_updateExpTotal` を 3-3 にて完全削除
+- **解消コミット**: a3110e5 (2026-06-07)
+
+### KI-018: RewritedTarget タイポ → RewrittenTarget
+
+- `StyleSkillDataModel` フィールド名を正規化。テンプレート・ロジック参照ゼロのため移行コスト不要
+- **解消コミット**: 83f8600 (2026-06-07)
+
+### KI-019: RewritingMiracle_ID 命名規約違反 → rewritingMiracleId
+
+- `StyleSkillDataModel` フィールド名を camelCase に正規化
+- **解消コミット**: 83f8600 (2026-06-07)
+
+---
+
 ## フェーズ2 で部分的解消
 
-### KI-017 (部分)
+### KI-017 (部分 → 3-3 で完全解消)
 
-- `_getHistoryData` / `_saveHistoryData` に ownerUserId 分岐追加 (2-2)
-- 完全整理はフェーズ3
+- `_getHistoryData` / `_saveHistoryData` に ownerUserId 分岐追加 (2-2) → 3-3 で削除完了
 
 詳細は [Known_Issues_Detail.md](Known_Issues_Detail.md) を参照。
