@@ -2036,3 +2036,36 @@ CSS 全体監査（前エントリ）で特定した分類 B〜H を複数セッ
 #### 推奨アクション
 
 3-6（ダイアログ系 V2 化）に進む。Journal.registerSheet の実機動作と ContextMenu は 3-7 最終検証で一括確認する。
+
+---
+
+### [ダイアログ系 V2 化: tnx-dialog.mjs / TnxScenarioSettingWizard](フェーズ3-6)
+
+**日付**: 2026-06-07
+**レビュー対象**: `scripts/module/tnx-dialog.mjs`, `scripts/module/tnx-scenario-setting-wizard.mjs`, `templates/dialog/card-selection-dialog.hbs`, `templates/parts/scenario-setting-wizard.hbs`
+**ステータス**: レビュー済(問題なし)
+
+#### レビュー観点
+
+- 保守性: V1 の `new Dialog({...}).render(true)` から `DialogV2.wait()` への変換が全 8 クラスで一貫しているか
+- 拡張性: ウィザードの多ステップ状態管理が V2 で維持できているか
+- FVTT慣行: `DialogV2.wait()` の `callback` / `close` パターンが標準に準拠しているか
+- 既存設計との整合: 各ダイアログが呼び出し元（TnxActionHandler / TnxScenarioSheet / TnxHud）と引き続き正しく接続されているか
+
+#### 良かった点
+
+- `DialogV2.wait()` パターンを全 8 クラスで統一。`close: () => null` でダイアログを × で閉じた場合の戻り値を `null` に統一
+- `TnxScenarioSettingWizard` の `FormApplication` → `HandlebarsApplicationMixin(ApplicationV2)` 移行において、多ステップ状態（`this.step` / `this.formData`）がインスタンスプロパティとして V2 でも完全に機能する
+- ステップナビゲーションの jQuery `click` リスナー → `static ACTIONS` 変換が完全。スピナーも `data-action="increment"/"decrement"` として統合
+- `_updateObject()` の巨大な処理本体を `_executeSetup()` に分離し、`_onFinishSetup` アクションがそれを呼ぶ形に整理。責務の分離が明確
+- `CardSelectionDialog` の jQuery 選択トグル処理を DOM レベルで解決: テンプレートを `<label>` ラップ構造に変更し、CSS の `:has(input:checked)` で選択状態を表現。JS が不要になった
+- 動的 import（`user-flag-schema.mjs`）をウィザードのトップレベルに移動。V1 時代の `await import()` パターンを排除
+
+#### 課題
+
+- ⚠️ `AmountInputDialog` のバリデーション挙動が V1 と微妙に異なる。V1 はダイアログを閉じずに再入力を促したが、V2 は `null` を返して閉じる。実用上の問題はないが、UX 変更として認識しておく
+- ⚠️ `:has(input:checked)` の CSS は現代ブラウザでは広くサポートされているが、Foundry VTT の Electron バージョンによっては動作しない可能性がある。3-7 実機確認で検証する
+
+#### 推奨アクション
+
+3-7（最終検証）に進む。実機確認でカード選択ダイアログの `:has()` 動作、ウィザードのステップ遷移、全ダイアログの開閉を確認する。

@@ -203,12 +203,24 @@ V2 移行と並走して **CSS リファクタリング**（デッドコード�
 
 **実装コミット**: a5a51a2 (2026-06-07)
 
-### 3-6: ダイアログ系 V2 化 + CSS デザイン適用
+### 3-6: ダイアログ系 V2 化 + CSS デザイン適用 ✅ (2026-06-07)
 
-- [ ] `TnxScenarioSettingWizard` (FormApplication → ApplicationV2)
-- [ ] `tnx-dialog.mjs` の 8 ダイアログ (`Dialog` → `DialogV2`)
-- [ ] ダイアログ群に 3-CSS-0 デザインシステムを適用
-- [ ] テスト更新・通過確認
+- [x] `TnxScenarioSettingWizard` を `HandlebarsApplicationMixin(ApplicationV2)` に移行
+  - `static DEFAULT_OPTIONS / PARTS / ACTIONS` 構成
+  - ステップナビゲーション・スピナーをすべて `static ACTIONS` ベースに変換
+  - `_updateObject()` → `_onFinishSetup()` + `_executeSetup()` に分割
+  - 動的 `import` をトップレベル静的 `import` に移動
+  - scenario-setting-wizard.hbs: 全ボタンに `data-action` 付与、`type="submit"` → `type="button" data-action="finishSetup"`
+- [x] `tnx-dialog.mjs` の 8 ダイアログを `DialogV2.wait()` に移行
+  - `DeckCreationDialog` / `AmountInputDialog` / `TargetSelectionDialog` / `CardSelectionDialog`
+  - `RichConfirmDialog` / `DealTrumpDialog` / `UnlinkConfirmDialog` / `UsageCreationDialog`
+  - `AmountInputDialog`: バリデーションをコールバック後に移動（V1 はダイアログを閉じず再入力可、V2 は null 返却で閉じる — 仕様変更として記録）
+- [x] `CardSelectionDialog` の jQuery 依存を完全排除
+  - card-selection-dialog.hbs: `<div>+<label>` 構造 → `<label class="card-selection-item">` ラップ構造に変更
+  - CSS: `:has(input:checked)` セレクタで選択状態を表現（`.selected` クラス JS 付与不要）
+- [x] `npm run lint` エラー 0 確認
+
+**実装コミット**: 4a19780 (2026-06-07)
 
 ### 3-7: 最終検証・CSS 最終調整・記録
 
