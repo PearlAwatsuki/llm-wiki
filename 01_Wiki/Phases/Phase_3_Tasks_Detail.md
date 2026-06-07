@@ -165,6 +165,15 @@ V2 移行と並走して **CSS リファクタリング**（デッドコード�
 
 **実装コミット**: a3110e5 (2026-06-07)
 
+**追加コミット**: 1d9bcc5 / 3a9ad64 (2026-06-07)
+
+- [x] タブ切替不動作修正: nav `<a>` に `data-action="tab"` 追加・コンテンツ div に `data-group` 追加（V2 組み込みタブハンドラの要件）
+- [x] プレイヤーアクター廃止に伴う関連コード完全削除: unlinkPlayer ボタン・action・`_onDrop` override・`_onUnlinkPlayer`・`_performHistoryUpdate` B ブランチ・`playerActor` 参照
+- [x] スートチェックボックス CSS 特異度修正: `.suit-checkbox-tiny input` → `input[type="checkbox"]`（グローバルルールとの競合解消）
+- [x] セッション履歴タブ sync チェックボックスレイアウト修正: `.sync-toggle-row` → `.checkbox-row`
+- [x] 再描画時スクロールリセット対策: `_preRender` でスクロール位置保存・`_onRender` の `requestAnimationFrame` で復元
+- [x] 再描画時サイドバーチラツキ対策: `_preRender` で `.tnx-no-transitions` 付与・rAF コールバックで除去（CSS トランジション再生抑制）
+
 ### 3-4: TnxHud V2 化 + HUD CSS デザイン
 
 - [ ] `TnxHud` を `HandlebarsApplicationMixin(ApplicationV2)` に移行

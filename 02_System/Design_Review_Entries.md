@@ -1933,7 +1933,7 @@ CSS 全体監査（前エントリ）で特定した分類 B〜H を複数セッ
 ### 3-3 TokyoNovaCastSheet ApplicationV2 移行 + KI-017 解消（フェーズ3）
 
 **日付**: 2026-06-07
-**レビュー対象**: `scripts/actor/tnx-cast-sheet.mjs`, `scripts/module/tnx-history-mixin.mjs`, テンプレート3点
+**レビュー対象**: `scripts/actor/tnx-cast-sheet.mjs`, `scripts/module/tnx-history-mixin.mjs`, テンプレート3点, `css/tnx.css`
 **ステータス**: レビュー済(問題なし)
 
 #### レビュー観点
@@ -1950,14 +1950,17 @@ CSS 全体監査（前エントリ）で特定した分類 B〜H を複数セッ
 - jQuery依存を完全排除。クラスベースハンドラは `_onRender()` 内でネイティブDOMイベントに変換
 - `form: { submitOnChange: true }` で growth 等 named input の変更を自動処理（`_onGrowthChange` 削除）
 - KI-017 デッドコード（`_getHistoryData` / `_saveHistoryData` / `_updateExpTotal`）を削除
-- `_onDrop` で `JSON.parse(event.dataTransfer.getData("text/plain"))` を採用（他V2シートと統一）
 - `foundry.applications.api.DialogV2.confirm` / `foundry.applications.ux.TextEditor.enrichHTML` への移行
+- プレイヤーアクター廃止に伴い `_onDrop` override・`unlinkPlayer` action・`_performHistoryUpdate` B ブランチを完全削除（ライフサイクルの簡素化）
+- CSS 特異度問題の根本修正: `.suit-checkbox-tiny input` → `input[type="checkbox"]` でグローバルルールとの競合を解消
+- 再描画時の UX 対策として `_preRender` / `requestAnimationFrame` パターンを確立（スクロール位置保存・復元 + `.tnx-no-transitions` によるトランジション再生抑制）
 
 #### 課題
 
 - ⚠️ `_onToggleAbilityDetails` のアニメーション: V1 の `panel.slideToggle(200)` を `style.display` トグルに降格。視覚的退行だが機能的には問題なし。フェーズ4 CSS でCSSトランジションに置き換え予定
 - ⚠️ ContextMenu コールバックの型: V13 ContextMenu がコールバックに渡す要素の型（HTMLElement か jQuery か）は実機確認が必要。現実装は `header.dataset.itemId` を前提
+- ⚠️ サイドバーチラツキ: `.tnx-no-transitions` による対策を実施したが実機での解消は未確認。根本対応は PARTS 分割（sidebar / body を独立した PART にする）だが、フェーズ4 以降での対応を想定
 
 #### 推奨アクション
 
-3-4（TnxHud V2 化）に進む。ContextMenu の実機動作は 3-7 最終検証で確認する。
+3-4（TnxHud V2 化）に進む。ContextMenu の実機動作とサイドバーチラツキは 3-7 最終検証で確認する。
