@@ -1858,3 +1858,72 @@ border-bottom: 1px solid var(--tnx-color-border-accent); padding-bottom: 8px;
 **フェーズ4 で対処**:
 - 分類L（ライトテーマ値）、分類M（スートパターン統一）の視覚的側面
 - 分類I（変数名の整理）はフェーズ4 のカラーパレット再設計と同時に行う
+
+---
+
+### 3-CSS-0 CSS リファクタリング実装(フェーズ3)
+
+**日付**: 2026-06-07
+**レビュー対象**: `css/tnx.css`（全体）、`.stylelintrc.json`、`postcss.config.mjs`
+**ステータス**: レビュー済(問題なし)
+
+#### 実施内容
+
+CSS 全体監査（前エントリ）で特定した分類 B〜H を複数セッションにわたって実施した。
+
+**構造整理（分類C・D・G）**:
+- `.array-row select` / `.array-row input` 等 15+ 箇所の重複・矛盾ルールを統合
+- 全セレクタへの `.tokyo-nova` / `.tokyo-nova.sheet` 親スコープ付与
+- dead CSS ルールの除去（`.abilities-section`、ステールコメント、孤立定義）
+- `.scenario-sheet .sheet-body` 二重定義をマージ
+
+**再利用性（グループ統合）**:
+- `.tnx-btn` / `.tnx-linked-btn` 共通基底をコンマセレクタに統合（hover・disabled 状態も統合）
+- `.text-item` / `.info-item` 完全重複統合
+- `form-group-checkbox` / `.checkbox-row` 共通基底統合
+- `textarea:focus` 3セレクタ統合
+- webkit スピンボタン 8セレクタ 1ブロックに統合
+- HUD `.main-area` / `.neuro-area` / `.hud-panel` 共通基底統合
+
+**変数化（分類B）**:
+- `:root` に 10+ カスタムプロパティを追加（`--tnx-overlay-*`、`--tnx-shadow-glow-text-*`、`--tnx-transition-*`、`--tnx-color-primary-glow` 等）
+- マジックナンバー（hardcoded color / transition / shadow 値）を変数参照に置換
+
+**開発ツール整備（build: 8917c4f）**:
+- `stylelint` + `.stylelintrc.json`: 重複セレクタ・空ブロック・無効 hex を検出（`npm run lint:css`）
+- `postcss` + `postcss-cli` + `postcss-combine-duplicated-selectors`: 同一セレクタ分散を自動マージ（`npm run css:merge`）
+- `postcss-merge-rules` は設定から除外: 無関係なセレクタの過剰マージ・コメント削除の副作用が確認されたため
+
+#### 技術的判断
+
+**`postcss-merge-rules` 除外について**
+同じ宣言セットを持つ別セレクタをコンマ結合する機能自体は有用だが、テスト実行で `:root` 内のセクションコメントおよび行末 why コメントが削除されることを確認。コードの意図を保持する価値の方が行削減より高いと判断し、設定ファイルから除外した。
+
+**`replace_all` の安全性**
+変数化作業で `Edit.replace_all` を使用する際、`:root` の変数定義行が置換対象に含まれると循環参照になる。対策: `transition: all 0.2s ease-out;` のように値だけでなくプロパティ名込みのフル宣言で置換対象を指定し、`:root` 行（`--tnx-transition-all: all 0.2s ease-out;`）とパターンが一致しないことを確認してから実行した。
+
+#### 成果
+
+- `stylelint lint:css`: 警告 0（重複セレクタ・空ブロックなし）
+- `postcss-combine-duplicated-selectors`: 構造変更 0（残存する分散セレクタなし）
+- 推奨アクションリスト（前エントリ）の 1〜9 をすべて対処済み
+
+#### 残留ハードコードカラー（9 件）
+
+以下はすべて単一箇所のみで使用される設計値であり、変数化の DRY メリットがないため対処を保留した。
+フェーズ4 のカラーパレット再設計時に一括で見直す。
+
+| 値 | 箇所 | 用途 |
+|---|---|---|
+| `#a2f3ff` | L420 | edit-mode-toggle ホバー時ノブ背景 |
+| `rgba(0,180,255,0.15)` | L824 | カード選択ハイライト |
+| `#333a41` | L1345 | コントロール形状背景 |
+| `#585f68` / `#666` | L1719-1720 | セカンダリボタンホバー背景・枠線 |
+| `rgba(0,170,255,0.08)` | L2044 | info-item 開示ヘッダー背景（`--tnx-color-primary-glow` の 0.1 に統一可） |
+| `#222` | L2296 | カード背景 |
+| `rgba(255,255,255,0.03)` | L2939 | スタイルスキル偶数行ストライプ |
+| `rgba(255,255,255,0.3)` | L3051 | 履歴リスト背景 |
+
+#### 推奨アクション
+
+3-3（CastSheet V2 化）に進む。視覚デザインの刷新はフェーズ4 に分離済み。

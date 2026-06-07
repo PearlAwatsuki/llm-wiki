@@ -146,6 +146,13 @@ V2 移行と並走して **CSS リファクタリング**（デッドコード�
 - タイポグラフィ設計（フォント種類・サイズスケール）
 - 装飾要素方針（グリッチ・スキャンライン・アニメーション等）
 - 分類L（ライトテーマ値）、分類M（スートパターン統一）、分類I（変数名整理）
+- 残留 hardcoded color 9 件（単一箇所のみの設計値、DRY メリットなし）
+- `rgba(0, 170, 255, 0.08)` → `--tnx-color-primary-glow`（0.1）に統一（L2044）
+
+**追加作業（2026-06-07）**:
+- CSS 開発ツール整備: `stylelint` + `.stylelintrc.json`、`postcss` + `postcss-combine-duplicated-selectors`（build: 8917c4f）
+- `npm run lint:css`: 警告 0 を確認（重複セレクタ・空ブロックなし）
+- `npm run css:merge`: 構造変更 0 を確認（分散セレクタなし）
 
 ### 3-3: CastSheet V2 化 + CSS デザイン適用
 
