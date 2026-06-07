@@ -86,13 +86,38 @@
 
 ---
 
+---
+
+## フェーズ3: シート ApplicationV2 移行 + CSS リファクタリング ✅ (v0.4.0, 2026-06-07)
+
+**目標**: ApplicationV1 完全廃止。全シート・HUD・ダイアログを V2 に移行し、CSS を構造整理する。
+
+| サブ | 内容 | 完了日 |
+|---|---|---|
+| 3-0 | V2 移行設計・基底クラス選定・API 調査 | 2026-06-06 |
+| 3-1 | TokyoNovaItemSheet + EffectsSheetMixin V2 化 (KI-009 解消) | 2026-06-06 |
+| 3-2 | Item 派生シート 5 本 V2 化 | 2026-06-06 |
+| 3-2b | アイテムシート CSS 回帰バグ修正 | 2026-06-06 |
+| 3-CSS-0 | CSS デザインシステム基盤確立・tnx.css 全体再監査 | 2026-06-07 |
+| 3-3 | TokyoNovaCastSheet + TnxHistoryMixin V2 化 (KI-017/018/019 解消) | 2026-06-07 |
+| 3-4 | TnxHud ApplicationV2 移行 | 2026-06-07 |
+| 3-5 | TnxScenarioSheet ApplicationV2 移行 | 2026-06-07 |
+| 3-6 | tnx-dialog.mjs 8 クラス DialogV2 化 + TnxScenarioSettingWizard V2 化 | 2026-06-07 |
+| 3-7 | 最終検証・タブバグ修正事後検討・KI 解消記録 | 2026-06-07 |
+
+**テスト**: 625 件グリーン (3-7 時点)
+**解消 KI**: KI-009, KI-017, KI-018, KI-019
+
+詳細: [Phase_3_Tasks_Detail.md](Phase_3_Tasks_Detail.md)
+
+---
+
 ## 今後のフェーズ (概要)
 
 | フェーズ | 内容 | 状態 |
 |---|---|---|
-| 3 | 既存シート ApplicationV2 移行 | **進行中** |
-| 4 | シート内容追加 (combatSpeed 等) | 未着手 |
-| 5 | CSS リファクタ + デザイン刷新 | 未着手 |
+| 4 | デザイン刷新（視覚デザイン）| **現在** |
+| 5 | シート内容追加 (combatSpeed 等) | 未着手 |
 | 6 | 未実装シート追加 | 未着手 |
 | (新設) | ActiveEffect フェーズ(KI-020 含む) | 未着手・位置未確定 |
 | 7-8 | 判定システム 設計→実装 | 未着手 |

@@ -62,6 +62,13 @@
 
 ## フェーズ3 で解消
 
+### KI-009: EffectsSheetMixin 適用方式の二系統
+
+- **解消**: フェーズ3-1/3-3 (2026-06-06/07)
+- V1 の二系統（CastSheet: インスタンス代入、ItemSheet: 静的呼び出し）を `ACTIONS` オブジェクトに統一
+- 両シートで `...EffectsSheetMixin.ACTIONS` スプレッドを `DEFAULT_OPTIONS.actions` に展開
+- V1 互換メソッド (`activateEffectListListeners` / `_onXxx` 群) は `@deprecated` 付きで維持し、実コードから参照ゼロを確認
+
 ### KI-017: cast シートのデッドコード
 
 - `_getHistoryData` / `_saveHistoryData` / `_updateExpTotal` を 3-3 にて完全削除

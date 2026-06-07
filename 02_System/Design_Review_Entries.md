@@ -2069,3 +2069,41 @@ CSS 全体監査（前エントリ）で特定した分類 B〜H を複数セッ
 #### 推奨アクション
 
 3-7（最終検証）に進む。実機確認でカード選択ダイアログの `:has()` 動作、ウィザードのステップ遷移、全ダイアログの開閉を確認する。
+
+---
+
+### 3-7 最終検証・アクトシートタブバグ事後検討（フェーズ3）
+
+**日付**: 2026-06-07
+**レビュー対象**: `scripts/journal/tnx-scenario-sheet.mjs`, `templates/journal/scenario-sheet.hbs`（タブ不具合対応の事後検討）
+**ステータス**: レビュー済(問題なし)
+
+#### 背景
+
+3-5 で TnxScenarioSheet を V2 移行した後、アクトシートのタブが一切機能しない不具合が3ラウンドのデバッグで修正された（コミット 932da9a → 8587b82 → 00b16c0）。本エントリはその根本原因と設計判断を記録する。
+
+#### 根本原因分析
+
+##### 原因1: `static TABS` 誤記法（コミット 932da9a で修正）
+
+3-5 の実装コミット (a5a51a2) には `static TABS = { primary: { tabs: [...], initial: 'setting' } }` が含まれていたが、これは V1 形式の記法で V2 では機能しない。CastSheet（動作確認済みの V2 参照実装）は `static TABS` を持たず、代わりに `tabGroups` インスタンスプロパティと `_onRender` での `changeTab` 呼び出しで初期タブを設定している。`static TABS` を削除し同パターンを適用した。
+
+##### 原因2: nav 要素の配置ミス（コミット 8587b82 で修正）
+
+3-5 の template では `<nav>` が `<aside class="scenario-sidebar">` の子になっており、`nav.parentElement = <aside>` だった。Foundry V13 の `_onClickTab` は `button.closest(".tabs")` で nav を探し、その `parentElement` 内の `.tab[data-group]` コンテンツを探索する。nav の親が `<aside>` であるとコンテンツが見つからないため、`<aside>` を除去して nav を root section の直接子にした。
+
+##### 原因3: `changeTab` の private field 問題（コミット 00b16c0 で最終修正）
+
+Foundry V13 の `changeTab` 実装 (`foundry.mjs` L27851-27875) は `this.#content.querySelector('.tabs [data-group][data-tab]')` を使うため、nav 要素に `.tabs` CSS クラスが必要。しかし Foundry コアの `body.game .app .tabs { flex-flow: row nowrap }` は特異度 (0,3,1) で我々の `.scenario-sheet .vertical-tabs { flex-direction: column }` (0,2,0) を上書きするため、`.tabs` クラスを追加すると縦型レイアウトが崩壊する。
+
+**解決策**: `TnxScenarioSheet` で `changeTab` をオーバーライドし、`this.#content`（private field = アクセス不可）の代わりに `this.element.querySelectorAll` を使う独自実装に置き換えた。これにより `.tabs` クラス不要で、V13 の private API を回避できる。
+
+#### 設計上の評価
+
+- **Foundry V13 の changeTab は実質 non-public API**: `.tabs` CSS クラス要件・`#content` private field のいずれも公式ドキュメントに明記されていない。V2 移行時はこの仕様を前提にした設計が必要
+- **`changeTab` オーバーライドパターンの汎用性**: 縦型タブ・カスタムレイアウトが必要な場合のパターンとして今後も参照できる
+- **`_onRender` での `force: true` 再適用**: V2 はレンダー後にタブ `active` クラスを自動付与しない。`_onRender` で `changeTab(tab, group, { force: true })` を呼ぶパターンは全 V2 シートで一貫して適用済み
+
+#### 推奨アクション
+
+フェーズ3 完了。フェーズ4（デザイン刷新）に進む。
