@@ -36,7 +36,7 @@
 | 症状 | initiative 式は修正済だがシートに入力 UI なし → 常に 0 |
 | 影響 | コンバットトラッカーでイニシアチブが機能しない |
 | 難易度 | 中 (ルール解釈必要) |
-| 担当 | フェーズ4 |
+| 担当 | フェーズ5 (5-6 キャストシート詳細タブ) |
 
 ## KI-020: handMaxSize への ActiveEffect 修正が未実装
 
@@ -49,10 +49,8 @@
 
 ## 軽微な残存 (機能的支障なし)
 
-- HUD 収納時の右サイドバーとの視覚的近接 (フェーズ5 デザイン刷新で根本解消)
-- tnx-hud.mjs のサイドバー連動 JS 死コード (フェーズ3)
 - Font Awesome 5/6 混在 (v13 実機未確認)
 
 ## 更新ルール
 
-新規発見時は `docs/KNOWN_ISSUES.md` に KI-NNN として追記し、本ファイルも更新する。
+新規発見時は本ファイルに KI-NNN として起票し、[Known_Issues_Detail.md](Known_Issues_Detail.md) に詳細を追記する。解消・分割済みは [Resolved_Issues.md](Resolved_Issues.md) へ移動する（KI の正本は Issues 一箇所のみ。他所での重複管理は廃止）。
