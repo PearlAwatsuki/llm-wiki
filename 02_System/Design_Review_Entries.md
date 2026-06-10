@@ -2181,3 +2181,42 @@ Foundry V13 の `changeTab` 実装 (`foundry.mjs` L27851-27875) は `this.#conte
 - `tnx.css` は移行期間中保持。シートごとに適用完了後、対応ブロックを削除
 - フェーズ4 終盤（4-6）で `tnx.css` を廃止し `system.json` から除去
 - 新変数系は `--tnx2-*` プレフィックスで管理（旧 `--tnx-*` と衝突しない）
+
+### 5-x TnxRollTable（カード引きロールテーブル）（フェーズ5）
+
+**日付**: 2026-06-11
+**レビュー対象**: `scripts/module/tnx-roll-table-sheet.mjs` / `templates/roll-table/tnx-roll-table-sheet.hbs`
+**ステータス**: レビュー済(問題なし)
+
+#### レビュー観点
+
+RollTable ドキュメントのカードベース化。当初 DataModel サブタイプ
+（`documentTypes.RollTable.tnxTable` + `CONFIG.RollTable.dataModels`）で実装したが、
+**RollTable は `type` / `system` フィールドを持たずサブタイプ非対応**であることが
+v13 API リファレンスで確定（ドキュメント作成自体が失敗）。flags ベースに再設計した。
+
+#### 設計判断
+
+- データは `flags.tokyo-nova-axleration.rollTable` に保存
+  （`deckMode` / `deckId` / `docResults` 14 スロット / `deckResults` 動的配列）。
+- flag 読み出しは `getTableFlagData()` に集約し、欠損キーをデフォルト補完。
+- コアの `foundry.applications.sheets.RollTableSheet`（v13 で AppV2 化済）を
+  unregister し、`TnxRollTableSheet` を makeDefault で登録 → 全 RollTable が TNX シートで開く。
+- シート・flag ヘルパー・ドローユーティリティを 1 モジュールに統合
+  （DataModel 廃止により `scripts/data/roll-table/` は削除）。
+
+#### 良かった点
+
+- DocumentSheetV2 + `tag: "form"` + form handler 構成はカードセットアップアプリと同パターンで整合。
+- flag スキーマがヘルパー 1 箇所に集約され、User flag ヘルパー方式（CLAUDE.md §3）と思想が揃う。
+
+#### 課題
+
+- ⚠️ コアシート完全置換のため、ユーザーが通常の RollTable（ダイス表）を使いたくなった場合は
+  シート選択 UI から戻せない（unregister 済）。TNX では使用場面がない前提で許容（ユーザー承認済）。
+- ⚠️ `lookupFromCard` は「開いているシート」のみ対象。閉じているテーブルは発火しない仕様
+  （意図的: 表を開いている＝有効化、のセマンティクス）。
+
+#### 推奨アクション
+
+- 対応不要。シーンカード特殊効果システム実装時（フェーズ11 想定）に再評価。
