@@ -2185,8 +2185,8 @@ Foundry V13 の `changeTab` 実装 (`foundry.mjs` L27851-27875) は `this.#conte
 ### 5-x TnxRollTable（カード引きロールテーブル）（フェーズ5）
 
 **日付**: 2026-06-11
-**レビュー対象**: `scripts/module/tnx-roll-table-sheet.mjs` / `templates/roll-table/tnx-roll-table-sheet.hbs`
-**ステータス**: レビュー済(問題なし)
+**レビュー対象**: （差し戻し済み・実装なし）
+**ステータス**: 差し戻し（再設計待ち）
 
 #### レビュー観点
 
@@ -2220,3 +2220,14 @@ v13 API リファレンスで確定（ドキュメント作成自体が失敗）
 #### 推奨アクション
 
 - 対応不要。シーンカード特殊効果システム実装時（フェーズ11 想定）に再評価。
+
+#### 差し戻し記録（2026-06-11）
+
+flags ベース実装を含む全コミットを revert（d66636c）。技術的教訓:
+
+- `documentTypes` に RollTable を宣言するとサーバーが documentTypes 全体を無効化し、
+  ワールドの全カスタム型ドキュメントが invalid になる（データは温存されるが読み込まれない）。
+  system.json の documentTypes に置けるのは system フィールドを持つ Document のみ。
+- system.json の変更はブラウザリロードでは反映されない。Foundry 本体（ワールド）の再起動が必要。
+- コアシートの unregister + 置換は要求超過だった。既存 UI 保持の要求がある場合、
+  render フックでの注入など非破壊的な拡張を第一候補とすること。
