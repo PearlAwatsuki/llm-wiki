@@ -2185,8 +2185,8 @@ Foundry V13 の `changeTab` 実装 (`foundry.mjs` L27851-27875) は `this.#conte
 ### 5-x TnxRollTable（カード引きロールテーブル）（フェーズ5）
 
 **日付**: 2026-06-11
-**レビュー対象**: （差し戻し済み・実装なし）
-**ステータス**: 差し戻し（再設計待ち）
+**レビュー対象**: `scripts/module/tnx-draw-table.mjs`
+**ステータス**: レビュー済(問題なし)
 
 #### レビュー観点
 
@@ -2231,3 +2231,22 @@ flags ベース実装を含む全コミットを revert（d66636c）。技術的
 - system.json の変更はブラウザリロードでは反映されない。Foundry 本体（ワールド）の再起動が必要。
 - コアシートの unregister + 置換は要求超過だった。既存 UI 保持の要求がある場合、
   render フックでの注入など非破壊的な拡張を第一候補とすること。
+
+#### 再実装記録（2026-06-11・ドロー表）
+
+コミット 8907d2e。差し戻し後の再設計はコア保持・非破壊注入を徹底:
+
+- ドキュメント・シートの置換なし。`preCreateRollTable`（デフォルト名「ドロー表」/
+  アイコン card-hands.svg）と `renderRollTableSheet`（DOM 注入）の 2 フックのみ。
+- 概要タブ: ロール式 form-group を hidden にしてデッキ選択を後挿入（フォーム値は温存）。
+- 結果行: 設定デッキモードは `results.{i}.flags.tokyo-nova-axleration.cardName` を name に
+  持つ select を注入し、コアの保存ボタンで他フィールドと一緒に永続化。
+  仮想 DoC モードは range 入力に値を転記するだけ（保存フローはコアのまま）。
+- フッターのドローボタンは capture リスナー + stopImmediatePropagation で
+  コアの drawResult アクションより先に横取り。設定デッキモードでは disabled。
+- チャット出力は `table.draw({roll, results})` / `({results, roll: null})` で
+  コアのメッセージをそのまま使用。結果の編集 UI（別ウィンドウ）もコアのまま。
+
+課題（軽微）:
+- ⚠️ 仮想 DoC で replacement OFF のままだと一度出た結果がロックされる。
+  DoC 再現としては replacement ON 推奨（ユーザー操作で設定可能、自動化はしない）。
