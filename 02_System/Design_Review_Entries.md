@@ -2250,3 +2250,45 @@ flags ベース実装を含む全コミットを revert（d66636c）。技術的
 課題（軽微）:
 - ⚠️ 仮想 DoC で replacement OFF のままだと一度出た結果がロックされる。
   DoC 再現としては replacement ON 推奨（ユーザー操作で設定可能、自動化はしない）。
+
+---
+
+### 5-6 キャストシート詳細タブ + 技能セクション刷新（フェーズ5）
+
+**日付**: 2026-06-12
+**レビュー対象**: `scripts/actor/tnx-cast-sheet.mjs`, `scripts/data/actor/cast.mjs`, `templates/actor/cast-sheet.hbs`, `css/tnx2.css`, `scripts/tnx.mjs`
+**ステータス**: レビュー済(問題なし)
+
+#### レビュー観点
+
+- 保守性: コンテキストメニュー定義の重複が解消されているか
+- 拡張性: ライフパスのデータ構造がフェーズ6（ライフパスアイテム実装）に耐えるか
+- FVTT慣行: ProseMirror カスタム要素・ContextMenu condition・コア設定デフォルト変更が標準パターンか
+- 既存設計との整合: 閲覧/編集モードの切替パターン・既存 CSS クラスの再利用
+
+#### 良かった点
+
+- **コンテキストメニューの共通化**: 閲覧/編集/複製/削除の option オブジェクトを 1 度定義し、
+  `baseItemMenu` / `skillMenu` の配列合成で 4 セレクタに配布。`getItemFromHeader()` で
+  itemId 解決も一本化（従来は 3 メニューがそれぞれ重複定義）。
+- **閲覧/編集をアイテムシートの `_isEditMode` 切替で区別**: シート再利用でドキュメント閲覧と
+  編集を 1 つの導線に統合。アイテムシート側の API（`_isEditMode` + `render`）をそのまま使用。
+- **技能セクション編集モードのレイアウト再設計**: 閲覧モードの `skills-list-view` /
+  `style-skills-list-wrapper` 構造・クラスを再利用し、編集対象セル（Lv・スート）だけ差し替え。
+  dragSelector も `.skills-list-view .item` 追加のみで両モードのソートに対応。
+- **ケバブメニュートリガーの汎用化**: `.item-menu-trigger` → `closest("[data-item-id]")` に
+  contextmenu をディスパッチする方式で、行構造に依存しない。
+- **`core.chatNotifications` デフォルト変更**: 設定定義の `default` プロパティのみ変更し、
+  ユーザーの明示的選択は保存値が優先される非破壊的手法。存在チェック付きで将来のキー変更にも安全。
+- **ProseMirror 固定高さ + `overflow: hidden`**: 自動拡張（height auto / overflow visible）は
+  flex 内部スクロールの前提を壊し枠線はみ出しを起こすことを確認 → 固定高さ + 内部スクロールに確定。
+
+#### 課題
+
+- ⚠️ ライフパスの `name` はドロップ時のキャッシュであり、参照先アイテムの改名に追従しない。
+  フェーズ6 のライフパスアイテム実装時に同期方針（render 時 fromUuid 解決 or キャッシュ維持）を確定する。
+- ⚠️ `summary` フィールドはドロップ時に空文字を保存するのみ（編集 UI 未提供）。フェーズ6 で連携。
+
+#### 推奨アクション
+
+- フェーズ6 ライフパスアイテム実装時に name/summary の同期設計を行う。それまでは対応不要。

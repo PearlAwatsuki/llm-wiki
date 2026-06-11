@@ -57,10 +57,13 @@ git push origin main --tags
 - タイトル: `vX.Y.Z - <フェーズ名>`
 - 本文: CHANGELOG 該当部分
 
-### 7. CLAUDE.md 更新
+### 7. wiki 更新（フェーズ記録の閉め）
 
-- §2.2 現在フェーズ → 次フェーズ
-- ロードマップ進行マーク更新
+- [Roadmap.md](Roadmap.md) の進行状況マーク更新（完了フェーズ ✅・次フェーズ ▶）
+- 現フェーズの Phases 詳細ページを完了状態に更新
+- [Completed_Phases.md](../01_Wiki/Phases/Completed_Phases.md) に完了フェーズの概要を追加
+- Audit_and_Review / Design_Review_Entries / Issues の全エントリ通読・最新化
+- 本ファイルの「完了済みリリース」表を更新
 
 ## 完了済みリリース
 
@@ -68,6 +71,10 @@ git push origin main --tags
 |---|---|---|
 | v0.1.0 | フェーズA | — |
 | v0.2.0 | フェーズB | 2026-05-24 |
+| v0.3.0 / v0.3.1 | フェーズ1・2 | 2026-06-05 |
+| v0.4.0 | フェーズ3 | 2026-06-07 |
+| v0.5.0 | フェーズ4 | 2026-06-08 |
+| v0.6.0 | フェーズ5 | 2026-06-12 |
 
 ## 関連
 
