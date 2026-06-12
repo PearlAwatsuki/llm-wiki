@@ -84,9 +84,12 @@ i18n 呼び出し一括ハードコード（フェーズ12 まで凍結）も本
 
 → [Phase_5_Tasks_Detail.md](../01_Wiki/Phases/Phase_5_Tasks_Detail.md)
 
-### フェーズ6: 未実装シート
+### フェーズ6: 未実装シート (進行中)
 
-outfit 系 Item 11 種 + guest/troop/extra Actor 3 種。フェーズ3 + 4 のデザイン踏襲。
+outfit 系 Item 11 種 + lifePath + guest/troop/extra Actor 3 種。フェーズ3 + 4 のデザイン踏襲。
+キャストシート「アウトフィット」タブ整備を含む（2026-06-12 スコープ追加）。
+
+→ [Phase_6_Tasks_Detail.md](../01_Wiki/Phases/Phase_6_Tasks_Detail.md)
 
 ### ActiveEffect フェーズ (新設・位置未確定)
 
