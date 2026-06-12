@@ -2285,10 +2285,60 @@ flags ベース実装を含む全コミットを revert（d66636c）。技術的
 
 #### 課題
 
-- ⚠️ ライフパスの `name` はドロップ時のキャッシュであり、参照先アイテムの改名に追従しない。
-  フェーズ6 のライフパスアイテム実装時に同期方針（render 時 fromUuid 解決 or キャッシュ維持）を確定する。
-- ⚠️ `summary` フィールドはドロップ時に空文字を保存するのみ（編集 UI 未提供）。フェーズ6 で連携。
+- ~~⚠️ ライフパスの `name` はドロップ時のキャッシュであり、参照先アイテムの改名に追従しない。
+  フェーズ6 のライフパスアイテム実装時に同期方針（render 時 fromUuid 解決 or キャッシュ維持）を確定する。~~
+  → **フェーズ6-0 で方針確定（2026-06-12）**: 表示は毎回 fromUuid で現物解決。キャッシュ名は
+  参照先削除時のフォールバック表示のみ。キャッシュ保持方式は全アイテム共通で今後一切採用しない（ユーザー明言）。
+- ~~⚠️ `summary` フィールドはドロップ時に空文字を保存するのみ（編集 UI 未提供）。フェーズ6 で連携。~~
+  → **フェーズ6-0 で方針確定**: 概要はライフパスアイテムの description をそのまま表示する
+  （アイテム側に summary フィールドは追加しない）。実装はフェーズ6-5。
 
 #### 推奨アクション
 
-- フェーズ6 ライフパスアイテム実装時に name/summary の同期設計を行う。それまでは対応不要。
+- ~~フェーズ6 ライフパスアイテム実装時に name/summary の同期設計を行う。それまでは対応不要。~~ → 設計確定済。実装はフェーズ6-5。
+
+---
+
+### 6-0 フェーズ6 着手時の DataModel 変更（フェーズ6）
+
+**日付**: 2026-06-12
+**レビュー対象**: `scripts/data/actor/cast.mjs`(player_name 削除)、
+`scripts/data/actor/troop.mjs`(heads 追加)、
+`scripts/data/item/*.mjs` 12 種(identificationKey 追加)、
+`scripts/data/item/common/outfit-base.mjs`(構造刷新)、
+`scripts/data/item/outfit-categories.mjs`(新設)、
+`scripts/data/item/life-path.mjs`(lifePathType choices 化)、対応テスト一式
+**ステータス**: レビュー済(問題なし)
+
+#### レビュー観点
+
+- 保守性: カテゴリ定数が単一モジュールに集約され、DataModel とシートの両方から参照できるか
+- 拡張性: buy / hide の 3 状態が将来のシート UI(ドロップダウン + 数値入力)に耐えるか
+- FVTT 慣行: StringField の choices / blank の併用、リソースバー用の {value, max} 構造が標準パターンか
+- 既存設計との整合: B-0「共通 template の継承戦略」、フェーズ4 の i18n ハードコード方針
+
+#### 良かった点
+
+- **「なし/数値/解説参照」の 3 状態を `{mode, value}` SchemaField で表現**: 文字列 1 本で
+  「-」「数値文字列」「解説参照」を持ち分けるより型安全で、シート側の表示分岐も mode の switch で済む。
+  `threeStateValueField()` として buy / hide で共用。
+- **カテゴリ定数の単一正本化**: `outfit-categories.mjs` の `OUTFIT_CATEGORIES`(大分類 → {小分類: type})
+  が choices とシートの連動ドロップダウン(フェーズ6-1)の両方の供給源。Object.freeze で不変化。
+  値は日本語表記をそのまま格納(フェーズ4 の i18n ハードコード方針に整合)。
+- **lifePathType のキーをキャスト側スロットキーと統一**: origin / experience / encounter で揃え、
+  フェーズ6-5 のドロップ時スロット・型検証が単純な文字列比較になる。
+- **heads は {value, max} 構造**: トークンリソースバー割り当ての FVTT 標準要件に準拠。バー連携自体は 6-8。
+- **template-integrity テストの除外を定数化**: `NON_DATAMODEL_FILES` で helpers / outfit-categories を
+  まとめて除外し、今後の非 DataModel ファイル追加にも 1 行で対応できる。
+- **テスト 637 → 654 件**: 全変更にスキーマ検証を併設。カテゴリ定数には一意性・type 妥当性・凍結の検証を含む。
+
+#### 課題
+
+- ⚠️ `hack` / `timing` / `exclusive` は StringField(初期値 "-")のまま。形式の確定は
+  実装サブフェーズ着手時のユーザー確認に依存(Phase_6_Tasks_Detail.md 残課題)。
+- ⚠️ 装備品データは実運用前のためマイグレーション不要と確認済み(2026-06-12 ユーザー回答)。
+  以後 outfitBase の構造を変える場合はマイグレーション要否の再確認が必要。
+
+#### 推奨アクション
+
+- フェーズ6-1(装備品シート共通基盤 + general)に進む。

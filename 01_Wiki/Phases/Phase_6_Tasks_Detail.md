@@ -36,17 +36,19 @@ ApplicationV2 シートを新規作成する。フェーズ3 の CSS 構造（tn
 
 ## サブフェーズ
 
-### 6-0: DataModel 変更・設計記録 ▶ 進行中
+### 6-0: DataModel 変更・設計記録 ✅ 完了（2026-06-12）
 
-- [ ] cast: `player_name` 削除（テスト更新含む）
-- [ ] 未実装 12 種（weapon / armor / ianus / cyborg / tron / tap / vehicle / residence / housingArea / combiner / general / lifePath）に `identificationKey` 追加
-- [ ] outfitBase: `isCarrying`（Boolean）追加
-- [ ] outfitBase: `buy` / `hide` を `{mode, value}` SchemaField 化（mode = none / value / reference）
-- [ ] outfitBase: `preserveExp` / `appearancePenalty` を NumberField 化
-- [ ] outfitBase: `majorCategory` / `minorCategory` を choices 付き StringField 化（カテゴリ定数モジュール新設）
-- [ ] troop: `heads`（`{value, max}` SchemaField）追加
-- [ ] lifePath: `lifePathType` を choices 付き（origin / experience / encounter）に変更 + 「運命」誤コメント修正
-- [ ] wiki: Game_Rules/Outfits.md 新設、監査・設計レビューエントリ追加
+- [x] cast: `player_name` 削除（テスト更新含む）（`0bdb47a`）
+- [x] 未実装 12 種（weapon / armor / ianus / cyborg / tron / tap / vehicle / residence / housingArea / combiner / general / lifePath）に `identificationKey` 追加（`2fc7128`）
+- [x] outfitBase: `isCarrying`（Boolean）追加（`7d314e7`）
+- [x] outfitBase: `buy` / `hide` を `{mode, value}` SchemaField 化（mode = none / value / reference）（`7d314e7`）
+- [x] outfitBase: `preserveExp` / `appearancePenalty` を NumberField 化（`7d314e7`）
+- [x] outfitBase: `majorCategory` / `minorCategory` を choices 付き StringField 化（`outfit-categories.mjs` 新設）（`7d314e7`）
+- [x] troop: `heads`（`{value, max}` SchemaField）追加（`9a0df1a`）
+- [x] lifePath: `lifePathType` を choices 付き（origin / experience / encounter）に変更 + 「運命」誤コメント修正（`50b331a`）
+- [x] wiki: Game_Rules/Outfits.md 新設、監査・設計レビューエントリ追加
+
+全テスト 654 件グリーン / ESLint 0 errors（警告は既存分のみ）。装備品データは実運用前のためマイグレーション不要（ユーザー確認済み）。
 
 ### 6-1: 装備品シート共通基盤 + general
 

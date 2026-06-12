@@ -193,3 +193,42 @@
 #### 課題・申し送り
 
 - なし。
+
+### [装備品共通パラメータ・ライフパス区分・トループ人数の DataModel 化](フェーズ6-0)
+
+**日付**: 2026-06-12
+**関連実装**: `scripts/data/item/common/outfit-base.mjs` / `scripts/data/item/outfit-categories.mjs` /
+`scripts/data/item/life-path.mjs` / `scripts/data/actor/troop.mjs`
+**ステータス**: 監査済(問題なし)
+
+#### ルール解釈
+
+ルールの正本は [Outfits.md](../01_Wiki/Game_Rules/Outfits.md)(2026-06-12 ユーザー言語化)。要点:
+
+- 購入値(buy)・隠匿値(hide)は「なし / 数値 / 解説参照」の 3 状態を持つ。
+  購は常備化経験点と対で「購：購入値／常備化経験点」表記(解説参照時は常備化経験点を表記しない)。
+  隠は危険値と対で「隠：隠匿値／危険値」表記(解説参照でも危険値は別個に設定される)。
+- 常備化経験点(preserveExp)・危険値(appearancePenalty)は必ず数値が入る。
+- カテゴリは大分類 8 種 + 小分類の二階層で、小分類ごとに対応する Item type が定まる。
+- 装備部位(part)はスロット消費ルール(後置数字・籠手の排他等)があるが種類が多く、UI は自由入力とする。
+- ライフパスの区分は出自・経験・邂逅の 3 種のみ(旧コメントの「運命」は誤りと確認)。
+- トループは人数(heads)が HP のように機能する。
+
+#### 実装
+
+- buy / hide → `{mode: none/value/reference, value: Number}` の SchemaField。
+- preserveExp / appearancePenalty → NumberField。
+- majorCategory / minorCategory → choices 付き StringField(`OUTFIT_CATEGORIES` が正本、blank 許容)。
+- lifePathType → choices 付き StringField(origin / experience / encounter。キャスト側スロットキーと対応)。
+- troop.heads → `{value, max}` SchemaField(リソースバー用構造。バー連携は 6-8)。
+- isCarrying(携帯中)を outfitBase に追加。
+
+#### 監査結果
+
+✅ 3 状態の持ち分け・必ず数値のフィールド・カテゴリ対応表・ライフパス 3 区分とも
+ユーザー言語化(Outfits.md)に準拠。表示形式(購/隠の対表記)はシート実装(6-1)で監査する。
+
+#### 課題・申し送り
+
+- hack / timing / exclusive の形式は実装サブフェーズ着手時にユーザー確認(Phase_6_Tasks_Detail.md 残課題)。
+- 購入判定(★信用)・登場判定・〈知覚〉〈電脳〉判定との連動は判定システム(フェーズ7-8)の領域。本フェーズでは扱わない。
