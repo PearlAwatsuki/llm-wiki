@@ -50,11 +50,20 @@ ApplicationV2 シートを新規作成する。フェーズ3 の CSS 構造（tn
 
 全テスト 654 件グリーン / ESLint 0 errors（警告は既存分のみ）。装備品データは実運用前のためマイグレーション不要（ユーザー確認済み）。
 
-### 6-1: 装備品シート共通基盤 + general
+### 6-1: 装備品シート共通基盤 + general ▶ 実装完了・実機確認待ち（2026-06-12）
 
-- [ ] outfitBase 部分の共通レイアウト（カテゴリ連動ドロップダウン、購/隠/危険値表示、部位、設定タブ）
-- [ ] extensible のスロット追加/削除 UI
-- [ ] general シートで共通基盤を確立
+- [x] DataModel 微調整（`331881e`）: hack → nullable NumberField（なし=null）/
+  timing → スタイル技能と共通の配列構造 / part・exclusive → 自由記述（初期値 ""）
+- [x] `TokyoNovaOutfitSheet` + `outfit-sheet.hbs` 新規実装、general に登録（`74423ee`）
+  - 説明 / データ / 設定 / エフェクトの 4 タブ（usage を持たないため用途タブなし）
+  - データタブ閲覧モード: ルルブ表記（購：購入値／常備化経験点、隠：隠匿値／危険値、解説参照分岐込み）
+  - ヘッダーに大分類→小分類の連動カテゴリドロップダウン（type で小分類フィルタ）
+  - タイミング行 UI はスタイル技能と同形（選択肢共通、`TnxSkillUtils.formatTimingLabel` に整形処理を共通化）
+  - 真偽値の配置: isPrepared / isCarrying = データタブ「運用状態」、isOption / isPre-play / isCyber = 設定タブ「アウトフィット性質」
+- [ ] ユーザー実機確認（general アイテムの作成・編集・閲覧表示）
+- [→] extensible のスロット追加/削除 UI → **6-2（最初の extensible 型 = weapon）で実装**
+
+確認済み（2026-06-12）: hack はなし/数値の 2 状態、timing はスタイル技能と選択肢共通、exclusive は自由記述（自動化なし）。
 
 ### 6-2: 戦闘系装備シート（weapon / armor / cyborg）
 
@@ -93,9 +102,7 @@ ApplicationV2 シートを新規作成する。フェーズ3 の CSS 構造（tn
 
 ## 実装サブフェーズ着手時に確認する残課題
 
-- `hack`（電脳制御値）の形式: なし/数値の 2 状態でよいか
-- `timing` の選択肢: スタイル技能の timing と共通リストか
-- `exclusive`（スタイル/ワークス専用）の入力形式: 自由記述か
+- ~~`hack` / `timing` / `exclusive` の形式~~ → 6-1 で確定（なし/数値の 2 状態 / スタイル技能と共通 / 自由記述・自動化なし）
 - 各種別の固有フィールドの意味と UI 形式（各サブフェーズ冒頭で確認）
 
 ## 完了条件

@@ -2342,3 +2342,45 @@ flags ベース実装を含む全コミットを revert（d66636c）。技術的
 #### 推奨アクション
 
 - フェーズ6-1(装備品シート共通基盤 + general)に進む。
+
+---
+
+### 6-1 アウトフィット共通シート + general(フェーズ6)
+
+**日付**: 2026-06-12
+**レビュー対象**: `scripts/item/tnx-outfit-sheet.mjs`(新設)、`templates/item/outfit-sheet.hbs`(新設)、
+`scripts/data/item/common/outfit-base.mjs`(hack/timing/part/exclusive 微調整)、
+`scripts/module/tnx-skill-utils.mjs`(formatTimingLabel 切り出し)、`scripts/tnx.mjs`(登録)、`css/tnx2.css`(§35 追加)
+**ステータス**: レビュー済(実機確認待ち)
+
+#### レビュー観点
+
+- 拡張性: 固有フィールドを持つ型(weapon 等)が継承で済む構成か
+- 保守性: タイミング UI・選択肢がスタイル技能と二重管理にならないか
+- FVTT 慣行: ApplicationV2 PARTS/TABS、submitOnChange と配列フィールドの併用
+- 既存設計との整合: 既存アイテムシートのタブ構成・view/edit モード・CSS クラス再利用
+
+#### 良かった点
+
+- **継承前提の基底設計**: general は固有フィールドがないため共通シートをそのまま登録。
+  6-2 以降は本クラスを継承し PARTS 差し替え + データタブ固有部分の追加で済む。
+- **タイミング整形の共通化**: prepareStyleSkillView 内のインライン整形を
+  `TnxSkillUtils.formatTimingLabel()` に切り出し、スタイル技能の挙動を変えずにアウトフィットと共用。
+  選択肢マップも getSkillOptions() を共用し二重管理を回避。
+- **配列操作はスタイル技能の実証済みパターンを踏襲**: 行追加/削除・value 変更時の下位フィールド
+  リセットを item.update(配列全体) で行い、submitOnChange の index 消失問題を回避。
+- **CSS は既存クラスを再利用**: style-skill-display-grid / settings-grid / array-row /
+  tnx-row-btn 等を流用し、新規 CSS はヘッダーカテゴリ行(§35)のみに抑制。
+  view-mode の入力無効化も既存 §26 のルールがそのまま適用される。
+- **カテゴリ連動の文脈フィルタ**: `_categoriesForType()` が OUTFIT_CATEGORIES から
+  その type に有効な大分類・小分類のみを提示。大分類変更時は小分類をリセット。
+
+#### 課題
+
+- ⚠️ 実機確認未了(general アイテムの作成・編集・閲覧)。確認後にステータス更新。
+- ⚠️ extensible スロット UI は未実装。最初の extensible 型(weapon)を扱う 6-2 で設計する。
+- ⚠️ 真偽値フラグの表示ラベル(オプション/プレアクト取得/サイバーウェア等)は推測。実機確認時に検証。
+
+#### 推奨アクション
+
+- ユーザー実機確認の後、フェーズ6-2(weapon / armor / cyborg)に進む。
