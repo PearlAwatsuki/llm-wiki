@@ -60,6 +60,11 @@ ApplicationV2 シートを新規作成する。フェーズ3 の CSS 構造（tn
   - ヘッダーに大分類→小分類の連動カテゴリドロップダウン（type で小分類フィルタ）
   - タイミング行 UI はスタイル技能と同形（選択肢共通、`TnxSkillUtils.formatTimingLabel` に整形処理を共通化）
   - 真偽値の配置: isPrepared / isCarrying = データタブ「運用状態」、isOption / isPre-play / isCyber = 設定タブ「アウトフィット性質」
+- [x] 実機確認 1 回目のフィードバック反映（`0dde383`）:
+  データタブ廃止（概要 = 購/隠/電制/部位 のみを説明タブのエディタ上部に常時表示、編集 UI は
+  すべて設定タブでスタイル技能レイアウト踏襲）/ 電脳制御値は略号「電制」表記 /
+  数値入力欄は number-input-spinner 必須（**恒久指示**。例外は使用回数のみ）/
+  フラグの意味確定（準備済み・携帯中・サイバーウェア・プリプレイ購入 → Outfits.md 参照。isOption は未言語化）
 - [ ] ユーザー実機確認（general アイテムの作成・編集・閲覧表示）
 - [→] extensible のスロット追加/削除 UI → **6-2（最初の extensible 型 = weapon）で実装**
 
