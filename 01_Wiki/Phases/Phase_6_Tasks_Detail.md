@@ -84,9 +84,22 @@ ApplicationV2 シートを新規作成する。フェーズ3 の CSS 構造（tn
 
 確認済み（2026-06-12）: hack はなし/数値の 2 状態、timing はスタイル技能と選択肢共通、exclusive は自由記述（自動化なし）。
 
-### 6-2: 戦闘系装備シート（weapon / armor / cyborg）
+### 6-2: 戦闘系装備シート（weapon / armor / cyborg） ▶ 実装完了・実機確認待ち（2026-06-12）
 
-- [ ] 着手時に固有フィールド（attack 構造・defence・FAValue 等）のルール解釈を確認
+- [x] 固有フィールドのルール解釈を確認（攻/受/射/FA/ダメージ種別 S/P/I/X/攻撃範囲/防/制/義体の宣言ルール
+  → Outfits.md に記録）
+- [x] DataModel（`c5385cf` / `7aa7dfc`）: isthrow → `isConsumption` + `quantity {value, max}` に一般化 /
+  `isBiological` も outfitBase へ一般化 / range → `{min, max}`（5 択）/ damageType choices（S/P/I/X）/
+  `attackArea` 追加（-/範囲/範囲(選択)/シーン/シーン(選択)）/
+  extensible → `slots[] {kind, count}` プール方式（kind 6 種、装備側はスロット数のみ）
+- [x] シート実装（`405cc36`）: 共通シートを weapon / armor / cyborg に登録し type 判定で差分吸収。
+  型別サマリ（weapon = 購/隠/攻/受/射/ス/電制/部位、armor = 購/隠/防/制/電制/部位、
+  cyborg = 購/隠/防/攻/受/電制/部位）、防御/攻撃データのフィールドセット、
+  スロット数スピナー、消費アイテムの「×個数」ヘッダー表示
+- [ ] ユーザー実機確認（weapon / armor / cyborg の作成・編集・サマリ表記）
+- [→] オプションの装備連携（スロットへの装備・解除）→ アイテム側はスロット数のみ確定のため、
+  キャストシートのアウトフィットタブ（6-6）で設計
+- [→] 消費アイテムのセッション終了時復活・経験点連動 → EXP 連携の設計が必要なため 6-6 以降で検討
 
 ### 6-3: 電脳系装備シート（ianus / tron / tap）
 

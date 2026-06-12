@@ -2384,3 +2384,46 @@ flags ベース実装を含む全コミットを revert（d66636c）。技術的
 #### 推奨アクション
 
 - ユーザー実機確認の後、フェーズ6-2(weapon / armor / cyborg)に進む。
+
+---
+
+### 6-2 戦闘系装備シート(weapon / armor / cyborg)(フェーズ6)
+
+**日付**: 2026-06-12
+**レビュー対象**: `scripts/item/tnx-outfit-sheet.mjs`(型対応拡張)、`templates/item/outfit-sheet.hbs`、
+`scripts/data/item/common/extensible.mjs`(プール方式再設計)、`scripts/data/item/weapon.mjs`、
+`scripts/data/item/common/outfit-base.mjs`、`scripts/tnx.mjs`(登録・ヘルパー)、対応テスト一式
+**ステータス**: レビュー済(実機確認待ち)
+
+#### レビュー観点
+
+- 拡張性: 6-3/6-4 の型追加が同じパターン(サマリ組み立て + 型別フィールドセット)で済むか
+- 保守性: サブクラス分割せず単一シート + type 判定にした判断の妥当性
+- FVTT 慣行: 配列フィールド(slots / damageType)の保存方法
+
+#### 良かった点
+
+- **サブクラスではなく単一シート + type 判定**: 6-1 時点ではサブクラス前提だったが、
+  型差分が「サマリの並び」と「フィールドセットの有無」に収まるため、`view.summary` の
+  {label, value} 配列組み立てと {{#if isWeapon}} 等の条件分岐で吸収。テンプレート 1 枚・
+  クラス 1 つで 4 型(将来 10 型)を扱え、登録も types 配列の拡張のみ。
+- **スロットのプール方式**: 装備側が数のみを持つというユーザー確定を
+  `slots[] {kind, count}` で素直に表現。型ごとの既定プールは `SLOT_PRESETS` 定数 +
+  `_normalizedSlots()` の表示時正規化で生成し、保存データを汚さない。
+- **配列フィールドの保存は全体更新**: slots / damageType / timing とも、
+  チェックボックス・スピナーから配列全体を組み立てて update する方式で統一
+  (submitOnChange の index 部分更新によるデータ破壊を回避)。
+- **quantity {value, max} の二層**: 「消費しても経験点が復活しない」を、現在個数と
+  常備化個数の分離で構造的に保証。
+
+#### 課題
+
+- ⚠️ 実機確認未了(weapon / armor / cyborg の作成・編集・サマリ表記)。
+- ⚠️ オプション装備連携は 6-6(キャストシート)へ移管。消費アイテムのセッション復活・
+  EXP 連動も未実装(構造のみ)。
+- ⚠️ 旧 slot / isthrow / 旧 range 構造のデータを持つ既存アイテムは validation エラーになる
+  (実運用前のため許容。テスト用アイテムは削除して対応)。
+
+#### 推奨アクション
+
+- ユーザー実機確認の後、フェーズ6-3(ianus / tron / tap)に進む。
