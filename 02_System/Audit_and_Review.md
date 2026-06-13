@@ -208,7 +208,8 @@
 - 購入値(buy)・隠匿値(hide)は「なし / 数値 / 解説参照」の 3 状態を持つ。
   購は常備化経験点と対で「購：購入値／常備化経験点」表記(解説参照時は常備化経験点を表記しない)。
   隠は危険値と対で「隠：隠匿値／危険値」表記(解説参照でも危険値は別個に設定される)。
-- 常備化経験点(preserveExp)・危険値(appearancePenalty)は必ず数値が入る。
+- 常備化経験点(preserveExp)・危険値(appearancePenalty)は当初「必ず数値が入る」として NumberField で実装。
+  → フェーズ6-4 で「なし / 数値」の 2 状態に変更（下記エントリ参照）。
 - カテゴリは大分類 8 種 + 小分類の二階層で、小分類ごとに対応する Item type が定まる。
 - 装備部位(part)はスロット消費ルール(後置数字・籠手の排他等)があるが種類が多く、UI は自由入力とする。
 - ライフパスの区分は出自・経験・邂逅の 3 種のみ(旧コメントの「運命」は誤りと確認)。
@@ -217,7 +218,7 @@
 #### 実装
 
 - buy / hide → `{mode: none/value/reference, value: Number}` の SchemaField。
-- preserveExp / appearancePenalty → NumberField。
+- preserveExp / appearancePenalty → 当初 NumberField（6-4 で {mode,value} に変更）。
 - majorCategory / minorCategory → choices 付き StringField(`OUTFIT_CATEGORIES` が正本、blank 許容)。
 - lifePathType → choices 付き StringField(origin / experience / encounter。キャスト側スロットキーと対応)。
 - troop.heads → `{value, max}` SchemaField(リソースバー用構造。バー連携は 6-8)。
@@ -409,3 +410,52 @@ paramRows は「両方に存在かつ値が食い違う場合のみ」生成す�
 
 - 実機での UI 確認(目アイコン操作感、パラメータラジオの視認性)はユーザーが実施。
 - アクター一体インポートはフェーズ6-6 で対応予定。
+
+---
+
+### [DataModel フィールドの {mode,value} 全面統一・isBiological 削除](フェーズ6-4 追補 2)
+
+**日付**: 2026-06-14
+**関連実装**: `scripts/data/item/helpers.mjs` / `scripts/data/item/common/outfit-base.mjs` /
+`scripts/data/item/common/extensible.mjs` / `scripts/data/item/{armor,cyborg,tap,vehicle,ianus,weapon}.mjs` /
+`scripts/data/item/housing-area.mjs`（hideMod 削除）/ `scripts/data/item/residence.mjs`（useHousingAreaDrop 追加）
+**ステータス**: 監査済(実機確認待ち)
+
+#### ルール解釈
+
+2026-06-14 ユーザー確定（Outfits.md 更新済み）:
+
+- preserveExp（常備化経験点）は**「なし / 数値」の 2 状態**。常備化経験点がないアウトフィットが存在する
+  （旧解釈「必ず数値が入る」を修正）。
+- appearancePenalty（危険値）も**「なし / 数値」の 2 状態**（同上）。
+- guardValue（受け値）/ defence（防御値）/ controlMod（制御値修正）/ speedFactor / passenger /
+  cycle / combatSpeedMod / slots[].count も同様に**「なし / 数値」の 2 状態**。
+  「0」と「そもそもない」を区別する意味がある（例: 防0は防がある武器に見える誤解を避けるため「-」表示が正しい）。
+- range（射程）の最低射程に「なし」を追加（射程自体がないアウトフィット）。最長射程から「至近」を除く
+  （最低射程が「至近」の単点表記で完結するため、最長が「至近」になるケースはない）。
+- isBiological は削除。生体装備はカテゴリ「生体装備」で識別する方針に確定。
+- 住宅エリアの修正値から hideMod を削除。住宅施設の隠匿値は住宅エリアを加算しない
+  （hide は住宅施設固有の値であり、エリア側から修正されない。ユーザー確認済み）。
+
+#### 実装
+
+- `modeValueField(choices)` を `outfit-base.mjs` 局所定義から `helpers.mjs` へ昇格（全モデルで共有）。
+- `defenceField()` に `mode: none/value` を追加（armor / cyborg / vehicle）。
+- outfitBase: preserveExp / appearancePenalty を `{mode,value}` 化、isBiological を削除。
+- extensible: slots[].count を `{mode,value}` 化。
+- 個別フィールド: armor.controlMod / cyborg.guardValue / tap.cycle + combatSpeedMod /
+  vehicle.speedFactor + passenger + controlMod / ianus.controlMod / weapon.guardValue を `{mode,value}` 化。
+- weapon.range: `WEAPON_RANGE_MIN_OPTIONS`（なし+5択）と `WEAPON_RANGE_MAX_OPTIONS`（なし+4択、至近除外）に分離。
+- 全モデルに `static migrateData(source)` を実装（旧 NumberField 形式のデータを `{mode,value}` に移行）。
+- housing-area: `hideMod` フィールドを削除（MOD_FIELDS 定数も更新）。
+- residence: `useHousingAreaDrop: BooleanField` を追加（ワールドアイテムドロップ時の状態保持フラグ）。
+
+#### 監査結果
+
+✅ preserveExp/appearancePenalty の「なし/数値」化・guardValue 等の同統一・isBiological 削除・hideMod 削除・
+range 選択肢分離ともユーザー確認済みの解釈に準拠。
+
+#### 課題・申し送り
+
+- シート側の modeValueField 表示対応（outfit-sheet / cast-sheet）は同日コミット済み（別設計レビューエントリ）。
+- activeEffect による {mode,value} フィールドへの修正（強制上書き vs 加算）は ActiveEffect フェーズで設計する。

@@ -126,7 +126,7 @@ ApplicationV2 シートを新規作成する。フェーズ3 の CSS 構造（tn
 - [x] IANUSオプションのカテゴリ対応を ianus → general に修正（装備対象とカテゴリが違う唯一のオプション）
 - [ ] ユーザー実機確認（ianus / tron / tap + 部位複数行・タイミング単一化の回帰確認）
 
-### 6-4: 生活系装備シート（vehicle / residence / housingArea / combiner） ▶ vehicle/residence/housingArea 完了・combiner 一部のみ（2026-06-13）
+### 6-4: 生活系装備シート（vehicle / residence / housingArea / combiner） ▶ DataModel・シート・キャストシート対応まで完了・実機確認待ち（2026-06-14）
 
 - [x] 固有フィールドのルール解釈を確認（SF/乗員・住宅施設/エリアの分離・コンバイナーの合成ルール → Outfits.md）
 - [x] DataModel（`a8c0725`）: vehicle に attack/defence 追加 / residence の重複 mod 除去（住宅エリアの役割） /
@@ -142,6 +142,24 @@ ApplicationV2 シートを新規作成する。フェーズ3 の CSS 構造（tn
   説明タブのサマリは修正値を合算した実効値
 - [x] コンバイナー連携（`25fa055`）: combine{source1, source2, appearance} に再設計。元二つのドロップ指定・
   見た目ラジオ・コンバインプレビュー（名称/分類/電制=高い方/隠=X(Y)/部位=両方占有）
+- [x] コンバイナーシート UI 刷新（`5bb2455` / `d7324a5` / `e485a6a`）: 見た目ラジオをコンバイン元行にインライン化（目アイコン）、
+  パラメータ選択セクション追加（両方に値があり食い違う項目のみラジオ表示）、カテゴリをサービス/コンバイナーに自動補正、
+  性質 fieldset を非表示、コンバイン元をボタン化・コンテキストメニュー（閲覧/編集/リンク解除）追加、tnx-linked-btn パターン統一・クリアボタン改善
+- [x] スタイル（`4fe8ea1`）: アイテムシートの ProseMirror エディタをコンテンツ高に自動伸長
+- [x] DataModel フィールドの {mode,value} 全面統一（`986c9f8` / `234a10c`）:
+  modeValueField を outfit-base.mjs の局所定義から helpers.mjs へ昇格。
+  preserveExp / appearancePenalty / guardValue / defence(mode追加) / controlMod / speedFactor / passenger /
+  cycle / combatSpeedMod / slots[].count を {mode,value} 化。range の min/max 選択肢を分離
+  （MIN=なし+5択、MAX=なし+4択。至近は最低射程のみ）。
+  housingArea の hideMod 削除。residence に useHousingAreaDrop 追加。全モデルに migrateData 実装。
+  isBiological を outfitBase から削除（カテゴリ「生体装備」で識別する方針に変更）
+- [x] アウトフィットシート modeValueField 全面対応（`29a9628`）:
+  全 {mode,value} フィールドを mode に応じて「-」または値を表示・編集。range の新選択肢対応。isBiological 関連 UI 除去
+- [x] キャストシート: 報酬点 ±1 ボタン追加・modeValueField 表示対応（`1f6b52e`）:
+  閲覧モードの報酬点パネルにホバー表示の ±1 ボタン（下限 0 で − 無効化）。
+  アイテム一覧の guardValue / defence / controlMod / speedFactor / passenger を {mode,value} 対応表示（none → 「-」）。
+  isCyber ※マークをサイバーウェア大カテゴリには付与しない修正
+- [x] CSS 整備（`52ef00d`）: 報酬点パネルのホバーボタン、アウトフィットシート modeValueField 表示スタイル、スタイルスキル表示改善
 - [ ] **combiner の param 取捨選択 UI**（両方にある値のどちらを採るか）は対象範囲を確認後に実装
 - [→] combiner のアクター一体インポート（「見た目名（コンバイン）」）/ residence の実効値の保存 /
   住宅アクセサリの準備可能数 → フェーズ6-6（キャストシート）

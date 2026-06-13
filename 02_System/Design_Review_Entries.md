@@ -2505,3 +2505,47 @@ flags ベース実装を含む全コミットを revert（d66636c）。技術的
 #### 推奨アクション
 
 - 実機確認 + コンバイナー param UI の対象確認の後、フェーズ6-5 へ。
+
+---
+
+### 6-4 追補 2: modeValueField 一般化・全 DataModel {mode,value} 統一・シート全面対応(フェーズ6)
+
+**日付**: 2026-06-14
+**レビュー対象**: `scripts/data/item/helpers.mjs`（modeValueField 昇格）、全 DataModel(outfit-base / extensible /
+armor / cyborg / tap / vehicle / ianus / weapon / housing-area / residence)、
+`scripts/item/tnx-outfit-sheet.mjs`・`templates/item/outfit-sheet.hbs`（全面 modeValueField 対応）、
+`scripts/actor/tnx-cast-sheet.mjs`・`templates/actor/cast-sheet.hbs`（報酬点ボタン + modeValueField 表示）、
+`css/tnx2.css`（対応スタイル）
+**ステータス**: レビュー済(実機確認待ち)
+
+#### レビュー観点
+
+- 保守性: modeValueField の単一情報源化
+- 整合: migrateData の実装統一性
+- パフォーマンス: シート描画時の mode チェック
+- 拡張性: ActiveEffect フェーズとの接続
+
+#### 良かった点
+
+- **modeValueField の helpers.mjs 昇格**: outfit-base.mjs に局所定義されていた関数を
+  `helpers.mjs` へ昇格し、全 DataModel で共用。DRY を徹底し同じパターンが複数ファイルに
+  点在するリスクを解消。
+- **migrateData の統一パターン**: 各 DataModel に `static migrateData(source)` を実装。
+  旧 NumberField → `{mode: "value", value: n}` / `{mode: "none", value: 0}` への変換ロジックが
+  一貫しており、実運用前データへの対応として信頼性が高い。
+- **defenceField への mode 追加**: defence(S/P/I 三値)に mode フィールドを追加することで、
+  「防がない」状態と「防が 0/0/0」を区別できる。シート表示の正確性が向上。
+- **報酬点 ±1 ボタン**: 閲覧モードのまま報酬点を調整できる。ホバー表示で常時目に入らず、
+  かつ下限 0 の無効化もある。D&D 5e の装備済みトグルと同じ「閲覧モード中の操作」パターン。
+- **isCyber ※マーク修正**: サイバーウェア大カテゴリに自動的に ※ が付くのを防止。
+  カテゴリ自体がサイバーウェアであることを示すため二重マークになる問題の修正。
+
+#### 課題
+
+- ⚠️ `{mode,value}` フィールドの ActiveEffect による修正方式（`OVERRIDE` か `ADD` か）は未定。
+  ActiveEffect フェーズで設計が必要。
+- ⚠️ 実機確認未了。すべての modeValueField が正しく mode 切り替えで非表示/表示されるか要確認。
+
+#### 推奨アクション
+
+- ユーザー実機確認の後、フェーズ6-5(lifePath シート + キャスト詳細タブ連携)に進む。
