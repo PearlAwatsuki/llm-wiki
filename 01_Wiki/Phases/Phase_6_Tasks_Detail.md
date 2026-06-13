@@ -168,8 +168,11 @@ ApplicationV2 シートを新規作成する。フェーズ3 の CSS 構造（tn
 
 ### 6-5: lifePath シート + キャスト詳細タブ連携
 
-- [ ] lifePath シート（lifePathType ドロップダウン / skillName / description）
-- [ ] キャスト詳細タブ: 型対応ドロップ検証・fromUuid live 解決・description の概要表示
+- [x] lifePath シート（lifePathType ドロップダウン / skillName / description）
+- [x] キャスト詳細タブ: 型対応ドロップ検証・fromUuid live 解決・description の概要表示
+- [x] ContextMenu（閲覧/編集/削除）・閲覧モード名クリック・カードレイアウト CSS
+- [x] cast DataModel の lifePath スロットから summary フィールドを削除（live 解決に一本化）
+- [ ] ユーザー実機確認
 
 ### 6-6: キャストシート「アウトフィット」タブ整備
 

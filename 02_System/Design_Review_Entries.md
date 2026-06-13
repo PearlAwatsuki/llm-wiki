@@ -2548,3 +2548,47 @@ armor / cyborg / tap / vehicle / ianus / weapon / housing-area / residence)、
 #### 推奨アクション
 
 - ユーザー実機確認の後、フェーズ6-5(lifePath シート + キャスト詳細タブ連携)に進む。
+
+---
+
+### 6-5 lifePath シート + キャスト詳細タブ連携（フェーズ6）
+
+**日付**: 2026-06-14
+**レビュー対象**: `scripts/item/tnx-life-path-sheet.mjs`(新設)、`templates/item/life-path-sheet.hbs`(新設)、
+`scripts/actor/tnx-cast-sheet.mjs`(型検証・fromUuid 解決・ContextMenu)、
+`templates/actor/cast-sheet.hbs`(カードレイアウト)、`scripts/data/actor/cast.mjs`(summary 削除)、`css/tnx2.css`(カード CSS)
+**ステータス**: レビュー済(問題なし)
+
+#### レビュー観点
+
+- 保守性: live 解決パターンが既存の fromUuid 方針と整合しているか
+- 拡張性: lifePathType 種別チェックが将来の型追加に対応できるか
+- FVTT 慣行: ContextMenu の data-context-menu 属性・_activateContextMenus のバインドパターン
+- 既存設計との整合: 閲覧/編集モードの toggling・ContextMenu の閲覧/編集/削除セット
+
+#### 良かった点
+
+- **summary フィールドの削除**: cast DataModel の lifePath スロットから `summary` を削除し、
+  description の表示を完全に fromUuid live 解決に一本化。データ二重管理の問題を根本から排除。
+  キャッシュは削除時フォールバック用の `name` フィールドのみに限定し、フェーズ6-0 のユーザー方針を貫徹。
+- **型検証の単純設計**: `lifePathType` 空文字→どのスロットでも受付、非空文字→スロットキーと比較、
+  lifePath 以外の型→即拒否、という 3 段階のチェックを `_onDropItem` に局所化。
+  lifePathType のキーとスロットキー（origin/experience/encounter）を統一したことで比較が単純な `!==` のみ。
+- **ContextMenu の一貫したパターン**: 既存の skills / style-skills の閲覧/編集/削除と同じ構造を
+  `_activateContextMenus` に追記。`data-context-menu="lifepath-item"` で対象を絞り、
+  `header.dataset.lifepathKey` でスロットキーを解決する方式。
+- **カードレイアウトの CSS 変数活用**: 既存の `--tnx2-*` 変数のみで構成（新変数なし）。
+  `.lifepath-card` の左ボーダーに `--tnx2-accent-dim` を使い、ヘッダー下のボーダーで description を分離。
+  空スロットは `opacity: 0.6` で簡潔に表現。
+- **lifePath アイテムシート**: TokyoNovaItemSheet を継承し、説明（ProseMirror）+ 設定（種別・習得技能・識別キー）
+  の 2 タブ構成。organization-sheet.hbs と同じ `tnx-fieldset` パターンで実装。
+
+#### 課題
+
+- ⚠️ `skillName` の自動化（固有名詞技能の自動生成）は設計未確定。フェーズ未定の実装タスク。
+  文字列フィールドのままにしておけばよく、シートUIへの影響はない。
+- ⚠️ 実機確認は未了（ユーザー確認待ち）。
+
+#### 推奨アクション
+
+- ユーザー実機確認の後、フェーズ6-6(キャストシート「アウトフィット」タブ整備)に進む。

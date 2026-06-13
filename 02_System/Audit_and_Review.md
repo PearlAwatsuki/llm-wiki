@@ -458,3 +458,43 @@ range 選択肢分離ともユーザー確認済みの解釈に準拠。
 
 - シート側の modeValueField 表示対応（outfit-sheet / cast-sheet）は同日コミット済み（別設計レビューエントリ）。
 - activeEffect による {mode,value} フィールドへの修正（強制上書き vs 加算）は ActiveEffect フェーズで設計する。
+
+---
+
+### lifePath アイテム + キャスト詳細タブ連携（フェーズ6-5）
+
+**日付**: 2026-06-14
+**レビュー対象**: `scripts/data/item/life-path.mjs`（lifePathType / skillName）、`scripts/data/actor/cast.mjs`（lifePath スロット構造）
+**ステータス**: 監査済(問題なし)
+
+#### ルール解釈
+
+2026-06-14 ユーザー確定:
+
+- lifePath アイテムの **lifePathType**（種別）は「—（指定なし）/ 出自 / 経験 / 邂逅」の 4 値。
+  キャストシートの 3 スロット（origin / experience / encounter）と値を統一することで、
+  ドロップ時のスロット・型整合チェックが単純な文字列比較で済む。
+  **空文字（—）はどのスロットにもドロップ可能**（汎用ライフパスの想定）。
+  非空値がスロットキーと一致しない場合のみ拒否してユーザーに通知。
+- **skillName**（習得技能）は**自由記述文字列**として保存する。
+  自動化する場合、その技能名を持つ **固有名詞技能**（`generalSkillCategory: "onomasticSkill"`）アイテムを
+  キャストアクターに直接生成する設計を予定（フェーズ未定）。
+  技能 UUID の参照としないのは、固有名詞技能はキャラクターと共に生成されるものであり、
+  既存技能アイテムとは別のライフサイクルを持つため。
+- キャストシートの lifePath スロットに表示する **description** は、
+  ライフパスアイテムの `system.description` を毎回 fromUuid で live 解決して表示する。
+  `summary` フィールドをキャスト DataModel に持たせてドロップ時に同期するキャッシュ方式は採用しない
+  （フェーズ6-0 でユーザーが確定した「名前キャッシュ以外の値キャッシュなし」方針に準拠）。
+
+#### 実装
+
+- `scripts/data/actor/cast.mjs`: lifePath 各スロットから `summary` フィールドを削除。
+  残存フィールドは `itemUuid`（参照 UUID）と `name`（削除時フォールバック用キャッシュ名）の 2 つのみ。
+- `scripts/data/item/life-path.mjs`: `lifePathType` の choices に origin / experience / encounter を追加済み（6-0）。`skillName: StringField` は 6-0 より存在。
+- `scripts/item/tnx-life-path-sheet.mjs`（新設）: 説明タブ（ProseMirror）+ 設定タブ（種別・習得技能・識別キー）の 2 タブ構成。
+- `scripts/actor/tnx-cast-sheet.mjs`: `_onDropItem` にライフパスのみ受け付ける型チェックと lifePathType × スロットキー整合チェックを追加。`_prepareContext` で async ループにより fromUuid live 解決 + TextEditor.enrichHTML を実施。
+
+#### 監査結果
+
+✅ lifePathType のキーとスロットキーの統一・空文字→どこでも受付の型検証ロジック・skillName の文字列保持方針・
+description の live 解決方針、いずれもユーザー確認済みの解釈に準拠。
