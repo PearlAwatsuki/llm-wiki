@@ -239,7 +239,7 @@
 **日付**: 2026-06-12
 **関連実装**: `scripts/item/tnx-outfit-sheet.mjs` / `templates/item/outfit-sheet.hbs` /
 `scripts/data/item/common/outfit-base.mjs`(微調整)
-**ステータス**: 監査済(実機確認待ち)
+**ステータス**: 監査済(問題なし)
 
 #### ルール解釈
 
@@ -259,8 +259,7 @@
 
 #### 監査結果
 
-✅ 表記ルール・3 状態の持ち分け・タイミング共通化ともユーザー確認済みの解釈に準拠。
-実機での表示確認は未了(確認後にステータス更新)。
+✅ 表記ルール・3 状態の持ち分け・タイミング共通化ともユーザー確認済みの解釈に準拠。実機確認済み。
 
 #### 課題・申し送り
 
@@ -273,7 +272,7 @@
 **関連実装**: `scripts/data/item/weapon.mjs` / `scripts/data/item/common/outfit-base.mjs` /
 `scripts/data/item/common/extensible.mjs` / `scripts/data/item/helpers.mjs` /
 `scripts/item/tnx-outfit-sheet.mjs` / `templates/item/outfit-sheet.hbs`
-**ステータス**: 監査済(実機確認待ち)
+**ステータス**: 監査済(問題なし)
 
 #### ルール解釈
 
@@ -299,15 +298,15 @@
 
 #### 課題・申し送り
 
-- 複数ダメージ種別の表記区切り(現状「S/P+3」のように「/」連結)は Code の判断。実機確認時に検証。
-- attack.mod(攻撃修正)は概要表記に含めていない(表記は基本値のみという解釈)。要検証。
+- ~~複数ダメージ種別の表記区切り~~ → damageType は単一選択に確定(6-2 実機確認フィードバック)。区切り表記は不要。
+- ~~attack.mod 概要表記~~ → 実機確認で問題なし。attack は種別+値の 1 行表示で落ち着いた。
 
 ### [生活系装備(ヴィークル / 住宅施設 / 住宅エリア / コンバイナー)](フェーズ6-4)
 
 **日付**: 2026-06-13
 **関連実装**: `scripts/data/item/vehicle.mjs` / `residence.mjs` / `housing-area.mjs` /
 `outfit-categories.mjs` / `scripts/item/tnx-outfit-sheet.mjs` / `tnx-housing-area-sheet.mjs`
-**ステータス**: 監査済(実機確認待ち。コンバイナー合成は未実装)
+**ステータス**: 監査済(問題なし)
 
 #### ルール解釈
 
@@ -334,7 +333,7 @@
 
 #### 課題・申し送り
 
-- コンバイナーの合成連携(二つの元の指定 UI・見た目選択・X(Y) 等の合成表示)は設計確認待ち。
+- ~~コンバイナーの合成連携~~ → 6-4 で実装済み(住宅エリア連携エントリ・コンバイナーシート UI 刷新エントリ参照)。
 - residence の `housingArea`(エリア ID リンク)フィールドは保持しているが、実効値算出は 6-6。
 
 ### [住宅エリア連携・コンバイン連携](フェーズ6-4 追補)
@@ -342,7 +341,7 @@
 **日付**: 2026-06-13
 **関連実装**: `scripts/data/item/{housing-area,combiner}.mjs` / `scripts/item/tnx-outfit-sheet.mjs` /
 `scripts/item/tnx-housing-area-sheet.mjs` / `scripts/actor/tnx-cast-sheet.mjs` / `system.json`
-**ステータス**: 監査済(実機確認待ち。一体インポートは未実装)
+**ステータス**: 監査済(問題なし。一体インポートは 6-6 へ)
 
 #### ルール解釈
 
@@ -376,7 +375,7 @@
 **日付**: 2026-06-13
 **関連実装**: `scripts/data/item/combiner.mjs` / `scripts/item/tnx-outfit-sheet.mjs` /
 `templates/item/outfit-sheet.hbs` / `css/tnx2.css`
-**ステータス**: 実機確認待ち
+**ステータス**: 監査済(問題なし)
 
 #### ルール解釈
 
@@ -419,7 +418,7 @@ paramRows は「両方に存在かつ値が食い違う場合のみ」生成す�
 **関連実装**: `scripts/data/item/helpers.mjs` / `scripts/data/item/common/outfit-base.mjs` /
 `scripts/data/item/common/extensible.mjs` / `scripts/data/item/{armor,cyborg,tap,vehicle,ianus,weapon}.mjs` /
 `scripts/data/item/housing-area.mjs`（hideMod 削除）/ `scripts/data/item/residence.mjs`（useHousingAreaDrop 追加）
-**ステータス**: 監査済(実機確認待ち)
+**ステータス**: 監査済(問題なし)
 
 #### ルール解釈
 

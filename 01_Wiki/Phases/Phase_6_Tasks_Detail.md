@@ -50,7 +50,7 @@ ApplicationV2 シートを新規作成する。フェーズ3 の CSS 構造（tn
 
 全テスト 654 件グリーン / ESLint 0 errors（警告は既存分のみ）。装備品データは実運用前のためマイグレーション不要（ユーザー確認済み）。
 
-### 6-1: 装備品シート共通基盤 + general ▶ 実装完了・実機確認待ち（2026-06-12）
+### 6-1: 装備品シート共通基盤 + general ✅ 完了（2026-06-12）
 
 - [x] DataModel 微調整（`331881e`）: hack → nullable NumberField（なし=null）/
   timing → スタイル技能と共通の配列構造 / part・exclusive → 自由記述（初期値 ""）
@@ -79,12 +79,12 @@ ApplicationV2 シートを新規作成する。フェーズ3 の CSS 構造（tn
   実装は `tnxDecoratedName` ヘルパーに集約。シートヘッダー閲覧モード + キャストシートのリスト表示に適用）/
   アウトフィット 10 種に usage テンプレート合成 +「用途」タブ追加 /
   旧アウトフィットリストの部位表示を `tnxPartLabel` で新構造に追従
-- [ ] ユーザー実機確認（general アイテムの作成・編集・閲覧表示）
+- [x] ユーザー実機確認（general アイテムの作成・編集・閲覧表示）
 - [→] extensible のスロット追加/削除 UI → **6-2（最初の extensible 型 = weapon）で実装**
 
 確認済み（2026-06-12）: hack はなし/数値の 2 状態、timing はスタイル技能と選択肢共通、exclusive は自由記述（自動化なし）。
 
-### 6-2: 戦闘系装備シート（weapon / armor / cyborg） ▶ 実装完了・実機確認待ち（2026-06-12）
+### 6-2: 戦闘系装備シート（weapon / armor / cyborg） ✅ 完了（2026-06-13）
 
 - [x] 固有フィールドのルール解釈を確認（攻/受/射/FA/ダメージ種別 S/P/I/X/攻撃範囲/防/制/義体の宣言ルール
   → Outfits.md に記録）
@@ -108,12 +108,12 @@ ApplicationV2 シートを新規作成する。フェーズ3 の CSS 構造（tn
   用語は「プリプレイ購入」ではなく TNX 用語の「プレアクト購入」）。
   フットノートは一般技能・スタイル技能・神業シートからも撤去（**以後シートにフットノートを置かない**。
   アクトシートの注釈 5 件のみ存続）
-- [ ] ユーザー実機確認（weapon / armor / cyborg の作成・編集・サマリ表記）
+- [x] ユーザー実機確認（weapon / armor / cyborg の作成・編集・サマリ表記）
 - [→] オプションの装備連携（スロットへの装備・解除）→ アイテム側はスロット数のみ確定のため、
   キャストシートのアウトフィットタブ（6-6）で設計
 - [→] 消費アイテムのセッション終了時復活・経験点連動 → EXP 連携の設計が必要なため 6-6 以降で検討
 
-### 6-3: 電脳系装備シート（ianus / tron / tap） ▶ 実装完了・実機確認待ち（2026-06-13）
+### 6-3: 電脳系装備シート（ianus / tron / tap） ✅ 完了（2026-06-13）
 
 - [x] 固有フィールドのルール解釈を確認（制御値修正は既存同様 / CS = combatSpeedMod、準備で CS に修正 /
   サ = cycle、タップの処理能力でハッキング FS 判定に使用 → Outfits.md に記録）
@@ -124,9 +124,9 @@ ApplicationV2 シートを新規作成する。フェーズ3 の CSS 構造（tn
   tron = 購/隠/ス/電制/部位、tap = 購/隠/ソ/ハ/CS/電制/部位（サは概要に含めない）。
   IANUSデータ（制御値修正）/ タップデータ（サイクル数・CS修正）のフィールドセット追加
 - [x] IANUSオプションのカテゴリ対応を ianus → general に修正（装備対象とカテゴリが違う唯一のオプション）
-- [ ] ユーザー実機確認（ianus / tron / tap + 部位複数行・タイミング単一化の回帰確認）
+- [x] ユーザー実機確認（ianus / tron / tap + 部位複数行・タイミング単一化の回帰確認）
 
-### 6-4: 生活系装備シート（vehicle / residence / housingArea / combiner） ▶ DataModel・シート・キャストシート対応まで完了・実機確認待ち（2026-06-14）
+### 6-4: 生活系装備シート（vehicle / residence / housingArea / combiner） ✅ 完了（2026-06-14）
 
 - [x] 固有フィールドのルール解釈を確認（SF/乗員・住宅施設/エリアの分離・コンバイナーの合成ルール → Outfits.md）
 - [x] DataModel（`a8c0725`）: vehicle に attack/defence 追加 / residence の重複 mod 除去（住宅エリアの役割） /
@@ -160,10 +160,11 @@ ApplicationV2 シートを新規作成する。フェーズ3 の CSS 構造（tn
   アイテム一覧の guardValue / defence / controlMod / speedFactor / passenger を {mode,value} 対応表示（none → 「-」）。
   isCyber ※マークをサイバーウェア大カテゴリには付与しない修正
 - [x] CSS 整備（`52ef00d`）: 報酬点パネルのホバーボタン、アウトフィットシート modeValueField 表示スタイル、スタイルスキル表示改善
-- [ ] **combiner の param 取捨選択 UI**（両方にある値のどちらを採るか）は対象範囲を確認後に実装
+- [x] **combiner の param 取捨選択 UI**: コンバイナーシート UI 刷新（`5bb2455`）で実装済み。
+  両方に値があり食い違う項目のみラジオ表示（COMBINE_PARAM_DEFS による存在/等価判定）
 - [→] combiner のアクター一体インポート（「見た目名（コンバイン）」）/ residence の実効値の保存 /
   住宅アクセサリの準備可能数 → フェーズ6-6（キャストシート）
-- [ ] ユーザー実機確認（vehicle / residence / housingArea / combiner プレビュー）
+- [x] ユーザー実機確認（vehicle / residence / housingArea / combiner プレビュー）
 
 ### 6-5: lifePath シート + キャスト詳細タブ連携
 

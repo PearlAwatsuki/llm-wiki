@@ -2351,7 +2351,7 @@ flags ベース実装を含む全コミットを revert（d66636c）。技術的
 **レビュー対象**: `scripts/item/tnx-outfit-sheet.mjs`(新設)、`templates/item/outfit-sheet.hbs`(新設)、
 `scripts/data/item/common/outfit-base.mjs`(hack/timing/part/exclusive 微調整)、
 `scripts/module/tnx-skill-utils.mjs`(formatTimingLabel 切り出し)、`scripts/tnx.mjs`(登録)、`css/tnx2.css`(§35 追加)
-**ステータス**: レビュー済(実機確認待ち)
+**ステータス**: レビュー済(問題なし)
 
 #### レビュー観点
 
@@ -2377,9 +2377,9 @@ flags ベース実装を含む全コミットを revert（d66636c）。技術的
 
 #### 課題
 
-- ⚠️ 実機確認未了(general アイテムの作成・編集・閲覧)。確認後にステータス更新。
-- ⚠️ extensible スロット UI は未実装。最初の extensible 型(weapon)を扱う 6-2 で設計する。
-- ⚠️ 真偽値フラグの表示ラベル(オプション/プレアクト取得/サイバーウェア等)は推測。実機確認時に検証。
+- ~~実機確認未了~~ → 実機確認済み(2026-06-14)。
+- ~~extensible スロット UI~~ → 6-2 で実装済み。
+- ~~真偽値フラグの表示ラベル~~ → 全フラグの意味をユーザーが言語化し確定(Outfits.md 参照)。
 
 #### 推奨アクション
 
@@ -2393,7 +2393,7 @@ flags ベース実装を含む全コミットを revert（d66636c）。技術的
 **レビュー対象**: `scripts/item/tnx-outfit-sheet.mjs`(型対応拡張)、`templates/item/outfit-sheet.hbs`、
 `scripts/data/item/common/extensible.mjs`(プール方式再設計)、`scripts/data/item/weapon.mjs`、
 `scripts/data/item/common/outfit-base.mjs`、`scripts/tnx.mjs`(登録・ヘルパー)、対応テスト一式
-**ステータス**: レビュー済(実機確認待ち)
+**ステータス**: レビュー済(問題なし)
 
 #### レビュー観点
 
@@ -2418,11 +2418,10 @@ flags ベース実装を含む全コミットを revert（d66636c）。技術的
 
 #### 課題
 
-- ⚠️ 実機確認未了(weapon / armor / cyborg の作成・編集・サマリ表記)。
+- ~~実機確認未了~~ → 実機確認済み(2026-06-14)。
 - ⚠️ オプション装備連携は 6-6(キャストシート)へ移管。消費アイテムのセッション復活・
   EXP 連動も未実装(構造のみ)。
-- ⚠️ 旧 slot / isthrow / 旧 range 構造のデータを持つ既存アイテムは validation エラーになる
-  (実運用前のため許容。テスト用アイテムは削除して対応)。
+- ~~旧データの validation エラー~~ → migrateData 実装済み(6-4 DataModel 全面統一)。
 
 #### 推奨アクション
 
@@ -2437,7 +2436,7 @@ flags ベース実装を含む全コミットを revert（d66636c）。技術的
 `scripts/item/tnx-outfit-sheet.mjs`(_prepareView 型別 switch 化)、
 `scripts/item/tnx-item-sheet.mjs`(スピナー汎用化)、`tnx-housing-area-sheet.mjs`(新設)、
 `templates/item/{outfit-sheet,housing-area-sheet}.hbs`、`scripts/tnx.mjs`(登録)、対応テスト
-**ステータス**: レビュー済(実機確認待ち)
+**ステータス**: レビュー済(問題なし)
 
 #### レビュー観点
 
@@ -2462,8 +2461,8 @@ flags ベース実装を含む全コミットを revert（d66636c）。技術的
 
 #### 課題
 
-- ⚠️ コンバイナーの合成連携は未実装(本体は一般アウトフィットとして動作)。設計確認後に着手。
-- ⚠️ 実機確認未了(vehicle / residence / housingArea)。
+- ~~コンバイナーの合成連携は未実装~~ → 6-4 追補・追補 2 で実装済み(住宅エリア連携・コンバイン連携エントリ参照)。
+- ~~実機確認未了~~ → 実機確認済み(2026-06-14)。
 - ⚠️ residence/combiner は outfitBase の appearancePenalty/hack を内部的には保持(非表示なだけ)。
   データ的な無駄だが、型ごとに outfitBase を分割するより単純さを優先した。
 
@@ -2479,7 +2478,7 @@ flags ベース実装を含む全コミットを revert（d66636c）。技術的
 **レビュー対象**: `housing-area.mjs`(area + MOD_FIELDS 集約)、`combiner.mjs`(combine 構造)、
 `tnx-outfit-sheet.mjs`(住宅エリア解決・コンバインプレビュー・ドロップ受付)、`system.json`(pack)、
 `tnx-cast-sheet.mjs`(ドロップ拒否)、対応テスト
-**ステータス**: レビュー済(実機確認待ち)
+**ステータス**: レビュー済(問題なし)
 
 #### 良かった点
 
@@ -2497,10 +2496,10 @@ flags ベース実装を含む全コミットを revert（d66636c）。技術的
 
 #### 課題
 
-- ⚠️ コンバイナーの param 取捨選択 UI とアクター一体インポートは未実装(6-6 / 確認待ち)。
+- ~~コンバイナーの param 取捨選択 UI は未実装~~ → コンバイナーシート UI 刷新(5bb2455)で実装済み。
 - ⚠️ residence の `housingArea` は単一リンク。取得ごとに自由組み合わせという原則とは別に、
   アイテムとしては 1 エリアを保持(実効値算出は 6-6)。
-- ⚠️ 実機確認未了。compendium(housing-areas)は空のため、ドロップダウンは投入後に機能。
+- ~~実機確認未了~~ → 実機確認済み(2026-06-14)。compendium は空で出荷(著作権配慮)。
 
 #### 推奨アクション
 
@@ -2516,7 +2515,7 @@ armor / cyborg / tap / vehicle / ianus / weapon / housing-area / residence)、
 `scripts/item/tnx-outfit-sheet.mjs`・`templates/item/outfit-sheet.hbs`（全面 modeValueField 対応）、
 `scripts/actor/tnx-cast-sheet.mjs`・`templates/actor/cast-sheet.hbs`（報酬点ボタン + modeValueField 表示）、
 `css/tnx2.css`（対応スタイル）
-**ステータス**: レビュー済(実機確認待ち)
+**ステータス**: レビュー済(問題なし)
 
 #### レビュー観点
 
@@ -2544,7 +2543,7 @@ armor / cyborg / tap / vehicle / ianus / weapon / housing-area / residence)、
 
 - ⚠️ `{mode,value}` フィールドの ActiveEffect による修正方式（`OVERRIDE` か `ADD` か）は未定。
   ActiveEffect フェーズで設計が必要。
-- ⚠️ 実機確認未了。すべての modeValueField が正しく mode 切り替えで非表示/表示されるか要確認。
+- ~~実機確認未了~~ → 実機確認済み(2026-06-14)。mode 切り替えの動作を確認。
 
 #### 推奨アクション
 
