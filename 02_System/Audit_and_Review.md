@@ -341,7 +341,7 @@
 **日付**: 2026-06-13
 **関連実装**: `scripts/data/item/{housing-area,combiner}.mjs` / `scripts/item/tnx-outfit-sheet.mjs` /
 `scripts/item/tnx-housing-area-sheet.mjs` / `scripts/actor/tnx-cast-sheet.mjs` / `system.json`
-**ステータス**: 監査済(実機確認待ち。param 取捨選択・一体インポートは未実装)
+**ステータス**: 監査済(実機確認待ち。一体インポートは未実装)
 
 #### ルール解釈
 
@@ -365,6 +365,47 @@
 
 #### 課題・申し送り
 
-- コンバイナーの「両方にあるパラメータの取捨選択」UI は対象範囲の確認後に実装。
 - 住宅エリア辞典は空で出荷(著作権配慮。ユーザーが内容を投入)。
 - アクター一体インポート(コンバイナー)・住宅実効値の保存はフェーズ6-6。
+
+---
+
+### コンバイナーシート UI 刷新(フェーズ6-4 修正、2026-06-13)
+
+**日付**: 2026-06-13
+**関連実装**: `scripts/data/item/combiner.mjs` / `scripts/item/tnx-outfit-sheet.mjs` /
+`templates/item/outfit-sheet.hbs` / `css/tnx2.css`
+**ステータス**: 実機確認待ち
+
+#### ルール解釈
+
+ユーザー指摘(2026-06-13)による設計修正:
+
+- 見た目選択は元アイテム行のインラインに配置する(standalone form-group は不適切)。
+- パラメータ取捨選択 = 「両方の元に値があって食い違う項目すべてに個別ラジオ」。
+  ラジオは横並び・元1/元2 ラベルを上付き(使用回数制限入力欄と同形式)。
+- カテゴリはサービス/コンバイナーで確定。選ばせる必要なし。
+- 性質セクションはコンバイナーでは全て false 確定のため非表示。
+- 常備化経験点 = コンバイナー本体 + 元1 + 元2 の合計(「高い方を選択」ではない)。
+
+#### 実装
+
+- `combine.params` SchemaField を追加(8 フィールド: appearancePenalty / controlMod / attack /
+  defence / guardValue / range / speedFactor / passenger、各 StringField initial "1")。
+- `COMBINE_PARAM_DEFS` 定数でパラメータ定義(exists/get/fmt/eq)。
+- `_prepareCombinePreview` に paramRows 生成ロジックと preserveExpTotal 計算を追加。
+- `_prepareContext` でコンバイナーのカテゴリをサービス/コンバイナーに自動補正(不一致時のみ update)。
+- テンプレート: 見た目ラジオをインライン化(目アイコン)、パラメータ選択セクション追加、
+  カテゴリセレクタ非表示、性質 fieldset を `{{#unless isCombiner}}` で除外。
+- CSS: `.combine-appearance-eye`(`:has(input:checked)` でアクセントカラー切替)、
+  `.combine-param-section`。
+
+#### 監査結果
+
+✅ ユーザー指摘の5点すべてに対応。常備化経験点の「合計」解釈はユーザー明言どおり。
+paramRows は「両方に存在かつ値が食い違う場合のみ」生成するため余分なラジオは表示されない。
+
+#### 課題・申し送り
+
+- 実機での UI 確認(目アイコン操作感、パラメータラジオの視認性)はユーザーが実施。
+- アクター一体インポートはフェーズ6-6 で対応予定。
