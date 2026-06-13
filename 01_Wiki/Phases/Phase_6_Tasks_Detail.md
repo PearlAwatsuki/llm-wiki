@@ -135,9 +135,17 @@ ApplicationV2 シートを新規作成する。フェーズ3 の CSS 構造（tn
   `_prepareView` を型別 switch に整理。vehicle = 購/隠/攻/SF/防/制/乗員/ス/電制/部位、
   residence = 購/隠(隠匿値のみ)/登場/セ(電／ア)/ス/部位（危険値・電制なし）
 - [x] housingArea 専用シート（`984681a`）: 説明 + 修正値 7 種。number-input-spinner を基底へ汎用化
-- [ ] **combiner のコンバイン連携（二つの元の指定・見た目選択・合成表示）は設計確認後に実装**
-- [→] residence + housingArea の実効値算出、住宅アクセサリの準備可能数 → フェーズ6-6（キャストシート）
-- [ ] ユーザー実機確認（vehicle / residence / housingArea）
+- [x] housingArea: area（セキュリティランク）追加 + housing-areas compendium（system.json）+
+  アクタードロップ拒否（`c89e89c`）
+- [x] 住宅施設の住宅エリア紐づけ（`6a5468c`）: compendium ドロップダウン + アイテムドロップ（ドロップ時は
+  ドロップダウン無効化）/ ヘッダーに住宅エリア名バッジ / 設定タブに供給値（エリア + 修正値）入力不可表示 /
+  説明タブのサマリは修正値を合算した実効値
+- [x] コンバイナー連携（`25fa055`）: combine{source1, source2, appearance} に再設計。元二つのドロップ指定・
+  見た目ラジオ・コンバインプレビュー（名称/分類/電制=高い方/隠=X(Y)/部位=両方占有）
+- [ ] **combiner の param 取捨選択 UI**（両方にある値のどちらを採るか）は対象範囲を確認後に実装
+- [→] combiner のアクター一体インポート（「見た目名（コンバイン）」）/ residence の実効値の保存 /
+  住宅アクセサリの準備可能数 → フェーズ6-6（キャストシート）
+- [ ] ユーザー実機確認（vehicle / residence / housingArea / combiner プレビュー）
 
 ### 6-5: lifePath シート + キャスト詳細タブ連携
 
