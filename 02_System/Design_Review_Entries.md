@@ -2427,3 +2427,46 @@ flags ベース実装を含む全コミットを revert（d66636c）。技術的
 #### 推奨アクション
 
 - ユーザー実機確認の後、フェーズ6-3(ianus / tron / tap)に進む。
+
+---
+
+### 6-4 生活系装備シート(vehicle / residence / housingArea / combiner)(フェーズ6)
+
+**日付**: 2026-06-13
+**レビュー対象**: `scripts/data/item/{vehicle,residence,housing-area,outfit-categories}.mjs`、
+`scripts/item/tnx-outfit-sheet.mjs`(_prepareView 型別 switch 化)、
+`scripts/item/tnx-item-sheet.mjs`(スピナー汎用化)、`tnx-housing-area-sheet.mjs`(新設)、
+`templates/item/{outfit-sheet,housing-area-sheet}.hbs`、`scripts/tnx.mjs`(登録)、対応テスト
+**ステータス**: レビュー済(実機確認待ち)
+
+#### レビュー観点
+
+- 保守性: 型ごとに異なる概要順序の表現方法
+- 拡張性: アウトフィットでない型(housingArea)の扱い
+- 整合: 数値スピナーの重複解消
+
+#### 良かった点
+
+- **_prepareView を型別 switch に再整理**: 6-2/6-3 の加算的な条件分岐では型ごとに異なる
+  概要の「順序」(例: cyborg は防→攻、vehicle は攻→SF→防)を正確に出せなかったため、
+  型ごとに push 順を明示する switch に変更。可読性と正確性が両立。
+- **housingArea を専用シートに分離**: 「アウトフィットではない」というルールに忠実に、
+  outfitBase を前提とするアウトフィットシートを流用せず、説明 + 修正値のみの軽量シートを新設。
+  MOD_FIELDS 定数でラベル・順序を一元管理。
+- **数値スピナーの基底汎用化**: incrementField/decrementField を TokyoNovaItemSheet に移し、
+  アウトフィット・住宅エリア両シートで共用(重複定義を解消)。今後の全アイテムシートで再利用可。
+- **カテゴリ配列化の効果**: 6-2 で小分類→type を配列化していたため、general への移動(住宅
+  オプション/アクセサリ・IANUSオプション)が対応表 1 行の修正で済んだ。
+- **攻撃/防御フィールドの出し分け**: hasAttack/hasGuard/hasDefence フラグで、vehicle(攻あり
+  受けなし)のような型差分をテンプレートの条件分岐 1 つで表現。
+
+#### 課題
+
+- ⚠️ コンバイナーの合成連携は未実装(本体は一般アウトフィットとして動作)。設計確認後に着手。
+- ⚠️ 実機確認未了(vehicle / residence / housingArea)。
+- ⚠️ residence/combiner は outfitBase の appearancePenalty/hack を内部的には保持(非表示なだけ)。
+  データ的な無駄だが、型ごとに outfitBase を分割するより単純さを優先した。
+
+#### 推奨アクション
+
+- ユーザー実機確認 + コンバイナー設計確認の後、フェーズ6-5(lifePath シート + キャスト連携)に進む。

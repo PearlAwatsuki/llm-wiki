@@ -126,9 +126,18 @@ ApplicationV2 シートを新規作成する。フェーズ3 の CSS 構造（tn
 - [x] IANUSオプションのカテゴリ対応を ianus → general に修正（装備対象とカテゴリが違う唯一のオプション）
 - [ ] ユーザー実機確認（ianus / tron / tap + 部位複数行・タイミング単一化の回帰確認）
 
-### 6-4: 生活系装備シート（vehicle / residence / housingArea / combiner）
+### 6-4: 生活系装備シート（vehicle / residence / housingArea / combiner） ▶ vehicle/residence/housingArea 完了・combiner 一部のみ（2026-06-13）
 
-- [ ] 着手時に固有フィールド（speedFactor / セキュリティ値 / Mod 群 / combinedOutfitID 等)のルール解釈を確認
+- [x] 固有フィールドのルール解釈を確認（SF/乗員・住宅施設/エリアの分離・コンバイナーの合成ルール → Outfits.md）
+- [x] DataModel（`a8c0725`）: vehicle に attack/defence 追加 / residence の重複 mod 除去（住宅エリアの役割） /
+  housingArea に hideMod/slotMod 追加（修正値 7 種） / カテゴリ修正（住宅オプション・アクセサリ → general、IANUSオプション → general）
+- [x] vehicle/residence/combiner をアウトフィットシートに登録（`8c3f532`）。
+  `_prepareView` を型別 switch に整理。vehicle = 購/隠/攻/SF/防/制/乗員/ス/電制/部位、
+  residence = 購/隠(隠匿値のみ)/登場/セ(電／ア)/ス/部位（危険値・電制なし）
+- [x] housingArea 専用シート（`984681a`）: 説明 + 修正値 7 種。number-input-spinner を基底へ汎用化
+- [ ] **combiner のコンバイン連携（二つの元の指定・見た目選択・合成表示）は設計確認後に実装**
+- [→] residence + housingArea の実効値算出、住宅アクセサリの準備可能数 → フェーズ6-6（キャストシート）
+- [ ] ユーザー実機確認（vehicle / residence / housingArea）
 
 ### 6-5: lifePath シート + キャスト詳細タブ連携
 
