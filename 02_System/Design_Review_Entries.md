@@ -2645,5 +2645,8 @@ armor / cyborg / tap / vehicle / ianus / weapon / housing-area / residence)、
 
 #### 推奨アクション
 
-- フェーズ6-7（guest シート）へ進む。
-- `OUTFIT_TYPES` 重複は将来のリファクタ候補として Issues に起票するか、6-10 仕上げフェーズで整理する。
+- ~~フェーズ6-7（guest シート）へ進む。~~ → **フェーズ11 に移管（2026-06-14）**
+  guest / troop / extra シートと戦闘タブは判定・神業システム完成後に実施する。
+- `OUTFIT_TYPES` 重複（`tnx-cast-sheet.mjs` の `OUTFIT_TYPES` と `tnx.mjs` の `OUTFIT_ITEM_TYPES`）は
+  6-10 仕上げ時またはフェーズ11 着手前にリファクタする。現在の動作には影響なし。
+- 次は **フェーズ6-10（仕上げ・wiki 整合・v0.7.0）**。
