@@ -2592,3 +2592,58 @@ armor / cyborg / tap / vehicle / ianus / weapon / housing-area / residence)、
 #### 推奨アクション
 
 - ユーザー実機確認の後、フェーズ6-6(キャストシート「アウトフィット」タブ整備)に進む。
+
+---
+
+### 6-6 キャストシート「アウトフィット」タブ整備（フェーズ6）
+
+**日付**: 2026-06-14
+**レビュー対象**: `scripts/actor/tnx-cast-sheet.mjs`（アウトフィットタブ・集計ハンドラ）、
+`scripts/data/actor/cast.mjs`（新フィールド群）、`scripts/data/item/common/outfit-base.mjs`（フィールド追加）、
+`scripts/data/item/combiner.mjs`（isCombineActive / combatSpeedMod 追加）、
+`scripts/item/tnx-outfit-sheet.mjs`（オプション品 UI・deactivateCombine）、
+`scripts/tnx.mjs`（集計関数・フック）、`templates/actor/cast-sheet.hbs`（タブ改称・UI 追加）、`css/tnx2.css`
+**ステータス**: レビュー済(問題なし)
+
+#### レビュー観点
+
+- 保守性: アウトフィット集計ロジックの lokalization（hook 内 vs DataModel vs tnx.mjs）
+- 整合: OUTFIT_TYPES の定義重複（cast-sheet.mjs と tnx.mjs で同一セットを持つ）
+- 拡張性: outfitMod フィールドと ActiveEffect フェーズの接続可否
+- FVTT 慣行: updateItem フック内での `actor.update` 呼び出し（再帰防止の syncing フラグ）
+
+#### 良かった点
+
+- **syncing フラグによる再帰防止**: `updateCastAppearanceModifier` / `updateCastOutfitMods` が
+  `actor.update(…, { syncing: true })` を発行し、updateActor フック側の既存ガード（`options.syncing` チェック）と
+  整合。EXP 再集計と同じパターンを踏襲しており一貫性がある。
+- **差分チェックによる不要 update の回避**: 集計値が変わらない場合は `actor.update` を呼ばない。
+  初期化時（ready）・フック時の両方で同じガードを通すことで無限ループおよびパフォーマンス劣化を防ぐ。
+- **グループ別列定義を OUTFIT_GROUP_CONFIG として宣言**: 各大分類の表示列（キー・ラベル）を
+  static 定数にまとめ、コンテキスト準備とテンプレートが同じ設定を共有する。
+  将来の列追加・並び替えが定数一箇所の変更で済む。
+- **グループ内ソート制限の実装**: `_onSortItem` でアウトフィット同士のドロップを
+  「同じ表示グループ（同 DOM ルート）内のみ」に限定。グループをまたぐドロップは黙って無視し、
+  ユーザーへの混乱を防ぐ。コメントでグループ内限定の理由も明記。
+- **isGhost → CS 修正の再集計**: ゴースト登場中は物理現場不在のため TAP の CS 修正を無効化する
+  ゲームルールの挙動を、`isGhost` 変更時の updateActor フック内で `updateCastOutfitMods` を
+  再実行することで正確に反映。
+- **bountyBase 再計算ボタン**: 外界値（mundaneTotalValue）は常に現在値から動的に計算される一方、
+  `bountyBase` は手動確定値として DB に永続化する設計を明確化。
+  ボタンのツールチップに現在の外界値を表示し、確定の意味が視覚的にわかる。
+
+#### 課題
+
+- ⚠️ `OUTFIT_TYPES` セットが `tnx-cast-sheet.mjs`（`OUTFIT_TYPES` static）と `tnx.mjs`
+  （`OUTFIT_ITEM_TYPES` const）に重複定義されている。単一ソース化は後日整理タスク
+  （どちらも正確なセットであり現在の動作には影響しない）。
+- ⚠️ `outfitMod.reason` / `.passion` / `.life` / `.mundane` の集計ロジックは現在 0 返し
+  （対応フィールドが各アウトフィット型に未定義）。ActiveEffect フェーズで各アウトフィット型に
+  対応修正値フィールドが追加された際に集計関数を拡張する。
+- ⚠️ `isCombineActive` フィールドは追加されたが、コンバイナー「起動/停止」UI は未実装。
+  `deactivateCombine` アクションのハンドラ実装も 6-6 スコープ外（フェーズ未定）。
+
+#### 推奨アクション
+
+- フェーズ6-7（guest シート）へ進む。
+- `OUTFIT_TYPES` 重複は将来のリファクタ候補として Issues に起票するか、6-10 仕上げフェーズで整理する。

@@ -172,9 +172,28 @@ ApplicationV2 シートを新規作成する。フェーズ3 の CSS 構造（tn
 - [x] キャスト詳細タブ: 型対応ドロップ検証・fromUuid live 解決・description の概要表示
 - [x] ContextMenu（閲覧/編集/削除）・閲覧モード名クリック・カードレイアウト CSS
 - [x] cast DataModel の lifePath スロットから summary フィールドを削除（live 解決に一本化）
-- [ ] ユーザー実機確認
+- [x] ユーザー実機確認
 
-### 6-6: キャストシート「アウトフィット」タブ整備
+### 6-6: キャストシート「アウトフィット」タブ整備 ✅ 完了（2026-06-14）
+
+- [x] Cast DataModel（`5338700`）: `isGhost`・`bountyBase`・`baseGuard`・`appearanceModifier`・`outfitMod` フィールド追加
+- [x] OutfitBase（`5338700`）: `isCheckAcquired`・`parentSlotKind`・`combineGroupId` フィールド追加、
+  `hide` モードに "control"（制御値依存の隠匿値）追加
+- [x] Combiner（`5338700`）: `combatSpeedMod` を COMBINE_PARAM_DEFS に追加、`isCombineActive` フィールド追加
+- [x] アウトフィットシート（`5338700`）: オプション品の親アイテム/スロット種別選択 UI 追加（同大分類・非オプション品のみ列挙）、
+  `deactivateCombine` アクション追加
+- [x] アウトフィットタブ全面実装（`5338700`）: 大分類別グループ表示（武器/防具/サイバーウェア/トロン/ヴィークル/住居/その他）、
+  グループ別固有列定義（攻/受/射/電制/部位 ほか）、行内 isCarrying/isPrepared フラグトグルボタン、
+  グループ内ドラッグ&ドロップ並び替え（グループをまたぐドロップは無視）、アウトフィット追加・シート開封アクション
+- [x] アウトフィット集計自動更新（`5338700`）: `createItem`/`deleteItem`/`updateItem` フック + ready 時初期化。
+  携帯中アウトフィットから `appearanceModifier`（危険値合算）を自動集計。
+  準備済み・携帯中フィルタで `outfitMod.control`、CS 修正（`outfitMod.combatSpeed`）を自動集計。
+  `isGhost` 変更時に `outfitMod.combatSpeed` を再集計（ゴースト登場中は TAP の CS 修正を無効化）
+- [x] キャストシート UI 更新（`5338700`）: 「判定」タブを「戦闘」タブに改称、
+  能力値ブレークダウンにアウトフィット修正行（アウトフィット修正 / アウトフィット制御値修正）追加、
+  bountyBase 再計算ボタン追加（現在の外界値を初期値として確定）
+- [x] 各 DataModel テストを新フィールドに対応（`5338700`）
+- [x] ユーザー実機確認（アウトフィットタブ表示・フラグトグル・自動集計・bountyBase 再計算）
 
 ### 6-7: guest シート
 

@@ -498,3 +498,47 @@ range 選択肢分離ともユーザー確認済みの解釈に準拠。
 
 ✅ lifePathType のキーとスロットキーの統一・空文字→どこでも受付の型検証ロジック・skillName の文字列保持方針・
 description の live 解決方針、いずれもユーザー確認済みの解釈に準拠。
+
+---
+
+### アウトフィット集計・携帯/準備フラグ（フェーズ6-6）
+
+**日付**: 2026-06-14
+**レビュー対象**: `scripts/tnx.mjs`（集計関数群）、`scripts/actor/tnx-cast-sheet.mjs`（フラグトグル UI）、
+`scripts/data/actor/cast.mjs`（outfitMod / appearanceModifier）、`scripts/data/item/common/outfit-base.mjs`（hide "control" モード）
+
+#### ルール解釈
+
+2026-06-14 ユーザー確定:
+
+- **携帯中（isCarrying）**: アクトに「持って来ている」状態。危険値（appearancePenalty）は携帯中のアウトフィット全体から算出し、
+  キャストの `appearanceModifier` に集計する（外見値判定で参照するため）。
+- **準備済み（isPrepared）**: 即使用可能な状態（「装備中」相当）。制御値修正（controlMod）は
+  **準備済み**かつ携帯中のアウトフィットのみ加算する。
+- **CS 修正（combatSpeedMod）**: 携帯中であれば準備済み不問で加算する（TAP は常時稼働のため）。
+  ただし**ゴースト登場中は CS 修正を無効化**する（ゴーストは物理現場不在のため）。
+- **住居（residence）は「携帯」の概念が存在しない**ため isCarrying トグルを表示しない。
+  住居が提供する修正値は住宅エリア集計で別途処理する（フェーズ未定）。
+- **`hide` モードの "control"**: 制御値依存の隠匿値を表す 4 番目のモード。
+  数値固定の "value" / ルルブ参照の "reference" に加えて追加。
+
+#### 実装
+
+- `scripts/tnx.mjs`:
+  - `calcAppearanceModifier(actor)`: 携帯中かつ `appearancePenalty.mode === "value"` のアウトフィットの
+    `appearancePenalty.value` を合算し `actor.system.appearanceModifier` に書き戻す。
+  - `calcOutfitMods(actor)`: 準備済み携帯中の `controlMod.value` を合算して `outfitMod.control` に格納。
+    CS 修正は `isGhost` 非時のみ加算（ghost ガードを関数内に持つ）。
+  - `createItem` / `deleteItem` / `updateItem` フックで `recalcOutfitAggregates` を呼び出し。
+    `ready` 時に全キャストを対象に初期集計を実施。
+  - `updateActor` フック: `isGhost` 変更検出時に `updateCastOutfitMods` を再実行。
+- `scripts/actor/tnx-cast-sheet.mjs`:
+  - `_onToggleOutfitFlag`: `isCarrying` / `isPrepared` を行内ボタンでトグル。
+    `isPrepared` は `isCarrying === false` の場合 disabled（携帯しない装備品を準備済みにできない）。
+  - `_onRecalculateBounty`: 現在の `mundaneTotalValue`（外界値合計）を `bountyBase` として DB に書き込む。
+
+#### 監査結果
+
+✅ isCarrying / isPrepared の分離・控除対象の差分（control は準備済み必須、CS は携帯のみ）・
+isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" モード追加、
+いずれもユーザー確認済みのルール解釈に準拠。
