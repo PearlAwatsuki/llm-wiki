@@ -705,3 +705,110 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 - `TnxRlRequestApp` ダイアログ内のチェックボックスは Foundry V13 の `appearance:none` + FA アイコン描画との相性で視覚的に不整合が残る（機能は正常）。将来的に CSS 調整の余地あり。
 - コンペンディウム技能のキャッシュは `TnxRlRequestApp._compendiumSkillCache` に保持。セッション中にコンペンディウムが更新された場合は反映されない（許容範囲）。
+- `renderChatMessage` フック名が V13 では `renderChatMessageHTML` に変更済み（2026-06-15 修正）。
+
+---
+
+### [Joker 宣言ダイアログ修正](フェーズ8)
+
+**日付**: 2026-06-15
+**関連実装**: `scripts/module/tnx-judgment-flow.mjs`
+**ステータス**: 監査済
+
+#### ルール解釈
+
+- Joker はスートと「どの札として使うか（A〜K のランク）」をプレイヤーが宣言する。
+- 宣言後はそのランクの通常カードとして扱う: A=11（または21固定）、J/Q/K=10（手札からは FUMBLE しない）、2〜10=数値通り。
+- Joker であってもスート不一致の宣言は可能（プレイヤーに失敗する権利があるため）。
+- 山札から Joker が出た場合、J/Q/K と宣言すると FUMBLE（山札判定の絵札ルールが適用される）。
+
+#### 実装
+
+- `_promptJokerDeclaration()` から `validSuits` 引数を廃止し、常に全4スート（`ALL_SUITS`）を表示。
+- 値入力を「1〜13の数値スピナー」から「A, 2-10, J, Q, K のドロップダウン」に変更。
+- 戻り値を `{ suit, numericValue }` に変更（旧: `{ suit, value }`）。
+- `executeFromHand` / `executeFromDeck` / `_executeAsTrumpJoker` で `getCardJudgmentValue({ numericValue })` を呼び出す（`isJoker: true` の特例ルートを廃止）。
+- `_handleAceChoice` に `extraParams = {}` を追加し、`fromDeck` / `trumpUsed` を引き継ぎ可能に。
+
+#### 監査結果
+
+✅ 全4スート選択可・宣言ランクが通常カードと同じルールで計算される点、ルールに準拠。
+
+#### 課題・申し送り
+
+なし。
+
+---
+
+### [山札判定スート読み取りバグ修正](フェーズ8)
+
+**日付**: 2026-06-15
+**関連実装**: `scripts/module/tnx-judgment-flow.mjs`
+**ステータス**: 監査済
+
+#### ルール解釈
+
+- 山札から引いたカードのスートで能力値を決定する。
+
+#### 実装（バグ修正）
+
+- `executeFromDeck` で `discard.draw()` 直後のカードは裏向き（face: -1）であり `card.suit` が null になる問題を修正。
+- `updateEmbeddedDocuments("Card", [{ face: 0 }])` の await 後に `discard.cards.get(card.id)` で再取得し、表向き状態のスートを読む。
+- スート不一致（有効スートに含まれないスート）の場合は達成値 0 の失敗として処理（手札判定と同様に `suitMismatch: true` を設定）。
+
+#### 監査結果
+
+✅ 修正後は引いたカードの実スートで能力値を決定する。スート不一致処理はルール「両判定に適用」に準拠。
+
+#### 課題・申し送り
+
+なし。
+
+---
+
+### [報酬点ダイアログ改善・FUMBLE 時スキップ](フェーズ8)
+
+**日付**: 2026-06-15
+**関連実装**: `scripts/module/tnx-judgment-flow.mjs`
+**ステータス**: 監査済
+
+#### ルール解釈
+
+- ファンブル確定時は報酬点を消費できない（報酬点ダイアログを表示しない）。
+- 報酬点ダイアログには報酬点加算前の現在の達成値を表示し、プレイヤーが加算効果を判断できるようにする。
+
+#### 実装
+
+- `_execute` の条件に `cardJudgmentValue !== "FUMBLE"` を追加。FUMBLE 確定時は `_promptBountyUsage` を呼ばない。
+- `abilitiesCtx` を `_execute` の先頭で一度だけ構築（従来: 計算直前）。
+- 報酬点 0 時のベース達成値を `calcSkillCheck(bountyUsed: 0)` で先計算し、`_promptBountyUsage` に `baseAchievement` として渡す。
+- ダイアログに「現在の達成値: N（報酬点1点 = +1 加算）」を表示。
+
+#### 監査結果
+
+✅ ファンブル時のダイアログ非表示・ベース達成値の事前表示、いずれもルールおよびユーザー要件に準拠。
+
+#### 課題・申し送り
+
+なし。
+
+---
+
+### [達成値プレビューをホバー時のみ表示](フェーズ8)
+
+**日付**: 2026-06-15
+**関連実装**: `templates/hud/hud.hbs`, `css/tnx2.css`
+**ステータス**: 設計レビュー済
+
+#### 設計
+
+- `.card-preview-label` を `.card-in-hand` 内部（カード画像の後）に移動。
+- `position: absolute; top: 0; left: 0; right: 0` でカード上端にオーバーレイ表示。
+- デフォルト `opacity: 0; visibility: hidden`。`.card-hand-slot:hover .card-preview-label:not(:empty)` でフェードイン。
+- `.card-hand-slot` の `gap: 2px` を削除（ラベルがフロー外になったため不要）。
+- `.card-in-hand` はすでに `position: relative` であり変更不要。
+- `overflow: hidden` を持つ `.hand-cards-row` のクリッピング問題を回避（ラベルがカード内に収まるため）。
+
+#### 監査結果
+
+✅ 常時表示による手札エリア上部の余白が解消。ホバー時のみ表示でレイアウト体系を破壊しない。

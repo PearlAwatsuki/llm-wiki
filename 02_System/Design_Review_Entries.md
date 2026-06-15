@@ -2708,3 +2708,53 @@ armor / cyborg / tap / vehicle / ianus / weapon / housing-area / residence)、
 
 - ActiveEffect フェーズ: `_buildAbilitiesCtx` を廃止し `actor.system[key].totalValue` を直参照するよう移行。`TnxHud` 側のプレビュー計算も同時に修正。
 - 次は **フェーズ6-10（仕上げ・wiki 整合・v0.7.0）**。
+
+---
+
+### キャストシート ProseMirror 編集→閲覧切替時の自動保存(バグ修正)
+
+**日付**: 2026-06-15
+**レビュー対象**: `scripts/actor/tnx-cast-sheet.mjs`（`_onToggleEditMode`）
+**ステータス**: レビュー済(問題なし)
+
+#### レビュー観点
+
+- 保守性: 修正が最小範囲に収まっているか
+- FVTT 慣行: ProseMirror カスタム要素の `value` / `getAttribute("name")` の正しい使用
+- 既存設計との整合: `actor.update()` トリガーの render タイミングと `_isEditMode` トグルの順序
+
+#### 問題
+
+`_onToggleEditMode` が同期で `this.render()` を呼ぶため、ProseMirror 要素に入力した内容が
+未保存のまま再描画で消えていた。`form.submitOnChange` は ProseMirror の変更を拾わないため、
+明示的な保存処理が必要だった。
+
+#### 修正（初回）
+
+- メソッドを `async` に変更。
+- 編集→閲覧切替時（`this._isEditMode === true`）に、DOM 内の `prose-mirror` 要素を全走査。
+- 各要素の `getAttribute("name")` でフィールドパス、`pm.value` で現在の HTML 内容を取得。
+- `this._isEditMode = false` を**先にセット**してから `actor.update(updates)` を呼ぶ。
+  → `actor.update` が発火する render フックの時点で既に閲覧モードのため、フラッシュなし。
+- ProseMirror 要素が存在しない場合（他タブ等）は元の `toggle + this.render()` にフォールバック。
+
+#### 追補バグ修正（2026-06-15）
+
+**問題**: `await actor.update()` の後に `this.render()` を呼ばず `return` していたため、
+説明文が未変更の場合に Foundry が「差分なし」と判定して更新フックを発火せず、
+シートが再描画されないまま視覚的に編集モードのまま固まっていた。
+`_isEditMode` は `false` に更新済みのため「閉じて開くと閲覧モード」になる副症状もあった。
+
+**修正**: `await actor.update()` の直後に `this.render()` を追加。
+`actor.update` の差分最適化の有無に関わらず確実に view モードで再描画するようにした。
+
+#### 良かった点
+
+- `_isEditMode = false` を先にセットすることで `actor.update` トリガーの再描画が直接ビューモードで
+  行われ、二重描画・フラッシュを回避。
+- 変更範囲が `_onToggleEditMode` 1 メソッドのみ。ProseMirror 設定コードは無変更。
+- ProseMirror 要素が存在しない場合にフォールバックする後方互換性を保持。
+
+#### 課題
+
+なし。
