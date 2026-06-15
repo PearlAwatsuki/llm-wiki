@@ -794,6 +794,33 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 ---
 
+### [手札補充自動化](フェーズ8)
+
+**日付**: 2026-06-15
+**関連実装**: `scripts/module/tnx-action-handler.mjs`（`autoReplenishHand`）、`scripts/module/tnx-judgment-flow.mjs`（`_execute`）
+**ステータス**: 監査済
+
+#### ルール解釈
+
+- 手札からカードを出した直後、**手札上限まで自動補充する**。
+- 山札判定では手札を消費しないため自動補充は行われない。
+- 山札が不足している場合は引ける枚数だけ引く（エラーにしない）。
+
+#### 実装
+
+- `TnxActionHandler.autoReplenishHand()` を新設: 上限 - 現在手札枚数を計算し、その枚数を山札からドロー。
+- `TnxJudgmentFlow._execute()` で `playCard()` の直後に `autoReplenishHand()` を呼び出す（`!fromDeck` のブランチ内）。
+
+#### 監査結果
+
+✅ 手札消費直後の自動補充タイミング、山札不足時の安全処理、山札判定では発動しない点、いずれもルールに準拠。
+
+#### 課題・申し送り
+
+なし。
+
+---
+
 ### [達成値プレビューをホバー時のみ表示](フェーズ8)
 
 **日付**: 2026-06-15
