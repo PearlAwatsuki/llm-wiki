@@ -839,3 +839,40 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 #### 監査結果
 
 ✅ 常時表示による手札エリア上部の余白が解消。ホバー時のみ表示でレイアウト体系を破壊しない。
+
+---
+
+### [HUD空エリアクリックによるカード補充](フェーズ8)
+
+**日付**: 2026-06-15
+**関連実装**: `scripts/module/tnx-hud.mjs`（`_onReplenishHand` / `_onResetRlTrump`）、`templates/hud/hud.hbs`（空手札プレースホルダー）、`scripts/module/tnx-action-handler.mjs`（`autoReplenishHand` / `resetRlTrump`）
+**ステータス**: 設計レビュー済
+
+#### 設計
+
+- **手札エリア（PL・GM共通）**: 手札が0枚のとき表示されるプレースホルダー（`.card-empty-placeholder`）に `data-action="replenishHand"` と `.card-empty-clickable` クラスを付与。クリックで `TnxActionHandler.autoReplenishHand()` を呼び出す。
+- **切り札エリア（GM専用）**: GMの切り札エリアが空のとき `data-action="resetRlTrump"` + `.card-empty-clickable` クラスを付与。クリックで `TnxActionHandler.resetRlTrump()` を呼び出す。非GMは非クリッカブルなプレースホルダーのみ。
+- いずれも `TnxHud.DEFAULT_OPTIONS.actions` に登録し、`_onReplenishHand` / `_onResetRlTrump` ハンドラが呼び出される。
+- `.card-empty-clickable` CSS クラスで `cursor: pointer` + ホバー時アクセントカラー変化を付与（既存スタイル再利用）。
+
+#### 監査結果
+
+✅ 手札補充は `autoReplenishHand()` を再利用しており、上限計算ロジックの重複がない。切り札リセットはGM専用制御が `hbs` 側の条件分岐で保証されている。
+
+---
+
+### [カード操作チャット通知の全面抑制](フェーズ8)
+
+**日付**: 2026-06-15
+**関連実装**: `scripts/module/tnx-action-handler.mjs`、`scripts/module/tnx-hud.mjs`、`scripts/journal/tnx-scenario-sheet.mjs`
+**ステータス**: 設計レビュー済
+
+#### 設計
+
+- Foundry V13 の Cards API（`draw` / `pass` / `recall` / `shuffle`）はデフォルトでチャットへ操作通知を投稿する。
+- TNX では独自の `ui.notifications` によるフィードバックを使用しており、Cards API の自動通知はノイズになるため、全操作に `{ chatNotification: false }` を付与して抑制する。
+- 対象ファイルはシステム内の Cards API 呼び出し箇所すべて。`tnx-draw-table.mjs` の `table.draw()` は `RollTable` APIであり別系統のため除外。
+
+#### 監査結果
+
+✅ 全 Cards API 呼び出し箇所（`tnx-action-handler.mjs` / `tnx-hud.mjs` / `tnx-scenario-sheet.mjs` / `tnx-card-setup-app.mjs` / `tnx-judgment-flow.mjs`）に `chatNotification: false` が付与されていることを確認。
