@@ -1,0 +1,347 @@
+# 判定システム
+
+TNX の判定ルールの正本。フェーズ7（設計）で言語化・確定。
+
+## 判定の種類
+
+### 能力判定
+
+1. RL が能力値・目標値を決定
+2. 指定された能力値に対応するスートのカードを出す
+3. 達成値 = カード値 + 指定能力値（実効値）
+4. 目標値と比較。場合によっては差分値（達成値 − 目標値）を算出
+
+### 技能判定
+
+1. RL が技能・目標値を決定
+2. 指定技能で使用できるスートのうち好きなスートのカードを出す
+3. 判定成立（カードを出した時点）
+4. 報酬点の使用を決定（使う場合：1点 = 達成値 +1、上限は所持点数のみ）
+5. 達成値 = カード値 + 出したスート対応の能力値実効値 + 使用報酬点
+6. 目標値と比較。場合によっては差分値を算出
+
+**重要**: 技能の「初期スート」に関係なく、出したカードのスートに対応する能力値が使われる。
+例: ♠♥の両方が使える技能で♥を出した場合 → 生命値で計算。
+
+技能レベルは達成値に**加算しない**。レベルが寄与するのは:
+- 使用可能なスートの数（レベルが高いほど選択肢が増える）
+- 一部スタイル技能・アウトフィットの発動条件・装備条件
+
+## スート ↔ 能力値対応表
+
+| スート | 記号 | 能力値キー | 表示名 |
+|---|---|---|---|
+| スペード | ♠ | `reason` | 理性 |
+| クラブ | ♣ | `passion` | 感情 |
+| ハート | ♥ | `life` | 生命 |
+| ダイヤ | ♦ | `mundane` | 外界 |
+
+## カード値の対応
+
+| カード | 判定値 | 備考 |
+|---|---|---|
+| 2〜10 | 数字通り | |
+| J / Q / K（絵札） | 10 | 山札判定時のみファンブル（→下記） |
+| A（エース） | 11 **または** 達成値21固定 | 判定時にプレイヤーが選択 |
+| Joker | スート・値ともに自由宣言 | ワイルドカード |
+| 切り札（Trump） | — | 消費することで手札1枚を Joker として扱える。消費後はシーンカードへ |
+
+### Aの「達成値21固定」
+
+- 選択した場合、達成値はちょうど21で確定する
+- 能力値・報酬点・修正値は一切加算されない（完全固定）
+- 自動成功ではない（目標値が21を超えることもある）
+
+### Joker の使い方
+
+- スートと数値の両方を自由に宣言して使用
+- 例:「♠9 として使う」「♥A として使う」など
+
+### 切り札（Trump）の使い方
+
+1. 切り札を消費することを宣言する
+2. 手札から好きな1枚を選び、Joker として扱う（スート・値を自由宣言）
+3. 消費した切り札はそのシーンのシーンカードになる（シーンの雰囲気を塗り替える）
+
+## 自動失敗の条件
+
+| 条件 | 判定 | 備考 |
+|---|---|---|
+| 使用できないスートのカードを出した | 自動失敗 | プレイヤーの選択は妨げない（UI で拒否しない） |
+| 山札判定で絵札（J/Q/K）が出た | ファンブル（致命的失敗） | RL によりペナルティが追加される場合もあるが、ルール上は失敗のみ |
+| 手札判定で絵札 | ファンブルにならない（通常の判定値10） | |
+
+## 能力値の実効値
+
+判定で加算する能力値は、キャストシート閲覧モードに表示される全修正込みの実効値：
+
+```
+totalValue = growth + Σ(style.value × styleLevel) + mod + effectMod + abilityOutfitMod
+```
+
+コード参照: `scripts/actor/tnx-cast-sheet.mjs` の `_prepareAbilities()`（`totalValue` フィールド）
+
+## UIフロー
+
+### HUD中心フロー（確定 2026-06-15、フェーズ8-3で変更）
+
+**カード選択はダイアログではなく HUD で行う。** ダイアログは判定コンテキスト（種別・スート・目標値）の表示のみ。
+
+#### プレイヤー主導（自発判定）
+
+1. キャストシートの技能行/能力値/制御値クリック、またはアクトシートのハンマーボタン
+2. `TnxJudgmentFlow.open(context)` → `TnxJudgmentDialog` 起動（コンテキスト表示のみ）+ HUD がペンディング状態に
+3. プレイヤーが HUD 上の手札カードをクリック（有効スートのカードを強調表示）
+   - カードホバー時: 達成値プレビューをバッジ表示（**報酬点含まない暫定値**）
+   - スート不一致カードをクリックした場合: 達成値0の失敗として処理（プレイを拒否しない）
+4. A クリック: 「11として使う / 達成値21固定」ダイアログ
+5. Joker クリック: スート・値宣言ダイアログ（`_promptJokerDeclaration`）
+6. 切り札モード中にカードクリック: そのカードを Joker として使い切り札消費
+7. カードがプレイされる（捨て札へ移動）
+8. 報酬点入力ダイアログ（`_promptBountyUsage`）— スート不一致・制御判定・`bountyAvailable=0` の場合はスキップ
+9. 達成値計算 → チャットに結果カード投稿
+10. ダイアログを閉じると判定キャンセル（`_onClose` → `TnxJudgmentFlow.cancel()`）
+
+#### RL 主導（判定要求、フェーズ8-5で実装予定）
+
+1. 左サイドバー（GM のみ表示）のボタン → `TnxRlRequestApp` 起動
+2. 対象アクター・判定種別（能力/技能）・能力値 or 技能・目標値を設定
+3. 「要求を送信」→ チャットに判定要求カードを投稿（全員に見える）
+4. 対象プレイヤーがカードの「判定する」ボタンをクリック
+5. 上記プレイヤー主導フロー(2〜9)が実行される
+6. 達成値計算 → 要求カードを更新（結果を反映） — socket 送信経由
+
+チャットカードの更新（ステップ6）にはソケット通信が必要（KI-006 解決込みでフェーズ8-5 実装）。
+
+## チャット表示内容（判定結果カード）（確定 2026-06-15）
+
+- 判定者名
+- 技能名: 組み合わせ技能を「+」でつなぐ（例: 〈射撃〉+〈知覚〉）。能力値判定は能力値名
+- 使用カード（スート・値）
+- 通常判定: 達成値 / 目標値 / 差分値 / 成否マーク
+- 制御判定: 「達成値 ≤ 制御値 ▶ 成功」形式（成否の表記に ▶ 使用）
+- 報酬点使用量（0 の場合は非表示）
+- 結果: 成功 / 失敗 / ファンブル
+
+## RL 判定要求の対象
+
+複数プレイヤーへ同時送信が基本（Monk's Token Bar 方式）。全員とは限らず選択制。
+
+## チャット結果の公開範囲
+
+- 秘匿ルールは存在しない
+- ただし RL が個人を対象に行った判定の結果は秘匿される傾向にある
+- **捨て札は全員が平等に見ることができる**（カードの内容は公開情報）
+- → 実装方針: デフォルトは全員公開。RL 主導要求ダイアログに roll mode（公開 / GM+本人のみ）の選択肢を設ける
+
+## 情報収集項目（アクトシート連動）
+
+アクトシート（JournalEntry の flags）で管理される情報収集項目から判定を起動できる。
+
+### データ構造（実装済み）
+
+```javascript
+// JournalEntry.getFlag("tokyo-nova-axleration", "infoItems")
+infoItems = [
+  {
+    id: "randomId",
+    title: "情報名",          // 例: "黒幕の素性"
+    isPublic: boolean,        // 公開中かどうか
+    contents: [
+      {
+        id: "contentId",
+        isDisclosed: boolean, // 調査済み（入手済み）かどうか
+        skills: [
+          { id: "skillId", name: "技能名（テキスト）", tn: 12 }
+          // tn = 目標値（Target Number）
+          // name は自由記述テキスト、Itemへの参照ではない
+        ],
+        text: "情報の内容テキスト（公開時に表示）"
+      }
+    ]
+  }
+]
+```
+
+### 判定トリガーの設計方針
+
+- プレイヤーが HUD または公開済み情報カード上のスキル行をクリック
+- `name`（技能名テキスト）と `tn`（目標値）が判定ダイアログに自動入力される
+- どのキャストの技能 Item と対応するかは自動解決しない（テキスト表示のみ）
+- プレイヤーはダイアログ内でカード選択と報酬点を指定して判定を実行
+
+## フェーズ8 スコープ（判定起動の対象）
+
+| 種別 | スコープ | 理由 |
+|---|---|---|
+| 情報収集判定（技能） | ✅ フェーズ8 | TN がアクトシートデータに実装済み |
+| RL 要求判定（能力・技能） | ✅ フェーズ8 | TN は要求カードに含む。socket 実装と同時 |
+| 購入判定（〈信用〉技能） | ❌ 辞典ブラウザ後 | 辞典ブラウザ（D&D 辞典ブラウザ相当）から起動。ブラウザ完成後に自然接続 |
+| 登場判定 | ❌ フェーズ11 候補 | アクトシートのシーン設定に TN・使用技能フィールドが必要。サブシーンシステムに依存 |
+
+PLが目標値を手入力するフローは採用しない（Foundry VTT のデータ駆動設計に反する）。
+
+## 辞典ブラウザ（将来機能）
+
+将来フェーズで実装予定。D&D 5e の Compendium Browser 相当機能：
+- カテゴリ別タブ切り替えで全コンペンディアムドキュメントを閲覧
+- ドロップエリアクリックでも起動
+- アイテム選択 → 決定でドロップエリアに自動インポート
+- **購入判定との接続**: アウトフィットタブで目的アイテムを選択 → 購入ボタンで `buy.value` を TN として〈信用〉技能判定を起動
+
+## 能力判定のプレイヤー側起動経路（確定 2026-06-14）
+
+- キャストシートの能力値（理性・感情・生命・外界）の数値をクリック → 判定ダイアログ起動
+- 能力値判定はRL主導が基本で自発はほぼないが、トリガーとして一応残す
+- TN はこの経路では稀なケースとして入力を許容（主流フローはRL要求カード経由）
+
+## ボーナス修正の供給元（確定 2026-06-15）
+
+| 修正の種類 | 供給元 |
+|---|---|
+| 技能判定ボーナス（大半） | ActiveEffect（アウトフィット提供含む） |
+| 登場判定ペナルティのみ | `outfitMod`（AE 経由でなく直接集計） |
+
+組み合わせ判定のボーナス集計は ActiveEffect Phase 完了後に実装。
+Phase 8 では基本判定メカニクス（カード選択・達成値計算・チャット投稿）を先に整備する。
+
+## usage `actions[]` DataModel 変更案（フェーズ8 事前承認用）
+
+### 変更内容（確定 2026-06-15）
+
+```javascript
+// usage.mjs の actions[] SchemaField
+{
+  type:        StringField,
+  // type の値域（確定）:
+  //   "check"        — 通常の技能・能力判定
+  //   "controlCheck" — 制御判定（下方判定。計算式が異なるため独立 type）
+  //   "declaration"  — 宣言
+  //   "miracle"      — 神業
+  //   "attack"       — 攻撃（新設）
+  //   ※ リアクション: type ではなく timing フィールドで "リアクション" を設定することで区別（D&D 方式）
+
+  name:        StringField,
+  description: StringField,
+
+  skillRefs:   ArrayField([   // 新設: 組み合わせ技能の item ID リスト（空 = 単独判定）
+    SchemaField({ itemId: StringField })
+  ]),
+  // ベース技能は用途を所持するアイテム自身のため skillRefs に含まない
+}
+```
+
+### 設計根拠
+
+- `"controlCheck"` を独立 type に: 通常判定（上方）と制御判定（下方）は計算式が根本的に異なる
+- リアクションは timing 駆動: D&D 5e 踏襲。timing = "リアクション" の action が反応時に呼ばれる
+- `skillRefs` は後方互換: 空配列がデフォルトのため既存データへの影響なし
+- DataModel 変更のため **フェーズ8 実装前にユーザー承認が必要**（CLAUDE.md §4.3）
+
+## 実装詳細（フェーズ8-3/8-4 完了時点）
+
+### モジュール構成
+
+| ファイル | 役割 |
+|---|---|
+| `scripts/module/tnx-judgment-engine.mjs` | 計算ロジック（UI なし）。`getCardJudgmentValue`, `calcSkillCheck`, `calcControlCheck`, `getComboSuits`, `getAbilityBySuit`, `ALL_SUITS`, `SUIT_TO_ABILITY` をエクスポート |
+| `scripts/module/tnx-judgment-flow.mjs` | フロー管理シングルトン（`TnxJudgmentFlow` static class）|
+| `scripts/module/tnx-judgment-dialog.mjs` | `TnxJudgmentDialog`（ApplicationV2）— コンテキスト表示のみ |
+| `templates/dialog/judgment-dialog.hbs` | ダイアログ本体（スート表示・山札から判定ボタン）|
+| `templates/chat/judgment-result.hbs` | 判定結果チャットカード |
+
+### `JudgmentContext` typedef
+
+```javascript
+/**
+ * @typedef {object} JudgmentContext
+ * @property {"skillCheck"|"controlCheck"|"abilityCheck"} type
+ * @property {string}        actorId          - 判定を行うキャスト Actor ID
+ * @property {string[]}      skillIds         - 使用技能 Item ID（能力値判定は空 []）
+ * @property {string}        skillLabel       - 表示用技能名 "〈電脳〉+〈ハッキング〉" 等
+ * @property {string[]}      validSuits       - 使用可能スート ["spade","heart"] 等
+ * @property {number|null}   targetValue      - 目標値（未決定は null）
+ * @property {number}        bountyAvailable  - 使用可能報酬点（0 のとき報酬点ダイアログをスキップ）
+ * @property {string|null}   requestMessageId - RL 要求 ChatMessage ID（自発判定は null）
+ */
+```
+
+### `TnxJudgmentFlow` 公開 API
+
+```javascript
+// 判定状態の確認
+TnxJudgmentFlow.isPending     // boolean: 判定進行中か
+TnxJudgmentFlow.context       // JudgmentContext | null
+TnxJudgmentFlow.trumpMode     // boolean: 切り札モード中か
+
+// 起動・キャンセル
+await TnxJudgmentFlow.open(context)   // 判定開始。ダイアログ + HUD を更新
+TnxJudgmentFlow.cancel()             // 判定中止。ダイアログ閉じ、HUD リフレッシュ
+TnxJudgmentFlow.toggleTrumpMode()    // 切り札モード切替
+
+// 実行（HUD から呼ぶ）
+await TnxJudgmentFlow.executeFromHand(cardId)  // 手札カードをクリック
+await TnxJudgmentFlow.executeFromDeck()        // 山札から判定
+
+// 内部注入（tnx.mjs の init で設定）
+TnxJudgmentFlow.dialogClass = TnxJudgmentDialog
+```
+
+### 判定起動のエントリーポイント一覧
+
+| 起動元 | 呼出し方 | 引数の注意点 |
+|---|---|---|
+| キャストシート 技能行クリック | `_onStartSkillCheck` → `open()` | `usesBounty === true` のときのみ `bountyAvailable` に実値。そうでなければ 0 |
+| キャストシート 能力値クリック | `_onStartAbilityCheck` → `open()` | `abilityCheck` 型。`validSuits` は1スートのみ |
+| キャストシート 制御値クリック | `_onStartControlCheck` → `open()` | `controlCheck` 型。`bountyAvailable: 0` 固定 |
+| アクトシート ハンマーボタン | `_onStartInfoSkillCheck` → `open()` | `game.user.character` をアクターとして使用。`validSuits: ALL_SUITS`（全スート） |
+
+### number-input-spinner ダイアログ実装パターン
+
+数値入力を含むダイアログは必ず `number-input-spinner` を使う。`DialogV2.prompt` ではなく `DialogV2.wait` を使い `actions` で +/- を制御する:
+
+```javascript
+const spinnerContent = await foundry.applications.handlebars.renderTemplate(
+    "systems/tokyo-nova-axleration/templates/dialog/amount-input-dialog.hbs",
+    { label: "ラベル", initialValue: 0, min: 0, max: MAX },
+);
+const result = await foundry.applications.api.DialogV2.wait({
+    window:   { title: "タイトル" },
+    classes:  ["tokyo-nova", "tnx-amount-dialog"],
+    position: { width: 480 },
+    content:  `<p>説明文</p>${spinnerContent}`,
+    actions: {
+        decrement: (_event, target) => target.closest(".number-input-spinner")?.querySelector("input[type='number']")?.stepDown(),
+        increment: (_event, target) => target.closest(".number-input-spinner")?.querySelector("input[type='number']")?.stepUp(),
+    },
+    buttons: [
+        {
+            action: "ok", icon: "fas fa-check", label: "確定", default: true,
+            callback: (_event, _button, dialog) => parseInt(dialog.element.querySelector("[name=amount]")?.value) || 0,
+        },
+        { action: "cancel", icon: "fas fa-times", label: "キャンセル", callback: () => 0 },
+    ],
+    close: () => 0,
+});
+```
+
+`amount-input-dialog.hbs` の input は `name="amount"` 固定。`min: 0` を指定すれば `stepDown()` が自動でクランプする。
+
+### HUD 達成値プレビュー
+
+HUD カードホバー時に `card.preview` バッジを表示（`templates/hud/hud.hbs`、`.card-preview-value` CSS）。
+
+- **スート一致**: `getCardJudgmentValue(card.value) + getAbilityBySuit(suit, abilitiesCtx)` を表示
+- **スート不一致**: `"0"` を赤背景で表示
+- **Joker**: `"?"` を表示（宣言前のため不明）
+- **A**: `null`（ダイアログ選択後に確定するため表示なし）
+- **報酬点は含まない**（カード選択後に入力するため）。プレビューは暫定値であることを前提とした設計。
+
+## 参照
+
+- [Card_Operations.md](Card_Operations.md) — 物理的なカード移動処理
+- [Usage_System.md](Usage_System.md) — usage テンプレート・KI-002
+- [Active_Issues.md](../Issues/Active_Issues.md) — KI-002, KI-006
+- [Phase_7_Tasks_Detail.md](../Phases/Phase_7_Tasks_Detail.md)
+- [Judgment_Rules.md](../Game_Rules/Judgment_Rules.md) — ゲームルール正本
+- [Bounty_Points.md](../Game_Rules/Bounty_Points.md) — 報酬点・usesBounty フィールド詳細

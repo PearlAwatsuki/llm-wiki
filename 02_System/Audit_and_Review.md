@@ -607,3 +607,31 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 #### 課題・申し送り
 
 - 制御判定の `achievement` フィールドは `null`（達成値概念がない）。チャットテンプレートで制御判定専用の表示分岐を使用。将来的に型を明確化する場合はオブジェクト構造の見直しが必要。
+
+---
+
+### [報酬点フロー修正: usesBounty チェック・spinner 修正](フェーズ8-3 バグ修正)
+
+**日付**: 2026-06-15
+**関連実装**: `scripts/module/tnx-judgment-flow.mjs`, `scripts/actor/tnx-cast-sheet.mjs`
+**ステータス**: 監査済(修正完了)
+
+#### ルール解釈
+
+- 報酬点を判定に使えるかどうかは、技能ごとに決まる（一般技能の `usesBounty` フラグで制御）。
+- デフォルトは「使用不可」。ルールブックで明記された技能のみ `true` に設定。
+- スタイル技能・制御判定・能力値判定には報酬点を適用しない（`bountyAvailable = 0`）。
+
+#### 実装
+
+- `_onStartSkillCheck`: `item.system.usesBounty === true` のときのみ `bountyAvailable = bountyBase + bounty`、そうでなければ `0`。これにより `_promptBountyUsage` 自体は変更不要（`bountyAvailable = 0` なら即 return 0）。
+- `_promptBountyUsage`: `DialogV2.prompt` → `DialogV2.wait` に切り替え。`amount-input-dialog.hbs` テンプレートと `actions: { decrement, increment }` で number-input-spinner を実現。
+- `_promptJokerDeclaration`: 値入力フィールドを `<input type="number">` → number-input-spinner に変換（`DialogV2.wait` + `actions: { decrementJokerValue, incrementJokerValue }`）。
+
+#### 監査結果
+
+✅ `usesBounty` フラグチェックによりルール通りの制御になった。number-input-spinner への変換は UI 規約（全数値入力はスピナー）に準拠。
+
+#### 課題・申し送り
+
+- HUD カードホバーの達成値プレビューは報酬点を含まない（カード選択前なので含められない）。これは設計上の仕様であり、プレビューは暫定値として扱う。
