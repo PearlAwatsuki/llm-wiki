@@ -168,55 +168,36 @@ class TnxJudgmentEngine {
 
 ---
 
-### 8-5: RL 要求フロー
+### 8-5: RL 要求フロー ✅ 完了 (2026-06-15)
 
 **新規: `scripts/module/tnx-rl-request-app.mjs`**
+**新規: `templates/app/rl-request-app.hbs`**
 **新規: `templates/chat/judgment-request.hbs`**
-**新規: `templates/chat/judgment-result.hbs`**
+
+> 設計は当初案から一部変更。rollMode 廃止（全公開のみ）、identificationKey による技能照合、「その他」自由入力、description フィールド追加。詳細は [Judgment_System.md](../Game_Mechanics/Judgment_System.md#rl-判定要求フローフェーズ-8-5) を参照。
 
 #### RL 側（GM）
 
-- [ ] 左サイドバー（SceneControls）に「判定要求」ボタン追加（GM のみ表示）
-- [ ] `TnxRlRequestApp` ダイアログ:
+- [x] シーンコントロール（tokens グループ）に「判定要求」ボタン追加（GM のみ表示）
+- [x] `TnxRlRequestApp` ダイアログ:
   - 対象プレイヤー（複数選択可、チェックボックス）
-  - 判定種別（通常チェック / 制御判定）
-  - 能力値 or 技能（テキスト入力 or ドロップダウン）
-  - 目標値（数値入力）
-  - roll mode（全員公開 / GM+本人のみ）
-- [ ] 送信 → ChatMessage 作成（`judgmentRequest` フラグ付き）
+  - 判定種別ドロップダウン (skillCheck / abilityCheck / controlCheck)
+  - 技能: 一般技能コンペンディウムの identificationKey から選択 or「その他」自由入力 + スート手動指定
+  - 能力値: abilityCheck/controlCheck 時は理性/感情/生命/外界を選択
+  - 目標値（number-input-spinner + targetValueHidden 非公開フラグ）
+  - 説明テキストエリア（省略可）
+  - rollMode 廃止（全公開のみ）
+- [x] 送信 → ChatMessage 作成（`judgmentRequest` フラグ付き）
 
 #### PL 側
 
-- [ ] `renderChatMessage` フック: 要求カードの「判定する」ボタンをバインド
-- [ ] ボタンクリック → `TnxJudgmentDialog`（TN・技能名はカードから取得）
-- [ ] 判定完了 → socket emit（`judgmentResult`）→ GM が ChatMessage.update() で結果反映
+- [x] `renderChatMessage` フック: 要求カードの「判定する」ボタンをバインド（自分のキャラ or GM のみ表示）
+- [x] ボタンクリック → `TnxRlRequestApp.onDoJudgment()` → identificationKey でキャラ上技能を解決 → `TnxJudgmentFlow.open()`
+- [x] 判定完了 → socket emit（`judgmentResult`）→ GM が ChatMessage.update() で results フラグ更新 → renderChatMessage 再発火で結果表示
 
-#### ChatMessage フラグ構造
+#### ChatMessage フラグ構造（実装後確定版）
 
-```javascript
-flags["tokyo-nova-axleration"] = {
-  type: "judgmentRequest",
-  judgmentType: "check" | "controlCheck",
-  skillName: string,          // 技能名テキスト（or 能力値名）
-  targetValue: number | null,
-  rollMode: "public" | "gmroll",
-  targets: [{ userId, actorId, actorName }],  // 対象プレイヤー
-  results: {
-    [actorId]: {
-      cardValue: number,
-      suit: string,
-      abilityKey: string,
-      abilityVal: number,
-      bountyUsed: number,
-      achievement: number,
-      success: boolean,
-      fumble: boolean,
-      fromDeck: boolean,
-      fixedAt21: boolean,
-    }
-  }
-}
-```
+→ [Judgment_System.md#chatmessage-フラグ構造](../Game_Mechanics/Judgment_System.md) を参照。
 
 ---
 

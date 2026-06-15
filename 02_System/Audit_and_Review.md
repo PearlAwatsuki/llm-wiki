@@ -167,6 +167,15 @@
 
 - summary はドロップ時点では空文字。ライフパスアイテム側の概要フィールドとの連携はフェーズ6 で確定する。
 
+#### 修正記録（2026-06-15）
+
+- **ProseMirror 編集→閲覧切替時の自動保存バグ修正（初回）**: `_onToggleEditMode` を `async` 化し、
+  `_isEditMode = false` を先にセットしてから `actor.update()` を呼ぶことで自動保存を実装。
+- **切替トグルが反応しなくなるバグ修正（追補）**: `actor.update()` 後に `this.render()` を呼ばずに `return`
+  していたため、説明文が未変更の場合（Foundry が差分なしと判定し更新フックを発火しない）に
+  シートが再描画されず視覚的に編集モードのまま固まる不具合を修正。`await actor.update()` の直後に
+  `this.render()` を追加して再描画を保証した（`tnx-cast-sheet.mjs:_onToggleEditMode`）。
+
 ### [キャストシート技能コンテキストメニュー（複製の扱い）](フェーズ5)
 
 **日付**: 2026-06-12
@@ -635,3 +644,64 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 #### 課題・申し送り
 
 - HUD カードホバーの達成値プレビューは報酬点を含まない（カード選択前なので含められない）。これは設計上の仕様であり、プレビューは暫定値として扱う。
+
+---
+
+### [HUD プレビュー表示改善](フェーズ8-3/8-4)
+
+**日付**: 2026-06-15
+**関連実装**: `scripts/module/tnx-hud.mjs`, `templates/hud/hud.hbs`, `css/tnx2.css`
+**ステータス**: 監査済
+
+#### ルール解釈
+
+- 判定待機中は「使用できないスートのカードを光らせない」のみで十分。使用可能スートを金色グローで強調し、それ以外は通常表示（モノクロ化しない）。
+- プレビュー数値はカードの上に重ならず、カードの上部に独立して表示する（ユーザー確認済み）。
+
+#### 実装
+
+- `getAbilityBySuit()` が `{abilityKey, totalValue, totalControl}` オブジェクトを返すため、`.totalValue` で参照するよう修正（文字列連結バグ `n[object Object]` を解消）。
+- CSS: モノクロ化ルール（`opacity: 0.35; filter: grayscale(80%)`）を削除。有効スートへのゴールドグローのみ残す。
+- HUD テンプレート: `.card-in-hand` を `.card-hand-slot` ラッパーで包み、`.card-preview-label` を flex-column の先頭に配置（カードより上に表示）。
+- ホバーアニメーション: スロット単位で `transform: translateY` を適用し、ラベルとカードが一体で浮き上がる。
+
+#### 監査結果
+
+✅ プレビュー表示位置・モノクロ廃止・達成値計算ともにユーザー指示に準拠。
+
+#### 課題・申し送り
+
+なし。
+
+---
+
+### [RL 判定要求フロー](フェーズ8-5)
+
+**日付**: 2026-06-15
+**関連実装**: `scripts/module/tnx-rl-request-app.mjs`, `scripts/tnx.mjs`, `templates/app/rl-request-app.hbs`, `templates/chat/judgment-request.hbs`
+**ステータス**: 監査済
+
+#### ルール解釈
+
+- RL（GM）が判定種別・技能・目標値・対象 PL を指定して判定を要求する。
+- 技能判定: identificationKey で技能を同定。PL は自分のキャラクター上で同一 identificationKey の技能を検索して判定。未所持の場合は判定不可。
+- 能力値判定: 指定能力値のスートで判定。報酬点使用可。
+- 制御判定: 指定能力値のスートで制御判定。報酬点使用不可。
+- 目標値の非公開: PL には「（非公開）」と表示、GM には実値を表示。
+- RL モードは全公開のみ（TNX はカードベースのため非公開判定が原理的に成立しない）。
+
+#### 実装
+
+- `TnxRlRequestApp` (ApplicationV2 + HandlebarsApplicationMixin): フォーム送信で `ChatMessage.create` を呼び、`flags.judgmentRequest` にデータを保持。
+- `renderChatMessage` フック: 対象 PL（または GM）にのみ「判定する」ボタンを表示。結果 (`results[actorId]`) が存在する場合はボタンを結果表示に切り替え。
+- `TnxRlRequestApp.onDoJudgment()`: identificationKey でアクター上の技能を解決し、`getComboSuits()` で validSuits を取得。技能未所持の場合は warn して早期 return。
+- `getSceneControlButtons` フック: V13 では controls がオブジェクト（`tokens` キー）。配列・Map・オブジェクトの全パターンをハンドリング。
+
+#### 監査結果
+
+✅ identificationKey による技能同定・技能未所持の早期 return・rollMode 廃止（全公開のみ）・目標値非公開フラグ、いずれもユーザー指示に準拠。
+
+#### 課題・申し送り
+
+- `TnxRlRequestApp` ダイアログ内のチェックボックスは Foundry V13 の `appearance:none` + FA アイコン描画との相性で視覚的に不整合が残る（機能は正常）。将来的に CSS 調整の余地あり。
+- コンペンディウム技能のキャッシュは `TnxRlRequestApp._compendiumSkillCache` に保持。セッション中にコンペンディウムが更新された場合は反映されない（許容範囲）。
