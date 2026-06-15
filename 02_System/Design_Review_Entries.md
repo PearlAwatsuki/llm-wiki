@@ -2649,4 +2649,62 @@ armor / cyborg / tap / vehicle / ianus / weapon / housing-area / residence)、
   guest / troop / extra シートと戦闘タブは判定・神業システム完成後に実施する。
 - `OUTFIT_TYPES` 重複（`tnx-cast-sheet.mjs` の `OUTFIT_TYPES` と `tnx.mjs` の `OUTFIT_ITEM_TYPES`）は
   6-10 仕上げ時またはフェーズ11 着手前にリファクタする。現在の動作には影響なし。
+
+---
+
+### [TnxJudgmentEngine — 判定計算エンジン](フェーズ8-2)
+
+**日付**: 2026-06-15
+**レビュー対象**: `scripts/module/tnx-judgment-engine.mjs`
+**ステータス**: レビュー済(問題なし)
+
+#### レビュー観点
+
+- 保守性: 計算ロジックを UI から完全分離。純粋関数 + 定数で構成。テストが書きやすい。
+- 拡張性: AE ボーナス追加時は呼び出し側の `abilitiesCtx` を拡張するだけ。エンジン関数の署名変更は不要。
+- パフォーマンス: 単純な算術計算のみ。問題なし。
+- FVTT 慣行: Foundry の Cards API や Actor 型に依存しない純粋計算層として設計。
+- 既存設計との整合: `SUIT_TO_ABILITY` を `TnxJudgmentFlow` と `TnxHud` が共有インポートで参照。重複定義なし。
+
+#### 良かった点
+
+- FUMBLE_VALUE / FIXED_21 を Symbol で表現したことで、`if (result === FUMBLE_VALUE)` という型安全な判定が可能。マジックナンバーや文字列定数に比べて誤マッチがない。
+- `getComboSuits` を純粋関数として分離したことで、usage 側のロジックから独立してテスト可能。
+
+#### 課題
+
+- ⚠️ `getAbilityBySuit` は `abilitiesCtx[key].totalValue` を参照するが、`totalValue` の計算は `TnxJudgmentFlow._buildAbilitiesCtx` で行っており、それが AE を考慮しない暫定実装。ActiveEffect フェーズで修正が必要。
+
+#### 推奨アクション
+
+- ActiveEffect フェーズ: `_buildAbilitiesCtx` を廃止して `prepareDerivedData` の出力（`actor.system[key].totalValue`）を使うように移行する。
+
+---
+
+### [TnxJudgmentFlow / TnxJudgmentDialog — 判定フロー制御](フェーズ8-3)
+
+**日付**: 2026-06-15
+**レビュー対象**: `scripts/module/tnx-judgment-flow.mjs`, `scripts/module/tnx-judgment-dialog.mjs`
+**ステータス**: レビュー済(問題なし)
+
+#### レビュー観点
+
+- 保守性: `TnxJudgmentFlow` が Singleton 静的クラスとして状態を一元管理。`_context` / `_trumpMode` の二変数のみ。
+- 拡張性: ダイアログクラスを `tnx.mjs` でインジェクションすることで循環 import を回避。将来のダイアログ実装変更に強い。
+- パフォーマンス: 判定ごとに1回だけ `_buildAbilitiesCtx` を呼び出す。HUD の `_prepareContext` でも呼ぶが、Actor のアイテムスキャンは許容範囲。
+- FVTT 慣行: `ApplicationV2 / HandlebarsApplicationMixin` 準拠。`_onClose` のオーバーライドでキャンセル処理を実装（V2 のライフサイクル活用）。
+- 既存設計との整合: `TnxActionHandler.playCard` を介してカードプレイ操作を委譲。HUD の `_onPlayCard` が `TnxJudgmentFlow.isPending` を確認してインターセプト。
+
+#### 良かった点
+
+- HUD 中心フローにより、カード選択のフィードバック（ゴールドグロー・グレースケール）を HUD の CSS で一元管理できる。
+- 報酬点フローをカード選択後の別プロンプトに移動したことで、スート不一致時のスキップが自然に実装される。
+
+#### 課題
+
+- ⚠️ `TnxJudgmentFlow._buildAbilitiesCtx` はプライベート命名だが `TnxHud` から直接呼ばれている。将来的に `tnx-judgment-engine.mjs` に `buildAbilitiesCtx` をエクスポートする関数として昇格させると依存関係が明確になる（現時点では機能上の問題なし）。
+
+#### 推奨アクション
+
+- ActiveEffect フェーズ: `_buildAbilitiesCtx` を廃止し `actor.system[key].totalValue` を直参照するよう移行。`TnxHud` 側のプレビュー計算も同時に修正。
 - 次は **フェーズ6-10（仕上げ・wiki 整合・v0.7.0）**。

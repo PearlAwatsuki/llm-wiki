@@ -1,4 +1,4 @@
-﻿# TNX Foundry システム Wiki
+# TNX Foundry システム Wiki
 
 トーキョーN◎VA THE AXLERATION 用 Foundry VTT システム (`tokyo-nova-axleration`) の開発向けリファレンス。
 
@@ -12,10 +12,10 @@
 | 項目 | 値 |
 |---|---|
 | 対象 FVTT | v13.351 動作確認済 (`minimum: 11`) |
-| 現バージョン | v0.3.0 (フェーズ2 完了時点) |
-| 現在フェーズ | **フェーズ3** — 既存シート ApplicationV2 移行 |
+| 現バージョン | v0.7.0（フェーズ6完了） |
+| 現在フェーズ | **フェーズ8** — 判定システム 実装（8-3 完了、8-4 進行中） |
 | 判定方式 | カード (Cards API)。ダイスロールなし |
-| データ定義 | DataModel 25 type。`template.json` 廃止済 |
+| データ定義 | DataModel。`template.json` 廃止済 |
 
 ## 目次
 
@@ -39,9 +39,18 @@
 
 | ファイル | 内容 |
 |---|---|
-| [Sheets.md](UI/Sheets.md) | シート一覧・ApplicationV1/V2 状況 |
+| [Sheets.md](UI/Sheets.md) | シート一覧・ApplicationV2 状況 |
 | [HUD_and_Dialogs.md](UI/HUD_and_Dialogs.md) | TnxHud・ダイアログ・レコードシート |
 | [Templates.md](UI/Templates.md) | Handlebars テンプレート構成 |
+
+### Game_Rules — ゲームルール解釈
+
+| ファイル | 内容 |
+|---|---|
+| [Terminology.md](Game_Rules/Terminology.md) | 用語定義・名称表記マーカー |
+| [Bounty_Points.md](Game_Rules/Bounty_Points.md) | 報酬点ルール |
+| [Outfits.md](Game_Rules/Outfits.md) | 装備品ルール・フィールド解釈 |
+| [Judgment_Rules.md](Game_Rules/Judgment_Rules.md) | 判定ルール（能力・技能・カード値・スート対応） |
 
 ### Game_Mechanics — ゲームロジック実装
 
@@ -50,6 +59,7 @@
 | [Card_Operations.md](Game_Mechanics/Card_Operations.md) | 山札・手札・切り札・ニューロ操作 |
 | [Experience_Points.md](Game_Mechanics/Experience_Points.md) | EXP 計算・同期・User 移行 |
 | [Usage_System.md](Game_Mechanics/Usage_System.md) | usage テンプレート (判定基盤) |
+| [Judgment_System.md](Game_Mechanics/Judgment_System.md) | 判定システム実装設計（UIフロー・データ構造） |
 
 ### Migration — 移行・互換
 
@@ -69,8 +79,12 @@
 | ファイル | 内容 |
 |---|---|
 | [Completed_Phases.md](Phases/Completed_Phases.md) | フェーズ0/A/B/1/2 の完了内容 |
-| [Phase_2_User_Migration.md](Phases/Phase_2_User_Migration.md) | フェーズ2 設計・進捗 (完了) |
-| [Phase_3_Tasks_Detail.md](Phases/Phase_3_Tasks_Detail.md) | **現在フェーズ3** — ApplicationV2 全面移行 |
+| [Phase_3_Tasks_Detail.md](Phases/Phase_3_Tasks_Detail.md) | フェーズ3 完了記録 |
+| [Phase_4_Tasks_Detail.md](Phases/Phase_4_Tasks_Detail.md) | フェーズ4 完了記録 |
+| [Phase_5_Tasks_Detail.md](Phases/Phase_5_Tasks_Detail.md) | フェーズ5 完了記録 |
+| [Phase_6_Tasks_Detail.md](Phases/Phase_6_Tasks_Detail.md) | フェーズ6 完了記録 |
+| [Phase_7_Tasks_Detail.md](Phases/Phase_7_Tasks_Detail.md) | フェーズ7 完了記録（判定システム 設計） |
+| [Phase_8_Tasks_Detail.md](Phases/Phase_8_Tasks_Detail.md) | **現在フェーズ8** — 判定システム 実装 |
 
 ## 関連
 

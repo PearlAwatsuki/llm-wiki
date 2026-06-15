@@ -542,3 +542,68 @@ description の live 解決方針、いずれもユーザー確認済みの解�
 ✅ isCarrying / isPrepared の分離・控除対象の差分（control は準備済み必須、CS は携帯のみ）・
 isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" モード追加、
 いずれもユーザー確認済みのルール解釈に準拠。
+
+---
+
+### [判定エンジン・カード値計算・スート対応](フェーズ8-2)
+
+**日付**: 2026-06-15
+**関連実装**: `scripts/module/tnx-judgment-engine.mjs`
+**ステータス**: 監査済(問題なし)
+
+#### ルール解釈
+
+- カード値: 2〜10 は数字通り、J/Q/K = 10（手札ではファンブルにならない）、A = 11 または達成値21固定（プレイヤーが選択）、Joker = 宣言値。
+- 山札判定で J/Q/K が出た場合のみファンブル（`isFromDeck: true` でトリガー）。
+- スート → 能力値キー: ♠理性 / ♣感情 / ♥生命 / ♦外界。出したカードのスートで能力値が自動決定する。
+- 技能判定: 達成値 = カード値 + 対応能力値実効値 + 報酬点。技能レベルは加算しない。
+- 制御判定: カード値 ≤ 制御値で成功（下方判定）。A は 11（21固定オプションは制御判定では使用不可）。
+- スート不一致: 起動を拒否しない。カードをプレイして達成値 0 の通常失敗扱いで投稿する。
+- 組み合わせ技能の使用可能スート: 各技能の suits の積集合（AND）。
+
+#### 実装
+
+- `SUIT_TO_ABILITY` 定数: `{ spade: "reason", club: "passion", heart: "life", diamond: "mundane" }` を `Object.freeze` で不変化。
+- `getCardJudgmentValue({ numericValue, isJoker, fixedAt21, declaredValue, isFromDeck })`: Symbol 値（FUMBLE_VALUE / FIXED_21）を使い、型安全に「ファンブル」「21固定」を表現。
+- `calcSkillCheck`: `bountyUsed` を加算。A の 21固定は `fixedAt21 === true` のとき `achievement = 21` で完全固定（能力値・報酬点を加算しない）。
+- `calcControlCheck`: 制御値 = `abilitiesCtx[key].totalControl`。`success = cardValue <= controlVal`。
+- `getComboSuits(skillSystems)`: `ALL_SUITS.filter` で積集合を計算。
+
+#### 監査結果
+
+✅ カード値ルール（手札絵札は 10、山札絵札はファンブル）・スート対応表・能力値計算式・制御判定の下方判定・スート不一致 = 達成値 0 失敗、いずれもユーザー確認済みのルール解釈に準拠。
+
+#### 課題・申し送り
+
+- AE ボーナス（ActiveEffect）は現在未集計。`abilitiesCtx[key].totalValue` の計算式に AE 分が含まれていないため、AE フェーズ完了後に `_buildAbilitiesCtx` を拡張する。
+
+---
+
+### [判定フロー・HUD 連携・報酬点フロー](フェーズ8-3)
+
+**日付**: 2026-06-15
+**関連実装**: `scripts/module/tnx-judgment-flow.mjs`, `scripts/module/tnx-judgment-dialog.mjs`, `scripts/module/tnx-hud.mjs`
+**ステータス**: 監査済(問題なし)
+
+#### ルール解釈
+
+- 判定フロー（技能判定）: ① カードを出す → ② 報酬点の消費量を決定 → ③ 達成値計算 → ④ チャット投稿。
+- 報酬点選択: カード選択後に別プロンプトで行う（カード選択前ではない）。ルール上「カードを出した時点で判定成立 → その後に報酬点を使うかどうか決定」の順序に準拠。
+- スート不一致: 起動（カードのプレイ操作）は拒否しない。達成値 0 の通常失敗として投稿する。ファンブルとは区別しない。
+- 切り札: 切り札を消費することを宣言 → 手札から 1 枚を Joker として使用 → 切り札はシーンカードへ。
+- ×ボタンでダイアログを閉じると判定キャンセル（ユーザー要求、2026-06-15 確定）。
+
+#### 実装
+
+- `TnxJudgmentFlow` (singleton 静的クラス): `_context` / `_trumpMode` で状態管理。ダイアログクラスは `tnx.mjs` で注入（循環 import 回避）。
+- `_execute`: ① ダイアログ close・state clear → ② カードプレイ（`TnxActionHandler.playCard`）→ ③ HUD 再描画 → ④ `_promptBountyUsage`（スート不一致・制御判定はスキップ）→ ⑤ 達成値計算 → ⑥ チャット投稿。
+- `TnxJudgmentDialog._onClose`: `TnxJudgmentFlow.cancel()` を呼び、×ボタンでも判定キャンセルを実現。
+- HUD カード達成値プレビュー: `getCardJudgmentValue + getAbilityBySuit` でホバー時に数値バッジを表示。スート不一致は赤バッジで「0」表示。
+
+#### 監査結果
+
+✅ 報酬点フローの順序（カード後）・スート不一致の扱い・切り札消費フロー・×ボタンキャンセル、いずれもユーザー指示に準拠。
+
+#### 課題・申し送り
+
+- 制御判定の `achievement` フィールドは `null`（達成値概念がない）。チャットテンプレートで制御判定専用の表示分岐を使用。将来的に型を明確化する場合はオブジェクト構造の見直しが必要。
