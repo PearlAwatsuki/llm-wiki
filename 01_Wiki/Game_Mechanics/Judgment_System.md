@@ -295,6 +295,94 @@ TnxJudgmentFlow.dialogClass = TnxJudgmentDialog
 | キャストシート 能力値クリック | `_onStartAbilityCheck` → `open()` | `abilityCheck` 型。`validSuits` は1スートのみ |
 | キャストシート 制御値クリック | `_onStartControlCheck` → `open()` | `controlCheck` 型。`bountyAvailable: 0` 固定 |
 | アクトシート ハンマーボタン | `_onStartInfoSkillCheck` → `open()` | `game.user.character` をアクターとして使用。`validSuits: ALL_SUITS`（全スート） |
+| RL 要求チャット「判定する」 | `TnxRlRequestApp.onDoJudgment()` → `open()` | identificationKey でキャラ上の技能を解決。技能未所持なら早期 return |
+
+---
+
+## RL 判定要求フロー（フェーズ 8-5）
+
+### 概要
+
+GM がシーンコントロールの「判定要求」ボタンからダイアログを開き、対象 PL に判定を要求する機能。
+
+**ファイル構成:**
+
+| ファイル | 役割 |
+|---|---|
+| `scripts/module/tnx-rl-request-app.mjs` | `TnxRlRequestApp` — ダイアログ本体・送信処理・判定実行ハンドラ |
+| `templates/app/rl-request-app.hbs` | 判定要求ダイアログ UI |
+| `templates/chat/judgment-request.hbs` | 判定要求チャットカード（静的 HTML）|
+| `scripts/tnx.mjs` | `getSceneControlButtons` フック・`renderChatMessage` フック |
+
+### フロー詳細
+
+```
+1. GM がシーンコントロール → トークングループ → 「判定要求」ボタンをクリック
+   → TnxRlRequestApp.render(true)
+
+2. ダイアログで入力:
+   - 判定種別: skillCheck / abilityCheck / controlCheck
+   - 技能: 一般技能コンペンディウムの identificationKey から選択、または「その他」(自由入力 + スート手動選択)
+   - 能力値: abilityCheck/controlCheck 時は理性/感情/生命/外界を選択
+   - 目標値: number-input-spinner + 非公開フラグ(targetValueHidden)
+   - 説明文: textarea (省略可)
+   - 対象プレイヤー: 接続中の非 GM かつキャラクター所持ユーザーのチェックボックス
+
+3. 送信 → TnxRlRequestApp._onSubmit():
+   - skillLabel, validSuits, targetValue, targets を組み立てる
+   - ChatMessage.create({ content, flags.judgmentRequest: {...} })
+
+4. 全クライアントが ChatMessage を受信 → renderChatMessage フック:
+   - targetValueHidden かつ非 GM → 目標値を「（非公開）」表示
+   - 対象の PL (game.user.id === userId) または GM → 「判定する」ボタンを注入
+   - それ以外の PL → 「待機中…」を注入
+   - results[actorId] が存在する場合 → 結果を注入（ボタンを置き換え）
+
+5. PL が「判定する」クリック → TnxRlRequestApp.onDoJudgment(flagData, actorId, messageId):
+   - skillCheck + identificationKey: actor.items から identificationKey 一致の generalSkill を検索
+     - 未所持なら warn して return
+     - 所持なら skillIds=[matchedItem.id], getComboSuits([matchedItem.system]) で validSuits を解決
+     - usesBounty === true なら bountyAvailable = actorBounty
+   - abilityCheck: bountyAvailable = actorBounty（全技能で報酬点使用可）
+   - controlCheck: bountyAvailable = 0
+   - skillCheck + その他: bountyAvailable = 0, validSuits = flagSuits
+   - TnxJudgmentFlow.open(context) で判定開始
+
+6. 判定完了 → TnxSocketHandler → message.update(flags.results) → renderChatMessage 再発火 → 結果表示
+```
+
+### ChatMessage フラグ構造
+
+```javascript
+// flags["tokyo-nova-axleration"].judgmentRequest
+{
+    judgmentType:      "skillCheck" | "abilityCheck" | "controlCheck",
+    identificationKey: string | null,    // 技能識別キー（その他・能力値判定時は null）
+    skillLabel:        string,            // 表示用名称
+    validSuits:        string[],          // skillCheck(識別キーあり) は []（PL 側で解決）
+    targetValue:       number | null,
+    targetValueHidden: boolean,
+    description:       string,
+    targets: [{ userId, actorId, actorName, userName }],
+    results: {
+        [actorId]: {
+            achievement: number | null,
+            success:     boolean | null,  // null = 目標値なし
+            fumble:      boolean,
+            cardValue:   number,
+            controlVal:  number | null,   // controlCheck のみ
+        }
+    },
+    status: "pending" | "closed",
+}
+```
+
+### 設計上の注意点
+
+- `identificationKey` が空の場合（その他）: PL の技能アイテムを検索しない。RL が指定したスートを使用。
+- `validSuits: []`（識別キーあり）の場合: `onDoJudgment` 内で `getComboSuits()` により PL 自身の技能から解決する。
+- `renderChatMessage` は ChatMessage の更新ごとに再発火するため、results が追記された時点で自動的にボタン→結果に切り替わる。
+- 目標値が `null` の場合はチャットカードに「—」表示。成否判定はスキップ（達成値のみ表示）。
 
 ### number-input-spinner ダイアログ実装パターン
 
