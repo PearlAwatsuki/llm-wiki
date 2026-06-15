@@ -160,11 +160,11 @@ class TnxJudgmentEngine {
 
 **`scripts/journal/tnx-scenario-sheet.mjs`** に infoItem skill クリックハンドラ追加
 
-- [ ] キャストシート: 技能行 → `TnxJudgmentDialog` 起動（技能 Item を渡す）
-- [ ] キャストシート: 能力値クリック → `TnxJudgmentDialog` 起動（abilityKey・TN入力あり）
-- [ ] キャストシート: 制御値クリック → `TnxJudgmentDialog` 起動（controlCheck モード）
-- [ ] アクトシート: infoItem skill 行クリック → `TnxJudgmentDialog`（TN=tn、技能名=name）
-- [ ] 判定結果 → `templates/chat/judgment-result.hbs` でチャット投稿
+- [x] キャストシート: 技能行クリック（一般・スタイル両方）→ `TnxJudgmentFlow.open`（スートは技能 Item の suits から算出）
+- [x] キャストシート: 能力値クリック → `TnxJudgmentFlow.open`（abilityCheck モード。対応スート1択）
+- [x] キャストシート: 制御値クリック → `TnxJudgmentFlow.open`（controlCheck モード。対応スート1択）
+- [x] アクトシート: infoItem skill 行のハンマーボタン → `TnxJudgmentFlow.open`（TN=tn、技能名=name テキスト、validSuits=全スート）
+- [x] 判定結果 → `templates/chat/judgment-result.hbs` でチャット投稿（8-3 で実装済み）
 
 ---
 
