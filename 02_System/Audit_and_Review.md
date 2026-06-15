@@ -876,3 +876,23 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 #### 監査結果
 
 ✅ 全 Cards API 呼び出し箇所（`tnx-action-handler.mjs` / `tnx-hud.mjs` / `tnx-scenario-sheet.mjs` / `tnx-card-setup-app.mjs` / `tnx-judgment-flow.mjs`）に `chatNotification: false` が付与されていることを確認。
+
+---
+
+### [usage edit 接続・skillRefs 編集 UI（KI-002）](フェーズ8-6)
+
+**日付**: 2026-06-15
+**関連実装**: `scripts/item/tnx-item-sheet.mjs`（`_onUsageEdit`）、`scripts/module/tnx-dialog.mjs`（`UsageCreationDialog.editAction`）、`templates/dialog/usage-edit-dialog.hbs`
+**ステータス**: 設計レビュー済
+
+#### 設計
+
+- `usage-list.hbs` の edit ボタン（`.action-edit[data-index]`）に `_onUsageEdit` イベントリスナーを接続。
+- `_onUsageEdit`: action を `index` で取得 → `UsageCreationDialog.editAction()` で編集ダイアログを開く → 戻り値で `system.actions[index]` を上書き更新。
+- `UsageCreationDialog.editAction()`: type / name / description / skillRefs（multi-select）を持つ新テンプレート `usage-edit-dialog.hbs` を使用。
+- `availableSkills`: `this.item.actor?.items` から `generalSkill | styleSkill`（自身を除く）をフィルタして名前順ソート。スタンドアロンアイテムでは空配列 → skillRefs 欄は非表示。
+- `skillRefs` の保存: `<select multiple name="skillRefIds">` の選択値を `[{ itemId }]` 配列に変換して保存。
+
+#### 監査結果
+
+✅ KI-002（usage edit ハンドラ不在）を解消。skillRefs の編集が item シートから行えるようになった。スタンドアロンアイテムでの安全な fallback あり。

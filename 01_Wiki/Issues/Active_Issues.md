@@ -2,15 +2,6 @@
 
 [Known_Issues_Detail.md](Known_Issues_Detail.md) から**現在有効**な項目のみ抽出。
 
-## KI-002: usage-list edit ハンドラ不在
-
-| 項目 | 内容 |
-|---|---|
-| 症状 | `usage-list.hbs` の edit ボタンに対応ハンドラなし |
-| 影響 | usage 編集ボタンが動作しない |
-| 難易度 | 中 (usage 設計と連動) |
-| 担当 | フェーズ7 (判定システム設計) |
-
 ## KI-006: socket 未実装
 
 | 項目 | 内容 |

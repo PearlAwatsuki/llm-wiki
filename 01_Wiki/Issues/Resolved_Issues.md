@@ -84,6 +84,11 @@
 - `StyleSkillDataModel` フィールド名を camelCase に正規化
 - **解消コミット**: 83f8600 (2026-06-07)
 
+## KI-002: usage-list edit ハンドラ不在
+
+- **解消**: フェーズ8-6 (2026-06-15)
+- `_onUsageEdit` ハンドラ追加 + `UsageCreationDialog.editAction()` で type / name / description / skillRefs の全フィールド編集 UI を実装
+
 ---
 
 ## フェーズ2 で部分的解消

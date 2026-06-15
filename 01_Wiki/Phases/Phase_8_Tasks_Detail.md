@@ -201,15 +201,16 @@ class TnxJudgmentEngine {
 
 ---
 
-### 8-6: usage edit 接続（KI-002 解決）
+### 8-6: usage edit 接続（KI-002 解決）✅ 完了 (2026-06-15)
 
 **`templates/parts/usage-list.hbs`** の edit ボタンに `_onUsageEdit` ハンドラを接続。
 **`UsageCreationDialog`** を拡張して `skillRefs` の編集 UI を追加。
 
-- [ ] `_onUsageEdit` ハンドラ追加（対象 Item・action index を渡す）
-- [ ] `UsageCreationDialog`: type セレクト / name / description / skillRefs ドロップダウン
-  - skillRefs: アクターが所持するスキルアイテムを列挙
-  - 型に応じてドロップダウン内の候補をフィルタ（アクション技能のみ等）
+- [x] `_onUsageEdit` ハンドラ追加（対象 Item・action index を渡す）
+- [x] `UsageCreationDialog.editAction()`: type セレクト / name / description / skillRefs multi-select
+  - skillRefs: アクターが所持する generalSkill / styleSkill アイテムを列挙（自分自身は除外）
+  - 新規テンプレート `templates/dialog/usage-edit-dialog.hbs` を追加
+  - スタンドアロンアイテム（actor なし）の場合は skillRefs 欄を非表示
 
 ---
 
