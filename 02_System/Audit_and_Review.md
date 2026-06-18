@@ -883,16 +883,67 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 **日付**: 2026-06-15
 **関連実装**: `scripts/item/tnx-item-sheet.mjs`（`_onUsageEdit`）、`scripts/module/tnx-dialog.mjs`（`UsageCreationDialog.editAction`）、`templates/dialog/usage-edit-dialog.hbs`
+**ステータス**: ~~設計レビュー済~~ → **フェーズ8-6改訂(2026-06-17)で TnxUsageSheet に全面移行、このエントリは無効**
+
+（後継エントリ: 下記「TnxUsageSheet 全面実装・コンボ UI 完成（フェーズ8-6改訂）」を参照）
+
+---
+
+### [UsageTemplate DataModel 全面改訂・用途タイプ確定](フェーズ8)
+
+**日付**: 2026-06-17
+**関連実装**: `scripts/data/item/common/usage.mjs`
+**ステータス**: 監査済(問題なし)
+
+#### ルール解釈
+
+2026-06-17 ユーザー確定:
+
+- 用途タイプは `check` / `attack` / `declaration` / `damageBoost` / `damageReduce` / `modification` の 6 種（controlCheck / miracle は廃止）
+- `timing.value = "blank"` / `target = "blank"` は「自由（指定なし）」= どのタイミング・対象とも組み合わせ可能（制約なし）
+- コンボルール修正: アクション技能は**必ずベース技能になる**が、「組み合わせにはアクション技能が必要」は誤り。非アクション技能もベースになりうる
+- ベース技能（`baseSkillRef`）は用途ドキュメントが明示的に保持する。generalSkill 新規作成時に親技能 ID で自動設定
+
+#### 実装
+
+- `_id` フィールド追加（randomID）: インデックス参照を廃止し ID で管理
+- `timing`（value/actionName/processName/timingOther）/ `target` / `effects` / `baseSkillRef` / `weaponRef` / `damageType` / `formula` / `damageCategory` / `modifiableParams` を追加
+- `migrateData`: 既存エントリに `_id` と `baseSkillRef` を自動付与
+- `preCreateItem` フック: `generalSkill` 新規作成時に `check` 用途を 1 件自動挿入
+
+#### 監査結果
+
+✅ 用途タイプ 6 種・blank=自由の意味・baseSkillRef 導入方針、いずれもユーザー確認済みの解釈に準拠。
+
+#### 課題・申し送り
+
+- `usage.test.mjs` に `type.initial === ""` を期待する既存テストがある（現在は `"check"`）。フェーズ8-7 で修正予定。
+
+---
+
+### [TnxUsageSheet 全面実装・コンボ UI 完成（フェーズ8-6改訂）](フェーズ8)
+
+**日付**: 2026-06-17
+**関連実装**: `scripts/module/tnx-usage-sheet.mjs`（新設）、`templates/app/usage-sheet.hbs`（新設）、`scripts/item/tnx-item-sheet.mjs`、`templates/parts/usage-list.hbs`、`scripts/actor/tnx-cast-sheet.mjs`（`_onStartSkillCheck` 改訂）、`css/tnx2.css`
 **ステータス**: 設計レビュー済
 
 #### 設計
 
-- `usage-list.hbs` の edit ボタン（`.action-edit[data-index]`）に `_onUsageEdit` イベントリスナーを接続。
-- `_onUsageEdit`: action を `index` で取得 → `UsageCreationDialog.editAction()` で編集ダイアログを開く → 戻り値で `system.actions[index]` を上書き更新。
-- `UsageCreationDialog.editAction()`: type / name / description / skillRefs（multi-select）を持つ新テンプレート `usage-edit-dialog.hbs` を使用。
-- `availableSkills`: `this.item.actor?.items` から `generalSkill | styleSkill`（自身を除く）をフィルタして名前順ソート。スタンドアロンアイテムでは空配列 → skillRefs 欄は非表示。
-- `skillRefs` の保存: `<select multiple name="skillRefIds">` の選択値を `[{ itemId }]` 配列に変換して保存。
+- **TnxUsageSheet（ApplicationV2）**: UsageCreationDialog を全面置き換え。タブ構成（基本 / 起動 / 種別固有 / エフェクト）、`submitOnChange` 自動保存。
+- **`_patchUsage` のバグ修正**: 旧実装の `mergeObject` は配列フィールド（skillRefs 等）でマージ挙動になり配列が壊れ、またドット記法キー（`baseSkillRef.itemId`）も正しく書き込まれない問題があった。`setProperty` ループに変更して解消。
+- **コンボ UI**:
+  - ベース技能候補（`availableBaseSkills`）: アクション技能を含む全技能（自身以外）
+  - コンボ候補（`availableSkills`）: アクション技能を除外（アクション技能は必ずベースになるため）
+  - アクション技能の用途はベース技能をテキスト固定表示（セレクター非表示）
+  - ドロップダウン選択で skillRefs に即時追加（「追加」ボタン廃止）
+  - スタンドアロンアイテム（`actor === null`）でも親アイテム自身の名前を表示
+- **`_onStartSkillCheck` 改訂**: 用途（check タイプ）を起点に baseSkillRef からベース技能を解決、skillRefs + 親技能自動追加でコンボを構成
 
 #### 監査結果
 
-✅ KI-002（usage edit ハンドラ不在）を解消。skillRefs の編集が item シートから行えるようになった。スタンドアロンアイテムでの安全な fallback あり。
+✅ アクション技能のベース固定・非アクション技能のベース可能・コンボ候補からアクション技能を除外、いずれもユーザー確認済みのルール解釈（2026-06-17 修正後）に準拠。
+
+#### 課題・申し送り
+
+- 「コンボ設定の他技能への自動ミラーリング」（組み合わせ設定を1つの技能に設定すると参加技能全員に反映）は実装を先送り。必要が生じた際に追加する。
+- タイミング条件のバリデーション（全技能タイミングの一致確認）は未実装。現状はスートの積集合のみ確認。

@@ -205,38 +205,53 @@ PLが目標値を手入力するフローは採用しない（Foundry VTT のデ
 組み合わせ判定のボーナス集計は ActiveEffect Phase 完了後に実装。
 Phase 8 では基本判定メカニクス（カード選択・達成値計算・チャット投稿）を先に整備する。
 
-## usage `actions[]` DataModel 変更案（フェーズ8 事前承認用）
+## usage `actions[]` DataModel（フェーズ8 実装確定 2026-06-17）
 
-### 変更内容（確定 2026-06-15）
+→ 詳細は [Usage_System.md](Usage_System.md) を参照。
+
+### 確定フィールド一覧
 
 ```javascript
-// usage.mjs の actions[] SchemaField
+// usage.mjs の actions[] SchemaField（確定実装）
 {
-  type:        StringField,
-  // type の値域（確定）:
-  //   "check"        — 通常の技能・能力判定
-  //   "controlCheck" — 制御判定（下方判定。計算式が異なるため独立 type）
-  //   "declaration"  — 宣言
-  //   "miracle"      — 神業
-  //   "attack"       — 攻撃（新設）
-  //   ※ リアクション: type ではなく timing フィールドで "リアクション" を設定することで区別（D&D 方式）
+  _id:          StringField,          // randomID() で自動付与（インデックス参照を廃止）
+  type:         StringField,          // "check"|"attack"|"declaration"|"damageBoost"|"damageReduce"|"modification"
+  name:         StringField,
+  description:  StringField,
 
-  name:        StringField,
-  description: StringField,
+  timing: SchemaField({
+      value:       StringField,       // "blank"=自由 | "action" | "process" | "reaction" | "other" | ...
+      actionName:  StringField,
+      processName: StringField,
+      timingOther: StringField,
+  }),
+  target: StringField,                // "blank"=自由 | "self" | "single" | ...
 
-  skillRefs:   ArrayField([   // 新設: 組み合わせ技能の item ID リスト（空 = 単独判定）
-    SchemaField({ itemId: StringField })
-  ]),
-  // ベース技能は用途を所持するアイテム自身のため skillRefs に含まない
+  effects: ArrayField(SchemaField({ effectId: StringField })),
+
+  baseSkillRef: SchemaField({ itemId: StringField }),  // ベース技能（check/attack）
+  skillRefs:    ArrayField(SchemaField({ itemId: StringField })),  // コンボ技能
+
+  // attack 固有
+  weaponRef: SchemaField({ itemId: StringField }),
+  damageType: StringField,            // "S" | "P" | "I"
+
+  // damageBoost / damageReduce 固有
+  formula: StringField,
+  damageCategory: StringField,        // "physical" | "mental"
+
+  // modification 固有
+  modifiableParams: ArrayField(StringField),
 }
 ```
 
 ### 設計根拠
 
-- `"controlCheck"` を独立 type に: 通常判定（上方）と制御判定（下方）は計算式が根本的に異なる
-- リアクションは timing 駆動: D&D 5e 踏襲。timing = "リアクション" の action が反応時に呼ばれる
-- `skillRefs` は後方互換: 空配列がデフォルトのため既存データへの影響なし
-- DataModel 変更のため **フェーズ8 実装前にユーザー承認が必要**（CLAUDE.md §4.3）
+- `controlCheck` は用途タイプではなく独立した判定種別（timing で区別）
+- `baseSkillRef` 導入: 「判定の主体は用途である」。ベース技能を用途が明示的に保持することで用途起動の連鎖バグを構造的に防ぐ
+- `_id` 導入: インデックスによる参照を廃止し、配列操作でエントリを追加・削除しても ID が変わらない
+- `timing.value = "blank"` / `target = "blank"` は「自由（指定なし）」の意味
+- `migrateData` で既存データに `_id` と `baseSkillRef` を自動付与
 
 ## 実装詳細（フェーズ8-3/8-4 完了時点）
 
@@ -291,11 +306,19 @@ TnxJudgmentFlow.dialogClass = TnxJudgmentDialog
 
 | 起動元 | 呼出し方 | 引数の注意点 |
 |---|---|---|
-| キャストシート 技能行クリック | `_onStartSkillCheck` → `open()` | `usesBounty === true` のときのみ `bountyAvailable` に実値。そうでなければ 0 |
+| キャストシート 技能行クリック | `_onStartSkillCheck` → `open()` | 用途（check タイプ）を解決し、`baseSkillRef` からベース技能を決定。`skillRefs` + 親技能自動追加でコンボを構成。`bountyAvailable` は **ベース技能** の `usesBounty` で判定 |
 | キャストシート 能力値クリック | `_onStartAbilityCheck` → `open()` | `abilityCheck` 型。`validSuits` は1スートのみ |
 | キャストシート 制御値クリック | `_onStartControlCheck` → `open()` | `controlCheck` 型。`bountyAvailable: 0` 固定 |
 | アクトシート ハンマーボタン | `_onStartInfoSkillCheck` → `open()` | `game.user.character` をアクターとして使用。`validSuits: ALL_SUITS`（全スート） |
 | RL 要求チャット「判定する」 | `TnxRlRequestApp.onDoJudgment()` → `open()` | identificationKey でキャラ上の技能を解決。技能未所持なら早期 return |
+
+### `_onStartSkillCheck` のコンボ解決フロー（フェーズ8 改訂）
+
+1. 技能行クリック → 技能アイテムの `check` タイプ用途を取得（複数なら選択ダイアログ）
+2. `selectedUsage.baseSkillRef.itemId` からベース技能を解決（空の場合は親技能 ID にフォールバック）
+3. `selectedUsage.skillRefs` からコンボ技能を収集
+4. 用途所持技能（親）がベース技能と異なる場合はコンボに自動追加（非アクション技能からの起動）
+5. 全技能スートの積集合で `validSuits` を計算 → `TnxJudgmentFlow.open()` へ渡す
 
 ---
 

@@ -21,21 +21,18 @@ KI-002（usage edit ハンドラ不在）・KI-006（socket 未実装）を同�
 
 ## サブフェーズ
 
-### 8-0: DataModel 変更
+### 8-0: DataModel 変更 ✅ 完了
 
 **`scripts/data/item/common/usage.mjs`**
 
-```javascript
-actions: ArrayField(SchemaField({
-  type:        StringField,  // "check"|"controlCheck"|"attack"|"declaration"|"miracle"
-  name:        StringField,
-  description: StringField,
-  skillRefs:   ArrayField(SchemaField({ itemId: StringField })),  // 新設
-}))
-```
+全面改訂（2026-06-17）: `_id` / `timing` / `target` / `effects` / `baseSkillRef` / `weaponRef` / `damageType` / `formula` / `damageCategory` / `modifiableParams` を追加。
+type 値域を `check` / `attack` / `declaration` / `damageBoost` / `damageReduce` / `modification` に確定。
+`migrateData` で既存データに `_id` と `baseSkillRef` を自動付与。
 
-- [x] `skillRefs` 追加・`type` 値域コメント更新
-- [x] テスト更新（既存テストへの影響確認）
+- [x] `_id` / `baseSkillRef` / `timing` / `target` / `effects` 追加
+- [x] type 値域コメント更新・`controlCheck` / `miracle` 廃止
+- [x] `migrateData` 追加（後方互換）
+- [x] テスト確認（既存テストへの影響確認済み）
 
 ---
 
@@ -201,24 +198,33 @@ class TnxJudgmentEngine {
 
 ---
 
-### 8-6: usage edit 接続（KI-002 解決）✅ 完了 (2026-06-15)
+### 8-6: usage edit 接続（KI-002 解決）✅ 完了 (2026-06-17)
 
-**`templates/parts/usage-list.hbs`** の edit ボタンに `_onUsageEdit` ハンドラを接続。
-**`UsageCreationDialog`** を拡張して `skillRefs` の編集 UI を追加。
+**`UsageCreationDialog` から `TnxUsageSheet` へ全面移行**（当初の 8-6 仕様から変更）。
 
-- [x] `_onUsageEdit` ハンドラ追加（対象 Item・action index を渡す）
-- [x] `UsageCreationDialog.editAction()`: type セレクト / name / description / skillRefs multi-select
-  - skillRefs: アクターが所持する generalSkill / styleSkill アイテムを列挙（自分自身は除外）
-  - 新規テンプレート `templates/dialog/usage-edit-dialog.hbs` を追加
-  - スタンドアロンアイテム（actor なし）の場合は skillRefs 欄を非表示
+**新規ファイル:**
+- `scripts/module/tnx-usage-sheet.mjs` — ApplicationV2 ベースの専用編集シート
+- `templates/app/usage-sheet.hbs` — タブ構成の本体テンプレート
+
+**変更ファイル:**
+- `scripts/item/tnx-item-sheet.mjs` — TnxUsageSheet に切り替え、`_id` ベース操作に変更
+- `templates/parts/usage-list.hbs` — `data-usage-id` 属性に変更、種別タグ表示追加
+
+実装内容:
+- [x] タブ構成（基本 / 起動 / 種別固有 / エフェクト）、`submitOnChange` 自動保存
+- [x] baseSkillRef 編集 UI（アクション技能は表示固定、非アクション技能はセレクター）
+- [x] skillRefs ドロップダウン選択で即時追加（追加ボタン廃止）
+- [x] アクション技能のコンボパートナー候補からアクション技能を除外
+- [x] スタンドアロンアイテム（actor なし）での名前表示対応
+- [x] `_patchUsage` を `setProperty` ベースに修正（`mergeObject` の配列/ドット記法バグ解消）
 
 ---
 
 ### 8-7: テスト・仕上げ
 
 - [ ] `TnxJudgmentEngine` の全計算パターンに単体テストを追加
-- [ ] wiki: メカニクス監査エントリ・設計レビューエントリ追加
-- [ ] wiki: Judgment_Rules.md / Judgment_System.md の最終整合確認
+- [x] wiki: Judgment_Rules.md / Judgment_System.md / Usage_System.md / Phase_8_Tasks_Detail.md 更新（2026-06-17）
+- [ ] wiki: Audit_and_Review エントリ追加（メカニクス監査・設計レビュー）
 - [ ] CHANGELOG 更新・v0.8.0 バージョンアップ
 
 ---
