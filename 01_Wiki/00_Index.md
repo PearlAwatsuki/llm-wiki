@@ -59,6 +59,7 @@
 | [Miracle_Rules.md](Game_Rules/Miracle_Rules.md) | 神業（構造・機能タイプ・神業一覧・派生参照・自動化方針） |
 | [Appearance_Check.md](Game_Rules/Appearance_Check.md) | 登場判定（タイミング・使用技能・エリア別目標値・チーム免除・ゴースト） |
 | [Purchase_and_Modification.md](Game_Rules/Purchase_and_Modification.md) | 購入判定・改造判定（信用・購入値・改造技能×製作技能・分類別改造項目） |
+| [Bad_Status.md](Game_Rules/Bad_Status.md) | バッドステータス（状態異常の効果・回復・重複・強度。AE 設計の前提） |
 
 ### Game_Mechanics — ゲームロジック実装
 
