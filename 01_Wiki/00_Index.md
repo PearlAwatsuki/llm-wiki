@@ -12,8 +12,8 @@
 | 項目 | 値 |
 |---|---|
 | 対象 FVTT | v13.351 動作確認済 (`minimum: 11`) |
-| 現バージョン | v0.7.0（フェーズ6完了） |
-| 現在フェーズ | **フェーズ8** — 判定システム 実装（8-3 完了、8-4 進行中） |
+| 現バージョン | v0.8.0（フェーズ8 部分完了） |
+| 現在フェーズ | **フェーズ9** — ActiveEffect / 派生値計算（設計準備。2026-06-20 フェーズ再編） |
 | 判定方式 | カード (Cards API)。ダイスロールなし |
 | データ定義 | DataModel。`template.json` 廃止済 |
 
@@ -48,9 +48,14 @@
 | ファイル | 内容 |
 |---|---|
 | [Terminology.md](Game_Rules/Terminology.md) | 用語定義・名称表記マーカー |
+| [Character_Creation.md](Game_Rules/Character_Creation.md) | キャラクター作成・技能体系・スタイル・経験点・能力値clamp |
 | [Bounty_Points.md](Game_Rules/Bounty_Points.md) | 報酬点ルール |
 | [Outfits.md](Game_Rules/Outfits.md) | 装備品ルール・フィールド解釈 |
 | [Judgment_Rules.md](Game_Rules/Judgment_Rules.md) | 判定ルール（能力・技能・カード値・スート対応） |
+| [Damage_Rules.md](Game_Rules/Damage_Rules.md) | ダメージ算出・適用（物理/精神/社会・チャート・戦闘不能・治療） |
+| [Combat_Flow.md](Game_Rules/Combat_Flow.md) | カット進行（プロセス・アクション・AR・コンバットスピード） |
+| [Scenario_Progress.md](Game_Rules/Scenario_Progress.md) | アクト進行（アンダー/プレ/メイン/ポスト・シーン進行・舞台裏・経験点） |
+| [Time_Management.md](Game_Rules/Time_Management.md) | 時間単位（メインプロセス/カット/シーン/アクト）・使用回数リセット・持続失効 |
 
 ### Game_Mechanics — ゲームロジック実装
 
