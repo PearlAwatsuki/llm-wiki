@@ -1128,3 +1128,28 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 - 旧 `system.outfitMod` / `system.appearanceModifier` の DB 保存値は以後 prepareDerivedData が常に上書きするため死蔵となる（読まれない）。実害なし。マイグレーションで除去するかは将来判断。
 - 9-3 で危険値集計はアイテムの AE 込み実効値（`appearancePenalty.total`）を読むよう切替予定（現状は raw value）。
 - guest / troop の集計は本フェーズ範囲外（11）。EXP 同期機構（updateCastExp / User flag）は B-2 対象外で不変。
+
+---
+
+### アイテム AE 着地点・実効値派生（設計レビュー）（フェーズ9-3a）
+
+**日付**: 2026-06-20
+**関連実装**: `scripts/data/item/helpers.mjs`（effectMod・`computeItemEffectiveValues`）、`scripts/data/item/common/outfit-base.mjs` / `skill-base.mjs`（prepareDerivedData）、`weapon.mjs` / `residence.mjs`、各テスト
+**ステータス**: 設計レビュー済（表示切替・モードB・KI-020 は継続）
+
+#### 設計
+
+- **着地点 substrate（漏れ防止＝ヘルパー単位）**: `modeValueField` に effectMod（隠匿値/電制/危険値/購入値/常備化EXP/受け値/制御修正/SF/乗員/サイクル/CS修正/スロット数を一括網羅）、`defenceField` に S/P/I_effectMod、attack.effectMod（既済）、weapon.FAValueEffectMod、skill levelEffectMod、residence 3stat。フィールド手列挙は漏れるため構造単位で付与（ユーザー指摘 2026-06-20）。
+- **除外**: 住宅エリア供給値・スタイル能力値（それ自体がエフェクト的でターゲットでない、ユーザー確定）。
+- **実効値派生（representation はフェーズ9）**: `computeItemEffectiveValues` が **base を書き換えず** `.total` 系を生成。mode=value 時のみ effectMod 加算。`OutfitBaseTemplate.prepareDerivedData` 1ヶ所で全10アウトフィット型に一括適用（concrete 未定義のため継承）、技能は `SkillBaseTemplate`。
+- **編集 UI は base / 表示・消費は total**（入力欄に実効値が漏れない＝AE 二重加算を防ぐ、ユーザー指摘）。
+
+#### 監査結果
+
+✅ §4.3 のスキーマ変更（effectMod 群）はユーザー承認済・ヘルパー単位で網羅。792 テスト green（substrate/computeItemEffectiveValues 単体テスト）、lint 新規警告ゼロ。
+
+#### 課題・申し送り
+
+- clamp はしない（controlMod / combatSpeedMod は負の修正がありうる）。0clamp は消費側（ダメージ算出フェーズ12）の責務。
+- **mixin の prepareDerivedData は順序依存**（後勝ち・チェーンしない）。現状 prepareDerivedData 定義は cast / outfit-base / skill-base の3つのみで競合なし。今後 UsageTemplate 等に追加する際は super 委譲か concrete 集約を検討。
+- 表示の total 参照切替（アウトフィット概要・キャストシート装備表示）は次の増分。モードB（アクター→アイテム横断）・KI-020 は継続。
