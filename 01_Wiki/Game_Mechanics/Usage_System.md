@@ -20,7 +20,18 @@ actions: ArrayField(SchemaField({
         timingOther: StringField,       // timing.value === "other" の場合の自由入力
     }),
 
-    target: StringField,                // "blank" | "self" | "single" | "team" | ...
+    // 対象・射程・目標値（スタイル技能と同形の flat フィールド。発動タブで設定）
+    target:        StringField,         // "blank" | "self" | "single" | "team" | ...
+    targetOther:   StringField,         // target === "other" の自由入力
+    isFixedTarget: BooleanField,        // 変更不可（※）: AE による対象変更を抑止（実機能はフェーズ13）
+    range:        StringField,          // "blank" | "close" | "short" | ... | "weapon"
+    rangeOther:   StringField,
+    isFixedRange: BooleanField,         // 変更不可（※）
+    targetValue:       StringField,     // "blank" | "number" | "control" | "total" | ...
+    targetValueNumber: NumberField,
+    targetValueOther:  StringField,
+
+    isUnopposable: BooleanField,        // 対決不可: 対象がこの判定に対決できない（実機能はフェーズ13、現状は保持のみ）
 
     effects: ArrayField(SchemaField({
         effectId: StringField,          // この用途使用時に付与する ActiveEffect の id
@@ -84,7 +95,13 @@ actions: ArrayField(SchemaField({
 
 ### TnxUsageSheet の設計
 
-- **タブ**: 基本 / 起動 / 種別固有（check・attack・damageBoost / damageReduce・modification） / エフェクト
+- **タブ（3構成、2026-06-20 改編）**: 基本 / 発動 / 効果
+  - **基本**: 説明
+  - **発動**（旧「起動」）: タイミング / 対象（＋変更不可※）/ 射程（＋変更不可※）/ 目標値 / 対決不可。技能ベース用途（check・attack）では参加技能の対決を読み取り「対決可能技能」を読み取り専用表示し、「参加技能から自動入力」ボタンを置く
+  - **効果**: 種別固有設定（check=コンボ / attack=武器・ダメージ種別・コンボ / damageBoost・Reduce=計算式・カテゴリ / modification=改造パラメータ）＋「適用される効果」（ActiveEffect）。旧「種別固有」タブと「エフェクト」タブを統合
+  - ベース技能＋組み合わせ技能の UI は `usage-sheet-combo.hbs` パートに切り出し（check / attack で共用。`tnx.mjs` の `loadTemplates` に登録）
+- **発動パラメータの自動入力**（`_onAutoFill`）: 参加技能（ベース＋コンボ）の**固有値**（スタイル技能の skill レベル `target`/`range`/`targetValue`/`timing`/`confrontation`。一般技能は固有値を持たず制約なし＝寄与しない）を読み、優先度で合成して用途へ書き込む。対象は対象優先度、射程は射程優先度（※複数は最短）、目標値は数値最大、タイミングはベース技能の先頭、対決不可は参加技能に「対決不可」があれば true。常時上書きせずボタン式（誤更新防止）。手編集で上書き可能
+- **対決（情報表示）**: 参加技能の `confrontation`（値=技能名/技能名※）を読み取り専用で表示。相手側リアクションの自動解決・対決値統合はフェーズ13。書き込み用の対決フィールドは usage に持たせない（`isUnopposable` フラグのみ保持）
 - `submitOnChange: true` — フォーム変更で即時 `_patchUsage()` を呼び自動保存
 - `_patchUsage()` は `foundry.utils.setProperty` でドット記法キーを処理（`mergeObject` は配列でバグあり）
 - **skillRefs 追加**: ドロップダウン選択で即時追加（「追加」ボタン廃止）
@@ -109,6 +126,14 @@ actions: ArrayField(SchemaField({
 3. `skillRefs` からコンボ技能を収集
 4. 用途所持技能がベース技能でない場合は自動的にコンボに追加（非アクション技能からの起動）
 5. 全技能スートの積集合で `validSuits` を計算し `TnxJudgmentFlow.open()` へ渡す
+
+## 使用回数の消費（2026-06-20）
+
+判定起動時に参加技能の使用回数を消費する（ルール: [Judgment_Rules.md](../Game_Rules/Judgment_Rules.md#使用回数の消費確定-2026-06-20)）。
+
+- `TnxJudgmentFlow.planUsesConsumption(actor, skillIds)`: `_onStartSkillCheck` が `open()` の前に呼ぶ。`uses.isLimit` を持つ参加技能があれば D&D 方式の消費ダイアログを表示。チェック済みで残り0なら起動不可（null 返却）。確定した消費対象を `open()` の `consumeUses` として渡す
+- `TnxJudgmentFlow._consumeUses(actor, skillIds)`: `_execute` 内（カードプレイ直後）で `updateEmbeddedDocuments` により各技能の `uses.value` を −1。組み合わせ技能は別アイテムのため遠隔消費
+- 消費の確定は起動時、減算は実行時。カード選択キャンセル時は `_execute` 未到達＝非消費
 
 ## 変更制約
 

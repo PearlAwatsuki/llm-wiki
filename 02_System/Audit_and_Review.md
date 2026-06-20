@@ -972,3 +972,42 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 - 用途使用時に効果を実際に対象へ適用するランタイム処理は ActiveEffect 基盤（フェーズ9）の領域。本変更は参照の保持・編集 UI まで。
 - 他タブ（起動・種別固有）への追加項目は今回見送り。`targetValue`（スタイル技能内包の目標値）・`range`・`confrontation`（対決）はルール上存在するが、消費する判定フローが攻撃判定・対決（フェーズ12）／AE ボーナス集計（フェーズ9）に属するため、§4.3「先回りで作らない」に従い現フェーズでは usage への追加を行わない。
+
+---
+
+### [用途シート発動タブ拡張・使用回数消費（メカニクス監査）](フェーズ8後追い)
+
+**日付**: 2026-06-20
+**関連ルール**: 射程の優先度・使用回数の消費（[Judgment_Rules.md](../01_Wiki/Game_Rules/Judgment_Rules.md)）
+
+#### 監査対象のルール解釈（ユーザー確定）
+
+- **射程の優先度**: 至近※ ＞ 武器 ＞ 超遠 ＞ 遠 ＞ 中 ＞ 近 ＞ 至近。変更不可（※）が複数なら最短を優先。ルルブに優先度記述がなくユーザーが裁定・追記要望したもの。
+- **使用回数の消費**: 消費は判定（用途）起動に紐づく機能であり、回復/リセット（フェーズ15）から分離。参加技能（ベース＋コンボ）の使用回数制限を各 −1、組み合わせ技能は遠隔消費。Roadmap フェーズ15「行動回数制限は自動化しない」（＝ターン行動回数）とは別物。
+- **対決**: 相手側リアクションの自動解決はしない（フェーズ13）。対決不可フラグ（`isUnopposable`）のみ今フェーズで保持、対決可能技能は参加技能から読み取り専用表示。
+
+#### 監査結果
+
+✅ いずれもユーザーが明示的に確定・裁定したルール解釈に準拠。射程優先度は一次ルールに記述がないためユーザー裁定を正本として記録。
+
+---
+
+### [用途シート発動タブ再構成・自動入力・使用回数消費（設計レビュー）](フェーズ8後追い)
+
+**日付**: 2026-06-20
+**関連実装**: `scripts/data/item/common/usage.mjs`、`scripts/module/tnx-usage-sheet.mjs`、`templates/app/usage-sheet.hbs`、`templates/app/usage-sheet-combo.hbs`（新設）、`scripts/tnx.mjs`（partial 登録）、`scripts/module/tnx-judgment-flow.mjs`、`scripts/actor/tnx-cast-sheet.mjs`、`css/tnx2.css`
+**ステータス**: 設計レビュー済
+
+#### 設計
+
+- **DataModel（usage.mjs）**: スタイル技能と同形の flat フィールドを 9 個追加（`targetOther` / `isFixedTarget` / `range` / `rangeOther` / `isFixedRange` / `targetValue` / `targetValueNumber` / `targetValueOther` / `isUnopposable`）。全て安全初期値で ArrayField(SchemaField) の cleanData が既存エントリへ自動補完するため migrateData 改変不要。
+- **タブ再構成**: 基本 / 発動 / 効果 の3タブ。種別固有タブを効果タブへ統合。ベース＋コンボ UI を `usage-sheet-combo.hbs` パートに切り出し共用。
+- **自動入力**（`_onAutoFill`）: 参加技能の固有値を優先度関数（`targetRank` / `rangeRank` / `resolveTarget` / `resolveRange` / `resolveTargetValue`）で合成。ボタン式で常時上書きを回避。
+- **使用回数消費**: 起動時 `planUsesConsumption`（消費ダイアログ＋原則ブロック）、実行時 `_consumeUses`（`updateEmbeddedDocuments` で遠隔消費）。消費確定と減算を分離しキャンセル時の誤消費を防止。
+
+#### 課題・申し送り
+
+- 自動入力のタイミング合成はベース技能の先頭 timing を採用する best-effort（スタイル技能 timing は配列のため）。目標値は数値最大の近似。いずれも手編集前提。
+- 対決の統合ルール（コンボ時に複数技能の対決をどう束ねるか）・相手リアクション解決はフェーズ13。
+- 対象/射程の AE による変更と `isFixed*` による抑止の実機能はフェーズ9/13。現状はフラグ保持のみ。
+- 使用回数の回復・リセット（カット/シーン/アクト境界）はフェーズ15。
