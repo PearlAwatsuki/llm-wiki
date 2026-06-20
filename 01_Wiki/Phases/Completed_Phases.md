@@ -166,15 +166,39 @@
 
 ---
 
-## 今後のフェーズ (概要)
+## フェーズ6: 未実装シート追加 ✅ (v0.7.0, 2026-06-14)
 
-| フェーズ | 内容 | 状態 |
-|---|---|---|
-| 6 | 未実装シート追加 | **現在** |
-| (新設) | ActiveEffect フェーズ(KI-020 含む) | 未着手・位置未確定 |
-| 7-8 | 判定システム 設計→実装 | 未着手 |
-| 9-10 | 神業システム 設計→実装 | 未着手 |
-| 11 | 戦闘進行/サブシーン | 未着手 |
-| 12 | 公開準備 → v1.0.0 | 未着手 |
+**目標**: outfit 系 Item 11 種（weapon/armor/cyborg/ianus/tron/tap/vehicle/residence/housingArea/combiner/general）+ lifePath のシート整備、キャストシート「アウトフィット」タブ。
 
-ロードマップ詳細: `../02_System/Roadmap.md`
+**主要成果**:
+- `TokyoNovaOutfitSheet`（共通シート）を 10 種に登録、`HousingArea` / `LifePath` シートを新設
+- キャストシート「アウトフィット」タブを全面実装（大分類別グループ・フラグトグル・グループ内 D&D 並び替え）
+- アウトフィット集計の自動更新（フック + ready 初期化）、識別キー追加
+- guest/troop/extra・キャストシート戦闘タブの実質内容は判定/神業後（フェーズ11）に先送り
+
+詳細: [Phase_6_Tasks_Detail.md](Phase_6_Tasks_Detail.md)
+
+---
+
+## フェーズ7-8: 判定システム 設計→実装 ✅ (v0.8.0, 2026-06-20)
+
+**目標**: TNX のカードベース判定を設計・実装。能力/技能/制御判定・コンボ・RL 要求・使用回数消費まで。攻撃判定＋ダメージ算出は判定システムの未完部分としてフェーズ12 に分離。
+
+**主要成果**:
+- 判定エンジン/フロー/ダイアログ（カード値計算・報酬点・切り札・山札判定）
+- RL 判定要求 + ソケット基盤（KI-006 解決）
+- usage を pseudo-document（単一 UsageTemplate ＋ type 6種）に再設計、`TnxUsageSheet`（基本/発動/効果の3タブ）（KI-002 解決）
+- 発動パラメータ（対象/射程/目標値/変更不可※/対決不可）・参加技能からの自動入力・対決の読み取り表示
+- 使用回数の消費（D&D 方式の消費ダイアログ・組み合わせ技能の遠隔消費・spent 管理）
+- mixin の静的 migrateData 合成修正（潜在的に死んでいた template マイグレーションを修復）
+
+**テスト**: 757 件グリーン
+**解消 KI**: KI-002, KI-006
+
+詳細: [Phase_7_Tasks_Detail.md](Phase_7_Tasks_Detail.md) / [Phase_8_Tasks_Detail.md](Phase_8_Tasks_Detail.md)、[Usage_System.md](../Game_Mechanics/Usage_System.md)、[Judgment_Rules.md](../Game_Rules/Judgment_Rules.md)
+
+---
+
+## 今後のフェーズ
+
+現在は **フェーズ9（ActiveEffect / 派生値計算パイプライン）**。以降の一覧・順序・詳細は [Roadmap.md](../../02_System/Roadmap.md) を正本とする（本ファイルは完了フェーズの概要に徹し、未来の番号は重複保持しない）。
