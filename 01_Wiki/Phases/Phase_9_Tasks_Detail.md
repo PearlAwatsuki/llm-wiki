@@ -144,7 +144,7 @@ prepareDerivedData    … 実効値 = growth + Σ(style×level) + mod + effectMo
 - [x] 能力値の AE 着地（モードA・actor）は 9-1 で成立済（Foundry が `system.<key>.effectMod` を適用→9-1 が total に合算）
 - [x] アイテム実効値 total の派生算出（`computeItemEffectiveValues`＋OutfitBase/SkillBase の prepareDerivedData。mode=value 時のみ value+effectMod、clampなし）`cc8bcc7`
 - [x] 表示切替（アウトフィット概要・キャスト装備列・_attackLabel を total 参照。編集入力は base 維持）`81ae6d7`。コンバイン表示は合成元 base のため不変。residence の登場/セキュリティ列（effectiveValues 経由）への AE 反映は申し送り
-- [ ] モードB（アクター→アイテム）のカスタム照合・注入パス（アクター prepareDerivedData 後処理）
+- [x] モードB（アクター→アイテム）のカスタム照合・注入エンジン `b14f12e`。AE flag `aeTarget`（byItemType/byMajorCategory/byMinorCategory「白兵武器」等/byIdentificationKey、指定次元AND）を `CastDataModel._applyCrossTargetEffects` が照合し一致アイテムの total に加算。flag 設定 UI は改造判定(17)/スタイル技能(20)の領分
 - [ ] **KI-020**: handMaxSize 修正層（層③）。User 権威の手札上限と Actor 側 AE 修正の合流を解消（`handMaxSizeMod`）
 - [ ] AE 適用順序のテスト・実機確認
 

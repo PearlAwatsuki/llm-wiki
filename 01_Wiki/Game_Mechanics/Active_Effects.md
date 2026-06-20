@@ -108,14 +108,25 @@ Actor.prepareData()
 
 ---
 
-## 6. target spec / change.key 規約（モードB）
+## 6. target spec / change.key 規約（モードB）— 実装確定（2026-06-20）
 
-- モードB の AE は flag（例: `flags.tokyo-nova.aeTarget`）に**対象指定**を持つ:
-  - `byIdentificationKey: [...]`（技能・アイテムを identificationKey で名指し。区分バフはここに区分内の公式キーを列挙）
-  - `byItemType: ["weapon", ...]` / `bySkillTrait: "action"` 等のカテゴリ指定
-  - `param: "attack" | "value" | ...`（どのパラメータに効くか）と `value`（加算量）
-- 照合層（アクター prepareDerivedData）が spec を解決し、一致アイテムの total へ加算。
+モードB の AE は flag `flags["tokyo-nova-axleration"].aeTarget` に **target spec** を持つ（`matchesAeTarget` / `addToItemTotal`、`CastDataModel._applyCrossTargetEffects`）:
+
+```
+aeTarget = {
+  byItemType:          ["weapon", ...],   // アイテム type
+  byMajorCategory:     ["武器", ...],      // 大分類
+  byMinorCategory:     ["白兵武器", ...],  // 小分類（minorCategory）
+  byIdentificationKey: ["...", ...],       // identificationKey 名指し（区分バフは公式キー列挙）
+  param:               "attack" | "guardValue" | "defence.S" | "level" | ...,
+  value:               n,                  // 加算量
+}
+```
+
+- **照合**: 指定された次元のみ AND で評価（各次元はリスト内 OR）。最低1次元の指定が必須（無条件全件マッチを防ぐ）。「全白兵武器」は `byMinorCategory:["白兵武器"]` で表現（ユーザー確定 2026-06-20）。
+- **注入**: アクター `prepareDerivedData` の後処理で所有アイテムを照合し、一致アイテムの `.total`（`defence.S_total` / `levelTotal` 等）に value を加算。**base は触らない**（アイテムの prepareDerivedData は先に走り total 算出済み）。
 - 素の Foundry `changes[]` は**アクター自身・自己アイテム（モードA）にのみ使う**。モードB は changes でなく flag ＋カスタム照合で表現（changes はキー解決できないため）。
+- **flag 設定 UI は未実装**（改造判定=フェーズ17 / スタイル技能=20 の領分）。現状はエンジンのみで、flag は手動 or 後続フローが付与する。
 
 ---
 
