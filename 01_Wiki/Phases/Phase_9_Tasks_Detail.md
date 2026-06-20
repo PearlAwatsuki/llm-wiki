@@ -115,12 +115,14 @@ prepareDerivedData    … 実効値 = growth + Σ(style×level) + mod + effectMo
 - [ ] Audit_and_Review にメカニクス監査・設計レビュー起票
 - [ ] 9-1 実装着手の承認取得
 
-### 9-1: 派生値パイプライン確立
+### 9-1: 派生値パイプライン確立 ✅ 完了 (2026-06-20)
 
-- [ ] `CastDataModel.prepareDerivedData` 新設、実効値を `system.<key>.total` / `.totalControl` に集約
-- [ ] **最終値0clamp** をここで適用（能力値・制御値とも。`max(0, …)`、順序非依存）
-- [ ] 4箇所の重複（シート表示・mundane単独・判定）を「集約値を読むだけ」に置換（EXP コストは触れない）
-- [ ] 回帰確認（シート表示値・判定達成値・登場判定 mundane が従来と一致）
+- [x] `CastDataModel.prepareDerivedData` 新設、実効値を `system.<key>.total` / `.totalControl` に集約（システム初の prepareDerivedData オーバーライド）
+- [x] **最終値0clamp** をここで適用（能力値・制御値とも。`computeAttributeFinal` で `max(0, …)`、順序非依存）
+- [x] 3箇所の重複（シート表示 `_getAbilitiesData`・mundane `_computeMundaneTotalValue`・判定 `_buildAbilitiesCtx`）を集約値参照に置換（EXP コストは対象外）
+- [x] **KI-021 解消**: 判定の `equipped` フィルタ欠落バグ（達成値からスタイル基本値が脱落）を一本化で修正
+- [x] `computeAttributeFinal` 単体テスト追加（tests/data/helpers.test.mjs。全766テスト green・lint 新規警告ゼロ）
+- [ ] 実機回帰確認（シート表示値が不変・判定達成値にスタイル基本値が載る）→ ユーザー確認待ち
 
 ### 9-2: outfitMod / appearanceModifier の B-2 化
 

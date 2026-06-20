@@ -1053,3 +1053,53 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 - mixin 修正で既存の dead だった template マイグレーション（outfit の appearancePenalty/preserveExp、usage の _id 等）が有効化された。いずれもガード付きで冪等のため安全だが、今後 template に migrateData を足す際は concrete で走る前提で書くこと。
 - 使用回数の回復・リセット（境界）はフェーズ15。
+
+---
+
+### [能力値・制御値の実効値一本化・0clamp（メカニクス監査）](フェーズ9-1)
+
+**日付**: 2026-06-20
+**関連実装**: `scripts/data/helpers.mjs`（`computeAttributeFinal`）、`scripts/data/actor/cast.mjs`（`prepareDerivedData`）
+**ステータス**: メカニクス監査済
+
+#### ルール解釈
+
+- 能力値・制御値の最終実効値 = `growth + Σ(スタイル基本値 × スタイルレベル) + mod + effectMod + outfitMod`。スタイル基本値は**3スロット全てを加算**する（"装備中のみ" のような equipped 概念はルールに存在しない）。
+- 最終値は **0clamp**（全修正を合算した最終値に対して。順序非依存。能力値・制御値の両方）。負方向修正で0を下回る場合の「効果を受けられない」を 0clamp として実装（ユーザー確定、[Character_Creation.md](../01_Wiki/Game_Rules/Character_Creation.md)）。
+
+#### 実装
+
+- `computeAttributeFinal()` でスタイル寄与（×レベル）の合算＋各修正合算＋0clamp を一括算出。`prepareDerivedData` が `system.<key>.total` / `.totalControl` を書く。
+
+#### 監査結果
+
+✅ ルール正本（Character_Creation）に準拠。判定が実在しない `system.equipped` でスタイルを除外し達成値からスタイル基本値を欠落させていた（KI-021）点を一本化で是正し、シート表示と同値になった。
+
+#### 課題・申し送り
+
+- 増減ペアを持つ技能の矛盾（clamp でデメリットだけ消える等）は自動化しない（手動 AE 調整）。
+- AE の effectMod 着地点への流入はフェーズ9-3。outfitMod の派生化（B-2）はフェーズ9-2。
+
+---
+
+### 能力値実効値の派生パイプライン確立（設計レビュー）（フェーズ9-1）
+
+**日付**: 2026-06-20
+**関連実装**: `scripts/data/actor/cast.mjs`、`scripts/data/helpers.mjs`、`scripts/actor/tnx-cast-sheet.mjs`、`scripts/module/tnx-judgment-flow.mjs`、`tests/data/helpers.test.mjs`
+**ステータス**: 設計レビュー済
+
+#### 設計
+
+- **システム初の `prepareDerivedData` オーバーライド**を `CastDataModel` に新設（CLAUDE.md §3 が「現状なし」としていた箇所。本フェーズが整備の正規タイミング）。実効値を `system.<key>.total` / `.totalControl` に集約し**単一の真実**とした。
+- 式は純粋関数 `computeAttributeFinal`（Item 非依存・素オブジェクト配列を受ける）に切り出しテスト可能化。
+- 重複3箇所（シート `_getAbilitiesData`・`_computeMundaneTotalValue`・判定 `_buildAbilitiesCtx`）を集約値参照に置換。EXP コスト（`updateCastExp`）は別式・§4.2 のため対象外。
+- `outfitMod` は当面永続フィールドを参照（B-2 化は9-2）。`effectMod` は AE 着地点として合算済み（流入は9-3）。
+
+#### 監査結果
+
+✅ `defineSchema` 不変（`total`/`totalControl` は派生プロパティで §4.3 非該当）。766 テスト green（`computeAttributeFinal` 単体テスト追加）、lint 新規警告ゼロ。
+
+#### 課題・申し送り
+
+- guest / troop も同式の実効値を要するが本フェーズ範囲外。フェーズ11 で同 helper を各 prepareDerivedData から呼ぶ。
+- 実機回帰（シート表示不変・判定達成値にスタイル基本値が載る）はユーザー確認待ち。
