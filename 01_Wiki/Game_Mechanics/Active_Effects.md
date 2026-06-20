@@ -30,6 +30,14 @@
 
 ---
 
+## 1.5 前提: legacyTransferral=false（必須の配線）
+
+**`CONFIG.ActiveEffect.legacyTransferral = false` を init で設定すること（フェーズ9-3、commit ef274fb）。** これが無いと着地点 effectMod を作っても AE は流れ込まない:
+
+- レガシー（既定 `true`）では **transfer:false の効果がアイテム自身に適用されない**（モードA 不成立）。さらに v13 ではトークンアクターで transfer:true が転送されないバグがある。
+- `false` で transfer:false → アイテム自身へ、transfer:true → アイテム上から親アクターへ仮想適用される（着地点に正しく流れ込む）。
+- 副作用: 転送効果は `actor.effects`（埋め込み）に入らず `actor.allApplicableEffects()` 経由になる。よってアクターシートの効果一覧は allApplicableEffects を列挙する（`EffectsSheetMixin.prepareEffectsContext`）。編集/削除は所有アイテム上の効果も解決する（`resolveEffect`）。
+
 ## 2. 2つの適用モード
 
 Foundry の AE は `change.key` を**その AE が乗るドキュメント自身**にしか解決しない。アクターの AE は `actor.system.*` のみ、アイテムの AE は（transfer に応じ）自分かアクターに効く。**埋め込みアイテム横断は素では不可**。TNX のアイテムバフはこれを 2 モードで吸収する。
