@@ -142,7 +142,8 @@ prepareDerivedData    … 実効値 = growth + Σ(style×level) + mod + effectMo
 
 - [x] **着地フィールド新設（§4.3 承認済・substrate 完了 7c6bef0）**: `modeValueField` に effectMod（隠匿値/電制/危険値/購入値/常備化EXP/受け値/制御修正/SF/乗員/サイクル/CS修正/スロット数を一括）、`defenceField` に S/P/I_effectMod、attack.effectMod（既済）、weapon.FAValueEffectMod、skill levelEffectMod、residence の3stat effectMod。漏れ防止のためヘルパー単位で追加
 - [x] 能力値の AE 着地（モードA・actor）は 9-1 で成立済（Foundry が `system.<key>.effectMod` を適用→9-1 が total に合算）
-- [ ] アイテム実効値 total の派生算出（item.prepareDerivedData。mode=value 時のみ value+effectMod、攻撃力等は0clamp）＋表示切替
+- [x] アイテム実効値 total の派生算出（`computeItemEffectiveValues`＋OutfitBase/SkillBase の prepareDerivedData。mode=value 時のみ value+effectMod、clampなし）`cc8bcc7`
+- [x] 表示切替（アウトフィット概要・キャスト装備列・_attackLabel を total 参照。編集入力は base 維持）`81ae6d7`。コンバイン表示は合成元 base のため不変。residence の登場/セキュリティ列（effectiveValues 経由）への AE 反映は申し送り
 - [ ] モードB（アクター→アイテム）のカスタム照合・注入パス（アクター prepareDerivedData 後処理）
 - [ ] **KI-020**: handMaxSize 修正層（層③）。User 権威の手札上限と Actor 側 AE 修正の合流を解消（`handMaxSizeMod`）
 - [ ] AE 適用順序のテスト・実機確認
