@@ -124,11 +124,13 @@ prepareDerivedData    … 実効値 = growth + Σ(style×level) + mod + effectMo
 - [x] `computeAttributeFinal` 単体テスト追加（tests/data/helpers.test.mjs。全766テスト green・lint 新規警告ゼロ）
 - [ ] 実機回帰確認（シート表示値が不変・判定達成値にスタイル基本値が載る）→ ユーザー確認待ち
 
-### 9-2: outfitMod / appearanceModifier の B-2 化
+### 9-2: outfitMod / appearanceModifier の B-2 化 ✅ 完了 (2026-06-20)
 
-- [ ] `outfitMod` の算出を `prepareDerivedData` へ移動
-- [ ] `appearanceModifier` の算出を `prepareDerivedData` へ移動
-- [ ] フック書き戻し（`recalcOutfitAggregates` / 起動時スキャン / isGhost 変更ハンドラ）と `{syncing}` 周辺を撤去
+- [x] `outfitMod` / `appearanceModifier` の算出を `CastDataModel.prepareDerivedData`（`_prepareOutfitAggregates`）へ移動。能力値 total が outfitMod を読むため先に計算
+- [x] 集計を純粋関数 `computeOutfitAggregates` に切り出し単体テスト追加（8件）
+- [x] フック書き戻し（`recalcOutfitAggregates`＋3フック / 起動時スキャンの集計呼び出し / isGhost 変更ハンドラ）と関連 `{syncing}` 書き込みを撤去。起動時スキャンは EXP（実保存・User flag 同期）のみ残置
+- [x] schema フィールド（outfitMod / appearanceModifier）は不変（派生で上書き＝§4.3 非該当）。各クライアントがローカル算出する本来形に（GM 限定書き戻しを解消）
+- [ ] 実機回帰確認（アウトフィット着脱・isGhost 切替で制御値修正・CS・危険値が即時反映）→ ユーザー確認待ち
 - [ ] isGhost 時の CS 修正無効化ロジックを派生計算側へ移設
 - [ ] 回帰確認（EXP 同期機構に波及していないこと）
 

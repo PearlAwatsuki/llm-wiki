@@ -1103,3 +1103,28 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 - guest / troop も同式の実効値を要するが本フェーズ範囲外。フェーズ11 で同 helper を各 prepareDerivedData から呼ぶ。
 - 実機回帰（シート表示不変・判定達成値にスタイル基本値が載る）はユーザー確認待ち。
+
+---
+
+### outfitMod / appearanceModifier の B-2 派生化（設計レビュー）（フェーズ9-2）
+
+**日付**: 2026-06-20
+**関連実装**: `scripts/data/actor/cast.mjs`（`_prepareOutfitAggregates`）、`scripts/data/helpers.mjs`（`computeOutfitAggregates` / `OUTFIT_ITEM_TYPES`）、`scripts/tnx.mjs`（フック撤去）、`tests/data/helpers.test.mjs`
+**ステータス**: 設計レビュー済
+
+#### 設計
+
+- アウトフィット集計（outfitMod の制御値修正・CS修正、appearanceModifier の危険値合計）を、フック駆動の DB 書き戻し（B-1）から `prepareDerivedData` での都度算出（B-2）へ移行。
+- 撤去: `calcOutfitMods` / `updateCastOutfitMods` / `calcAppearanceModifier` / `updateCastAppearanceModifier` / `recalcOutfitAggregates`（create/delete/updateItem の3フック）/ 起動時スキャンの集計呼び出し / isGhost 変更ハンドラ。`{syncing:true}` 書き込みも該当分が消滅。
+- 集計ロジックは純粋関数 `computeOutfitAggregates(items, isGhost)` に切り出し（isPrepared/isCarrying/isGhost 条件を網羅テスト、8件）。`OUTFIT_ITEM_TYPES` も helpers に集約（tnx.mjs から移動、重複解消）。
+- 能力値 total が outfitMod を読むため、`prepareDerivedData` 内で集計を**先に**実行。
+
+#### 監査結果
+
+✅ `defineSchema` 不変（outfitMod / appearanceModifier は schema フィールドのまま派生で上書き＝§4.3 非該当）。774 テスト green、lint 新規警告ゼロ。派生値を DB に焼かない本来形になり、`{syncing}` の小細工と「GM クライアントのみ集計」制約が解消。各クライアントがローカル算出する。
+
+#### 課題・申し送り
+
+- 旧 `system.outfitMod` / `system.appearanceModifier` の DB 保存値は以後 prepareDerivedData が常に上書きするため死蔵となる（読まれない）。実害なし。マイグレーションで除去するかは将来判断。
+- 9-3 で危険値集計はアイテムの AE 込み実効値（`appearancePenalty.total`）を読むよう切替予定（現状は raw value）。
+- guest / troop の集計は本フェーズ範囲外（11）。EXP 同期機構（updateCastExp / User flag）は B-2 対象外で不変。
