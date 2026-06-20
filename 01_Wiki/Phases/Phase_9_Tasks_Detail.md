@@ -132,10 +132,15 @@ prepareDerivedData    … 実効値 = growth + Σ(style×level) + mod + effectMo
 
 ### 9-3: AE 適用モデル確立
 
+> 詳細設計は [Active_Effects.md](../Game_Mechanics/Active_Effects.md) が正本（バフの2分類・モードA/B・prepare 順序・クロスターゲット注入・棚卸し・DataModel 変更提案）。アイテム横断バフは素の Foundry AE で扱えないため、本サブフェーズはカスタム照合層の設計が核。**アイテムの実効値（AE 込み）の表現は全パラメータをフェーズ9 で確定**する（表示=10・ダメージ=12 はそれを消費するだけ。旧「歩調を合わせる」案は撤回、Active_Effects §11）。
+
 - [ ] AE が狙える `system.*` パスの確定（論点1）
-- [ ] AE → `effectMod` 着地 → 派生合算の経路を実装・検証
+- [ ] モードA（アイテム自己適用 `transfer:false`）の effectMod 着地経路
+- [ ] モードB（アクター→アイテム）のカスタム照合・注入パス（アクター prepareDerivedData 後処理）
+- [ ] 着地フィールド新設（§4.3 承認案件、Active_Effects §10）
+- [ ] AE → `effectMod` 着地 → 派生合算の経路を実装・検証（ADD/clamp）
 - [ ] **KI-020**: handMaxSize 修正層（層③）。User 権威の手札上限と Actor 側 AE 修正の合流を解消（`handMaxSizeMod`）
-- [ ] AE 適用順序のテスト（ADD/clamp の挙動）
+- [ ] AE 適用順序のテスト
 
 ### 9-4: バッドステータス／効果の AE 表現
 
