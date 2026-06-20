@@ -46,8 +46,13 @@ scripts/data/
 ```javascript
 // scripts/data/abstract.mjs
 export class SystemDataModel extends foundry.abstract.TypeDataModel {
-  static mixin(...mixins) { /* class extends this + プロトタイプ合成 */ }
+  static mixin(...mixins) { /* class extends this + プロトタイプ合成 + 静的 migrateData 合成 */ }
 }
+```
+
+> **静的 migrateData の合成（2026-06-20）**: `mixin()` はプロトタイプ（インスタンス）メソッドしかコピーしないため、template の**静的** `migrateData` は concrete モデルでは実行されなかった（cleanData の初期値補完で実害は隠れていた）。`mixin()` 内で各 template の静的 `migrateData` を順に適用してから親へ委譲するよう修正。これにより `OutfitBaseTemplate` / `UsageTemplate` 等の template 側マイグレーションが concrete モデルでも有効になる（`uses.value→spent` 移行はこれに依存）。
+
+```javascript
 
 // scripts/data/actor/cast.mjs
 export class CastDataModel extends SystemDataModel.mixin(

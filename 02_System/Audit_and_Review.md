@@ -1011,3 +1011,45 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 - 対決の統合ルール（コンボ時に複数技能の対決をどう束ねるか）・相手リアクション解決はフェーズ13。
 - 対象/射程の AE による変更と `isFixed*` による抑止の実機能はフェーズ9/13。現状はフラグ保持のみ。
 - 使用回数の回復・リセット（カット/シーン/アクト境界）はフェーズ15。
+
+---
+
+### [対決の解釈・使用回数の spent 化（メカニクス監査）](フェーズ8後追い)
+
+**日付**: 2026-06-20
+**関連ルール**: 対決の解釈・使用回数の消費（[Judgment_Rules.md](../01_Wiki/Game_Rules/Judgment_Rules.md)）
+
+#### 監査対象のルール解釈（ユーザー確定）
+
+- **対決「技能名」（無印）は限定でなく付与・例示**。書かれていない技能でのリアクションを排除しない。根拠は〈電脳〉ドッジ付与技能の存在（限定説だと機能しなくなる）という実プレイ整合。公式は「対決:〈回避〉」を「リアクションできる」程度の緩い意味で運用しているとの解釈。
+- **「技能名※」のみ真の制約**（その技能を必ずリアクションに含める）。単体判定も「組み合わせ」に含む。
+- 機械的に意味があるのは「対決可能／不可」と「※必須」のみ。無印技能名は例示扱い、強制しない。※の必須化強制はフェーズ13。
+- 使用回数は D&D 方式の「消費済み（spent）」表現に変更（残り = max − spent）。消費の意味自体は不変。
+
+#### 監査結果
+
+✅ ユーザーが実プレイ整合の根拠とともに確定したルール解釈に準拠。当初 Code が傾いた「限定説」は前提（射撃をパリー不可）が誤りだったため撤回し、付与説で確定。
+
+---
+
+### [使用回数 spent 化・mixin 静的 migrateData 合成（設計レビュー）](フェーズ8後追い)
+
+**日付**: 2026-06-20
+**関連実装**: `scripts/data/abstract.mjs`、`scripts/data/item/helpers.mjs`、`scripts/data/item/style-skill.mjs`、`scripts/data/item/common/outfit-base.mjs`、`scripts/module/tnx-judgment-flow.mjs`、`scripts/item/tnx-style-skill-sheet.mjs`、`scripts/item/tnx-outfit-sheet.mjs`、`templates/item/style-skill-sheet.hbs`、`templates/item/outfit-sheet.hbs`、`templates/app/usage-sheet.hbs`
+**ステータス**: 設計レビュー済
+
+#### 設計
+
+- **mixin の静的 migrateData 合成**: `SystemDataModel.mixin()` がプロトタイプメソッドのみコピーしていたため template の静的 `migrateData` が concrete モデルで死んでいた（潜在バグ）。mixin 内で各 template の静的 `migrateData` を順に適用してから親へ委譲するよう修正。`OutfitBaseTemplate` 等の既存マイグレーションも有効化される。
+- **uses.value → uses.spent**: 残り回数管理から D&D 方式の「消費済み」管理へ。`migrateUsesValueToSpent()`（`helpers.mjs` 共用）で `spent = max − value` に移行。style-skill は自身の migrateData、outfit-base は template の migrateData に追加（上記 mixin 修正で全アウトフィットに適用）。
+- 判定フロー: `planUsesConsumption`（残り = max − spent でブロック判定）・`_consumeUses`（spent +1）。シートのラベル「現在値」→「消費済み」、isLimit 解除リセットは spent=0。
+- 対決表示: 無印技能名を「リアクション例」として表示し、網羅と誤読させない注記を追加。
+
+#### 監査結果
+
+✅ DataModel フィールド改名・mixin 挙動変更はユーザー承認済み（§4.3）。757 テスト green（mixin 合成・移行の単体テスト追加）。
+
+#### 課題・申し送り
+
+- mixin 修正で既存の dead だった template マイグレーション（outfit の appearancePenalty/preserveExp、usage の _id 等）が有効化された。いずれもガード付きで冪等のため安全だが、今後 template に migrateData を足す際は concrete で走る前提で書くこと。
+- 使用回数の回復・リセット（境界）はフェーズ15。
