@@ -136,16 +136,29 @@ aeTarget = {
 - **照合**: 指定された次元のみ AND で評価（各次元はリスト内 OR）。最低1次元の指定が必須（無条件全件マッチを防ぐ）。「全白兵武器」は `byMinorCategory:["白兵武器"]` で表現（ユーザー確定 2026-06-20）。
 - **注入**: アクター `prepareDerivedData` の後処理で所有アイテムを照合し、一致アイテムの `.total`（`defence.S_total` / `levelTotal` 等）に value を加算。**base は触らない**（アイテムの prepareDerivedData は先に走り total 算出済み）。
 - 素の Foundry `changes[]` は**アクター自身・自己アイテム（モードA）にのみ使う**。モードB は changes でなく flag ＋カスタム照合で表現（changes はキー解決できないため）。
-- **付与方法**: モードB は change.key を使わない（change/changes 欄は空でよい）。代わりに effect に flag `aeTarget` を設定し、target（型/分類/key）と `param`・`value` を持たせる。`param` が「どのパラメータに効くか」＝実質のキー（"attack" / "defence.S" / "guardValue" / "level" 等）。
-- **アイテム→他アイテムの場合は effect の `transfer` を true にする**（commit 4d97ab8）。アクターの `_applyCrossTargetEffects` は `actor.allApplicableEffects()`（自身＋アイテムから転送された効果）を列挙するため、アイテムに乗せた aeTarget 効果は transfer:true でアクターに届いて初めて拾われる。
-- **flag 設定 UI は未実装**（改造判定=フェーズ17 / スタイル技能=20 の領分）。現状は flag を手動（マクロ/コンソール）で付与する。例:
-  ```js
-  // 武器強化アイテム上の効果に、白兵武器の攻撃力 +1 のモードB を設定する
-  await effect.update({
-    transfer: true,
-    "flags.tokyo-nova-axleration.aeTarget": { byMinorCategory: ["白兵武器"], param: "attack", value: 1 }
-  });
-  ```
+付与方法は2通り。`_applyCrossTargetEffects` はアクター自身＋全所有アイテムの effects を走査する（transfer の有無に依らない）。着地点 effectMod に積んだ後、触れたアイテムの実効値を再計算する（commit a6e1813）。
+
+**(A) changes キー `<識別キー>.<systemパス>`（推奨・標準UIで完結）**
+
+標準の ActiveEffect「変更」UI に、キー＝`<識別キー>.<パス>`、モード＝加算、値＝n を書く。その識別キーを持つアイテムの該当パスにエフェクトが乗る。flag もマクロも不要。
+
+| 例（key） | 効果 |
+|---|---|
+| `hisho-geki.attack.effectMod` | 識別キー hisho-geki のアイテムの攻撃力 +n |
+| `katana.defence.S_effectMod` | 同 katana の防御力S +n |
+| `xxx.guardValue.effectMod` / `xxx.levelEffectMod` | 受け値 / 技能レベル |
+
+- パスはアイテムの **effectMod 着地点**を指す（modeValue系は `<param>.effectMod`、防御は `defence.{S,P,I}_effectMod`、素の値は `<param>EffectMod`）。
+- `transfer` は OFF 推奨（ON だと Foundry が無効キーをアクターへもネイティブ適用し無害な一時プロパティが付く）。`TokyoNovaItem.applyActiveEffects` は横断キー（非 system.）を自己適用しない。
+
+**(B) flag `aeTarget`（型/大分類/小分類でまとめて指定）**
+
+識別キーで名指しできない「全白兵武器」等は flag を使う（型/大分類/小分類/識別キー＋param/value）。現状 flag 設定 UI は無く手動（改造判定=17 / スタイル技能=20 で UI 化）:
+```js
+await effect.update({
+  "flags.tokyo-nova-axleration.aeTarget": { byMinorCategory: ["白兵武器"], param: "attack", value: 1 }
+});
+```
 
 ---
 
