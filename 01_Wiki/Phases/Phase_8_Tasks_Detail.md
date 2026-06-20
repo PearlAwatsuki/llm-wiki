@@ -1,5 +1,7 @@
 # Phase 8: 判定システム 実装
 
+> ✅ **完了 (v0.8.0, 2026-06-20)**。8-0〜8-7 に加え、発動タブ拡張（対象/射程/目標値/変更不可※/対決不可）・効果タブ統合・参加技能からの自動入力・対決の読み取り表示・使用回数の消費（D&D 方式・遠隔消費・spent 管理）・mixin の静的 migrateData 合成を実装。攻撃判定＋ダメージ算出はフェーズ12 に分離。詳細は [Usage_System.md](../Game_Mechanics/Usage_System.md) / [Judgment_Rules.md](../Game_Rules/Judgment_Rules.md) / Audit_and_Review を参照。タグ付け・push はユーザー。
+
 ## 目的
 
 フェーズ7 で確定した設計に基づき、TNX の判定システムをコードとして実装する。
