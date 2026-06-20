@@ -136,7 +136,16 @@ aeTarget = {
 - **照合**: 指定された次元のみ AND で評価（各次元はリスト内 OR）。最低1次元の指定が必須（無条件全件マッチを防ぐ）。「全白兵武器」は `byMinorCategory:["白兵武器"]` で表現（ユーザー確定 2026-06-20）。
 - **注入**: アクター `prepareDerivedData` の後処理で所有アイテムを照合し、一致アイテムの `.total`（`defence.S_total` / `levelTotal` 等）に value を加算。**base は触らない**（アイテムの prepareDerivedData は先に走り total 算出済み）。
 - 素の Foundry `changes[]` は**アクター自身・自己アイテム（モードA）にのみ使う**。モードB は changes でなく flag ＋カスタム照合で表現（changes はキー解決できないため）。
-- **flag 設定 UI は未実装**（改造判定=フェーズ17 / スタイル技能=20 の領分）。現状はエンジンのみで、flag は手動 or 後続フローが付与する。
+- **付与方法**: モードB は change.key を使わない（change/changes 欄は空でよい）。代わりに effect に flag `aeTarget` を設定し、target（型/分類/key）と `param`・`value` を持たせる。`param` が「どのパラメータに効くか」＝実質のキー（"attack" / "defence.S" / "guardValue" / "level" 等）。
+- **アイテム→他アイテムの場合は effect の `transfer` を true にする**（commit 4d97ab8）。アクターの `_applyCrossTargetEffects` は `actor.allApplicableEffects()`（自身＋アイテムから転送された効果）を列挙するため、アイテムに乗せた aeTarget 効果は transfer:true でアクターに届いて初めて拾われる。
+- **flag 設定 UI は未実装**（改造判定=フェーズ17 / スタイル技能=20 の領分）。現状は flag を手動（マクロ/コンソール）で付与する。例:
+  ```js
+  // 武器強化アイテム上の効果に、白兵武器の攻撃力 +1 のモードB を設定する
+  await effect.update({
+    transfer: true,
+    "flags.tokyo-nova-axleration.aeTarget": { byMinorCategory: ["白兵武器"], param: "attack", value: 1 }
+  });
+  ```
 
 ---
 
