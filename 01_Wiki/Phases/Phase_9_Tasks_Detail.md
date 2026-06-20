@@ -145,8 +145,8 @@ prepareDerivedData    … 実効値 = growth + Σ(style×level) + mod + effectMo
 - [x] アイテム実効値 total の派生算出（`computeItemEffectiveValues`＋OutfitBase/SkillBase の prepareDerivedData。mode=value 時のみ value+effectMod、clampなし）`cc8bcc7`
 - [x] 表示切替（アウトフィット概要・キャスト装備列・_attackLabel を total 参照。編集入力は base 維持）`81ae6d7`。コンバイン表示は合成元 base のため不変。residence の登場/セキュリティ列（effectiveValues 経由）への AE 反映は申し送り
 - [x] モードB（アクター→アイテム）のカスタム照合・注入エンジン `b14f12e`。AE flag `aeTarget`（byItemType/byMajorCategory/byMinorCategory「白兵武器」等/byIdentificationKey、指定次元AND）を `CastDataModel._applyCrossTargetEffects` が照合し一致アイテムの total に加算。flag 設定 UI は改造判定(17)/スタイル技能(20)の領分
-- [ ] **KI-020**: handMaxSize 修正層（層③）。User 権威の手札上限と Actor 側 AE 修正の合流を解消（`handMaxSizeMod`）
-- [ ] AE 適用順序のテスト・実機確認
+- [x] **KI-020 解消** `e4fc70c`: cast に AE 着地点 `handMaxSizeMod` を新設し、`resolveEffectiveHandMaxSize` を3層化（①既定 ②User flag ③所有 cast の AE 合算、0clamp）。User は AE を持てないため所有 cast の AE から合流
+- [ ] AE 適用順序の実機確認（モードA：アイテム/能力値への AE 反映、モードB：横断バフ、handMaxSizeMod バフ）→ ユーザー確認待ち
 
 ### 9-4: バッドステータス／効果の AE 表現
 

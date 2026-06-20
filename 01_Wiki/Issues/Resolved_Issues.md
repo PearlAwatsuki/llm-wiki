@@ -103,6 +103,12 @@
 - **原因**: 能力値の最終実効値が `prepareDerivedData` で保持されず、4箇所が同式を各自再計算。判定の再計算だけが実在しない `equipped` フィルタを残していた（派生値パイプライン未整備に起因する分岐バグ）。
 - **解消内容**: `CastDataModel.prepareDerivedData` で実効値を `system.<key>.total` / `.totalControl` に一本化（`computeAttributeFinal` 純粋関数＋0clamp）。シート表示・mundane 算出・判定の3箇所を集約値参照に置換。判定はシート表示と同一値になった。
 
+## KI-020: handMaxSize への ActiveEffect 修正が未実装
+
+- **解消**: フェーズ9-3 (2026-06-20、commit e4fc70c)
+- **症状**: KI-005 の AE 修正層（層③）。`handMaxSizeMod` が未定義・参照0件で手札上限バフが機能しなかった（既定上限・個別設定は正常）。
+- **解消内容**: `CastDataModel` に AE 着地点 `handMaxSizeMod` を新設（User は DataModel/AE を持てないため、所有 cast の AE がここに ADD で着地）。`resolveEffectiveHandMaxSize` を3層化（①既定 ②User flag 明示 ③所有 cast の handMaxSizeMod 合算、0clamp）。`computeEffectiveHandMaxSize` / `gatherHandMaxSizeMod` を分離しテスト可能化。派生値計算パイプライン（9-1〜9-3）の確立が前提だった。
+
 ---
 
 ## フェーズ2 で部分的解消
