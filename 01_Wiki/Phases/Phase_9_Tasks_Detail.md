@@ -138,13 +138,14 @@ prepareDerivedData    … 実効値 = growth + Σ(style×level) + mod + effectMo
 
 > 詳細設計は [Active_Effects.md](../Game_Mechanics/Active_Effects.md) が正本（バフの2分類・モードA/B・prepare 順序・クロスターゲット注入・棚卸し・DataModel 変更提案）。アイテム横断バフは素の Foundry AE で扱えないため、本サブフェーズはカスタム照合層の設計が核。**アイテムの実効値（AE 込み）の表現は全パラメータをフェーズ9 で確定**する（表示=10・ダメージ=12 はそれを消費するだけ。旧「歩調を合わせる」案は撤回、Active_Effects §11）。
 
-- [ ] AE が狙える `system.*` パスの確定（論点1）
-- [ ] モードA（アイテム自己適用 `transfer:false`）の effectMod 着地経路
+**9-3 スコープ確定（2026-06-20）**: アイテム着地フィールドは**全 buff 対象パラメータ**（ヘルパー単位で網羅）。除外＝住宅エリア供給値・スタイル能力値（それ自体がエフェクト的）。FA値・技能レベルは含む。
+
+- [x] **着地フィールド新設（§4.3 承認済・substrate 完了 7c6bef0）**: `modeValueField` に effectMod（隠匿値/電制/危険値/購入値/常備化EXP/受け値/制御修正/SF/乗員/サイクル/CS修正/スロット数を一括）、`defenceField` に S/P/I_effectMod、attack.effectMod（既済）、weapon.FAValueEffectMod、skill levelEffectMod、residence の3stat effectMod。漏れ防止のためヘルパー単位で追加
+- [x] 能力値の AE 着地（モードA・actor）は 9-1 で成立済（Foundry が `system.<key>.effectMod` を適用→9-1 が total に合算）
+- [ ] アイテム実効値 total の派生算出（item.prepareDerivedData。mode=value 時のみ value+effectMod、攻撃力等は0clamp）＋表示切替
 - [ ] モードB（アクター→アイテム）のカスタム照合・注入パス（アクター prepareDerivedData 後処理）
-- [ ] 着地フィールド新設（§4.3 承認案件、Active_Effects §10）
-- [ ] AE → `effectMod` 着地 → 派生合算の経路を実装・検証（ADD/clamp）
 - [ ] **KI-020**: handMaxSize 修正層（層③）。User 権威の手札上限と Actor 側 AE 修正の合流を解消（`handMaxSizeMod`）
-- [ ] AE 適用順序のテスト
+- [ ] AE 適用順序のテスト・実機確認
 
 ### 9-4: バッドステータス／効果の AE 表現
 
