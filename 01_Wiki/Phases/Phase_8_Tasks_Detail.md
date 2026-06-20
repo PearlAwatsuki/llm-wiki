@@ -220,12 +220,12 @@ class TnxJudgmentEngine {
 
 ---
 
-### 8-7: テスト・仕上げ
+### 8-7: テスト・仕上げ ✅ 完了
 
-- [ ] `TnxJudgmentEngine` の全計算パターンに単体テストを追加
+- [x] `TnxJudgmentEngine` の全計算パターンに単体テストを追加（`tests/module/tnx-judgment-engine.test.mjs`。カード値/技能/制御/コンボ/スート対応を網羅）
 - [x] wiki: Judgment_Rules.md / Judgment_System.md / Usage_System.md / Phase_8_Tasks_Detail.md 更新（2026-06-17）
-- [ ] wiki: Audit_and_Review エントリ追加（メカニクス監査・設計レビュー）
-- [ ] CHANGELOG 更新・v0.8.0 バージョンアップ
+- [x] wiki: Audit_and_Review エントリ追加（8-2〜8-5 ＋バグ修正多数を記録）
+- [x] CHANGELOG 更新・v0.8.0 バージョンアップ（commit c9ea3bb）
 
 ---
 

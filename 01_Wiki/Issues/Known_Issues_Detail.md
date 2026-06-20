@@ -152,7 +152,9 @@ ActiveEffect による handMaxSize 修正(層③)は、効果を載せる Actor 
 
 ---
 
-## KI-006: "socket": true の未実装
+## KI-006 [解消済み]: "socket": true の未実装
+
+**解消**: フェーズ8-1 (2026-06-15, commit 22a0c51)。`scripts/module/tnx-socket-handler.mjs` で emit/on を集約し、`ready` フックで登録。RL 要求判定の結果反映に使用。
 
 **概要**
 `system.json` で `"socket": true` を宣言しているが、`game.socket.emit()` / `game.socket.on()`

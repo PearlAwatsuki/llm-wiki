@@ -89,6 +89,12 @@
 - **解消**: フェーズ8-6 (2026-06-15)
 - `_onUsageEdit` ハンドラ追加 + `UsageCreationDialog.editAction()` で type / name / description / skillRefs の全フィールド編集 UI を実装
 
+## KI-006: "socket": true の未実装
+
+- **解消**: フェーズ8-1 (2026-06-15)
+- **解消コミット**: 22a0c51（`TnxSocketHandler` 新設・ソケット集約）
+- `scripts/module/tnx-socket-handler.mjs` で emit/on を集約。`ready` フックで `game.socket.on("system.tokyo-nova-axleration", ...)` を登録。RL 要求判定の結果反映（`emitJudgmentResult` → `ChatMessage.update`）・アクセスカード提示で稼働。
+
 ---
 
 ## フェーズ2 で部分的解消
