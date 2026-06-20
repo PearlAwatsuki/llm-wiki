@@ -947,3 +947,28 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 - 「コンボ設定の他技能への自動ミラーリング」（組み合わせ設定を1つの技能に設定すると参加技能全員に反映）は実装を先送り。必要が生じた際に追加する。
 - タイミング条件のバリデーション（全技能タイミングの一致確認）は未実装。現状はスートの積集合のみ確認。
+
+---
+
+### [用途シート エフェクトタブをセレクト方式へ再設計](フェーズ8-6改訂)
+
+**日付**: 2026-06-20
+**関連実装**: `scripts/module/tnx-usage-sheet.mjs`、`templates/app/usage-sheet.hbs`、`css/tnx2.css`
+**ステータス**: 設計レビュー済
+
+#### 設計
+
+- 旧実装（アイテムの全 ActiveEffect をチェックボックスで羅列し、トグルで `usage.effects` を増減）を、D&D 5e の「適用される効果」方式へ置換。
+- **セレクト追加**: 未追加の ActiveEffect をセレクトボックスで選ぶと `usage.effects` に `{effectId}` を即時追加。`select.effect-select` の change ハンドラは skillRefs と同じ `_onRender` の editable ブロックに集約。
+- **追加済みリスト＋解除**: 追加済みは行表示し、`effectRemove` アクションでデタッチ（効果ドキュメント自体は削除しない＝アイテムシートのエフェクトタブの責務と分離）。
+- **空状態**: アイテムに ActiveEffect が無くても空のセレクトを表示（ユーザー要求）。`addedEffects` / `availableEffects` / `hasAnyEffect` をコンテキストに供給。
+- **UI 統一・CSS**: 行は既存の `.usage-skill-ref-row`、追加セレクトは `.usage-skill-ref-add` を流用。不要になった `.usage-effect-row` / `.usage-effect-label` 系を削除（汎用セレクタの拡張なし）。
+
+#### 監査結果
+
+✅ ルール解釈に関わる変更なし（純 UI）。`usage.effects`（`{effectId}` 配列）の DataModel は不変で、フィールド追加・改名なし（§4.3 抵触なし）。
+
+#### 課題・申し送り
+
+- 用途使用時に効果を実際に対象へ適用するランタイム処理は ActiveEffect 基盤（フェーズ9）の領域。本変更は参照の保持・編集 UI まで。
+- 他タブ（起動・種別固有）への追加項目は今回見送り。`targetValue`（スタイル技能内包の目標値）・`range`・`confrontation`（対決）はルール上存在するが、消費する判定フローが攻撃判定・対決（フェーズ12）／AE ボーナス集計（フェーズ9）に属するため、§4.3「先回りで作らない」に従い現フェーズでは usage への追加を行わない。

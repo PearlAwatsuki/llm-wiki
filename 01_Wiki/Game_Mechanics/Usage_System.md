@@ -88,6 +88,7 @@ actions: ArrayField(SchemaField({
 - `submitOnChange: true` — フォーム変更で即時 `_patchUsage()` を呼び自動保存
 - `_patchUsage()` は `foundry.utils.setProperty` でドット記法キーを処理（`mergeObject` は配列でバグあり）
 - **skillRefs 追加**: ドロップダウン選択で即時追加（「追加」ボタン廃止）
+- **effects 管理（エフェクトタブ）**: D&D の「適用される効果」方式。セレクトボックスでアイテムの ActiveEffect（未追加のもの）を選ぶと `usage.effects` に `{effectId}` を追加。追加済みは行表示＋「解除」ボタンでデタッチ（効果自体は削除しない＝アイテムシートのエフェクトタブの責務）。アイテムに ActiveEffect が無い場合も空のセレクトを表示。`addedEffects` / `availableEffects` / `hasAnyEffect` をコンテキストに供給（旧チェックボックス羅列方式を 2026-06-20 に置換）
 - **アクション技能**: ベース技能を親技能で表示固定（セレクター非表示）
 - **ベース技能候補** (`availableBaseSkills`): アクション技能を含む全技能（自身以外）。非アクション技能もベースになりうる
 - **コンボ候補** (`availableSkills`): アクション技能を除外（アクション技能は必ずベースになるため）
