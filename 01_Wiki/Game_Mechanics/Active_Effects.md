@@ -42,9 +42,11 @@
 
 Foundry の AE は `change.key` を**その AE が乗るドキュメント自身**にしか解決しない。アクターの AE は `actor.system.*` のみ、アイテムの AE は（transfer に応じ）自分かアクターに効く。**埋め込みアイテム横断は素では不可**。TNX のアイテムバフはこれを 2 モードで吸収する。
 
-### モードA — アイテム自己適用（Foundry ネイティブ）
+### モードA — アイテム自己適用（**Item 側の実装が必須**）
 
-AE をアイテム自身に乗せ `transfer: false` にすると、そのアイテムの prepareData 中に自分の `system.*.effectMod` へ適用される。
+AE をアイテム自身に乗せ `transfer: false` にすると、そのアイテムの `system.*.effectMod` へ適用される。
+
+> **重要（commit d3241c7）**: Foundry の Item は既定で `applyActiveEffects` を持たず、**自分自身の AE を適用しない**（`applyActiveEffects` は Actor のみ）。`legacyTransferral=false` だけではモードA は成立しない。`TokyoNovaItem.prepareEmbeddedDocuments` の後に自前の `applyActiveEffects`（有効な非転送効果の changes を `this` へ `effect.apply`）を実装して初めて、attack.effectMod 等の着地点に値が入る。これが「着地点を作っただけでは動かない」二段目の配線。
 
 - 用途: **改造**（恒久。改造技能の結果としてアイテムに AE を1枚足す）、**そのアイテム固有の常時ボーナス**。
 - 例: ある武器に「攻撃力＋2」AE → `system.attack.effectMod += 2`。
