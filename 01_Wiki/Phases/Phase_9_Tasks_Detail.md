@@ -149,6 +149,21 @@ prepareDerivedData    … 実効値 = growth + Σ(style×level) + mod + effectMo
 - [x] **AE 配線（必須・抜けていた）** `ef274fb`: `CONFIG.ActiveEffect.legacyTransferral=false`（これが無いとモードA 自己適用・転送が機能せず着地点に流れ込まない）。効果一覧を allApplicableEffects 列挙へ、転送効果の編集/削除を resolveEffect で解決
 - [ ] AE 適用の実機確認（モードA：アイテム自己 effectMod／能力値 effectMod、転送 true、モードB：横断バフ、handMaxSizeMod）→ ユーザー確認待ち
 
+#### 9-3 v2 再設計（2026-06-21・実装完了）
+
+上記の effectMod 着地＋モードB（aeTarget flag 照合）方式は、OVERRIDE/MULTIPLY を表現できない・非存在フィールド前提など限界が判明し、**「total 直接適用」方式へ全面再設計**（ユーザー確定）。詳細は [Active_Effects.md](../Game_Mechanics/Active_Effects.md)（v2 正本）。
+
+- [x] **effectMod 着地フィールド全廃**（`e02b920`）: modeValue/defence/attack/weapon.FAValue/skill.level/residence/能力値の effectMod 系を削除。`computeItemEffectiveValues` は total=base のみ（形状・base名で検出）。`computeAttributeFinal` から effectMod 項除去。能力値内訳の「効果」行撤去
+- [x] **v2 キー文法**（`parseEffectTargetKey`）: 値バフ `system.<名前空間>`（ability/control/self/parent/category.<小or大キー>/skill.<識別キー[*]>/handMaxSizeMod）、条件 `[path op value;...]`。判定バフ `check.` / `controlCheck.`（技能識別キー/プレフィックス・能力値・制御）
+- [x] **恒常適用パス**（`CastDataModel._applyEffectBuffs`）: アクター＋全所有アイテムの effects を集約→解決→`effect.apply` で total へモード適用（priority 順）。transfer 非依存（legacyTransferral=false）
+- [x] **判定時バフ**（`computeCheckBonus` / 判定フロー `_computeCheckBonus`）: 判定種別ごとの criteria 照合で達成値・制御値に加算。`calcSkillCheck`/`calcControlCheck` に checkBonus 配線。報酬点プレビューにも反映
+- [x] **同一効果の重複適用不可（一般原則）**: 値・判定の両方で、安定 ID（`flags.effectId` ?? document `_id`）単位に重複排除・最大採用。stackable のみスタック
+- [x] **重複可チェックボックス UI**: ActiveEffectConfig 詳細タブに注入（`renderActiveEffectConfig`、`flags.stackable` へ setFlag）
+- [x] **死蔵ヘルパー撤去**（`cac11f6`）: matchesAeTarget / addToItemEffectMod / parseCrossTargetKey / migrateAttackModToEffectMod 削除
+- [x] 全テスト green（814）・lint 0 error（既存 15 warning）
+- [ ] 実機確認（値バフ・判定バフ・重複可・条件付き category）→ ユーザー確認待ち
+- [ ] 申し送り: スタイル/ワークス述語の構造化（辞典ドロップダウン・専用欄）。手札上限の横断パス統一（現状 native）
+
 ### 9-4: バッドステータス／効果の AE 表現
 
 - [ ] 11ステータス（`CONFIG.statusEffects`）の AE 化

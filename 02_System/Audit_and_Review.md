@@ -1153,3 +1153,36 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 - clamp はしない（controlMod / combatSpeedMod は負の修正がありうる）。0clamp は消費側（ダメージ算出フェーズ12）の責務。
 - **mixin の prepareDerivedData は順序依存**（後勝ち・チェーンしない）。現状 prepareDerivedData 定義は cast / outfit-base / skill-base の3つのみで競合なし。今後 UsageTemplate 等に追加する際は super 委譲か concrete 集約を検討。
 - 表示の total 参照切替（アウトフィット概要・キャストシート装備表示）は次の増分。モードB（アクター→アイテム横断）・KI-020 は継続。
+
+---
+
+### AE 適用モデル v2「total 直接適用」（メカニクス監査＋設計レビュー）（フェーズ9-3 v2）
+
+**日付**: 2026-06-21
+**関連実装**: `scripts/data/item/helpers.mjs`（`parseEffectTargetKey` / `computeCheckBonus` / `checkChangeMatches` / `computeItemEffectiveValues`）、`scripts/data/actor/cast.mjs`（`_applyEffectBuffs` / `_resolveBuffApplications`）、`scripts/data/helpers.mjs`（`computeAttributeFinal`）、`scripts/module/tnx-judgment-engine.mjs`・`tnx-judgment-flow.mjs`（checkBonus）、`scripts/tnx.mjs`（重複可 UI フック）、各 DataModel・テスト
+**ステータス**: 実装完了・実機確認待ち（9-3a の effectMod/モードB 設計を**全面置換**）
+
+#### メカニクス監査（ルール解釈）
+
+- **同一効果の重複適用不可**（ユーザー確定 2026-06-21）: 明記なき限り同一効果は重複しない＝一般原則。値バフ・判定バフ双方に適用。ごく稀な「重複可」は明示フラグで表現。同一性は**安定 ID**（`flags.effectId` ?? document `_id`）で判定（名前変更耐性。辞典 effectId でコピー同士も同一視可能）。同名・異値は最大採用。
+- **判定（check）への加算がトーキョーN◎VA 最重要バフ**（単一技能指定）。コンボで複数技能に該当しても同一エフェクトは1回（プレフィックスが2技能に当たっても +1）。別エフェクトはスタック。
+- 制御判定バフは制御値を実効的に押し上げ（成功条件 `cardValue <= totalControl + checkBonus`）。
+- アウトフィットは識別キーで個体指定しない（親/カテゴリ/条件で相対指定）。技能は識別キーで一意指定。区分バフは小分類キー、大分類も `category.<大キー>` で可（大小キー非衝突）。
+
+#### 設計レビュー（技術的妥当性）
+
+- **effectMod 中間枠を全廃し total へ直接 `effect.apply`**: ネイティブのモード（ADD/OVERRIDE/MULTIPLY/UPGRADE/DOWNGRADE）と priority をそのまま再利用。effectMod では OVERRIDE/MULTIPLY を表現できなかった限界を解消。
+- **標準 UI のみ（キー＋モード＋値）**: 非存在フィールド・マクロに依存しない。条件はキー文字列内 `[...]` に畳み込む。重複可のみ詳細タブにチェックボックスを自前注入（`renderActiveEffectConfig`＋`setFlag`、フォーム送信非依存）。
+- **アクター単一適用パス**（`_applyEffectBuffs`）: Foundry の Item が自己効果を適用しない・change.key が他アイテムへ解決しない制約を、`legacyTransferral=false`＋アクター集約で回避。transfer OFF でも横断バフが反映。
+- **判定バフは判定時評価**（恒常 total に焼かない）: 文脈依存（コンボ）かつ非スタックのため。純粋関数 `computeCheckBonus` に切り出し単体テスト（重複不可・最大採用・スタック・stackable・非アクティブ）。
+
+#### 監査結果
+
+✅ §4.3 のスキーマ変更（effectMod 群の削除）はユーザー承認済。814 テスト green、lint 0 error（既存 15 warning）。9-3a の substrate（effectMod 着地・モードB aeTarget・死蔵ヘルパー）は本 v2 で撤去。
+
+#### 課題・申し送り
+
+- 値バフ重複排除は `(対象, total パス, モード, identity)` 単位の最大採用。OVERRIDE/MULTIPLY を**同名併用**する特殊ケースは「同名で最も有利な結果を残す」方針で、複雑な併用は明示 stackable で回避する整理。
+- 値バフ重複排除・適用パスは Foundry ドキュメント依存のため単体テスト外（実機確認）。判定バフ側は純粋関数で網羅済み。
+- 手札上限バフは現状 native `system.handMaxSizeMod`（KI-020 特例）。横断パスへ寄せて transfer 不要に統一するかは申し送り。
+- スタイル/ワークス述語（`byStyle:` 等）は構造化（辞典ドロップダウン・専用欄）が前提で後続。当面は識別キー/プレフィックス/カテゴリ。
