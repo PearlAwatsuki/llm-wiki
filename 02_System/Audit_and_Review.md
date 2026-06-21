@@ -1186,3 +1186,34 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 - 値バフ重複排除・適用パスは Foundry ドキュメント依存のため単体テスト外（実機確認）。判定バフ側は純粋関数で網羅済み。
 - 手札上限バフは現状 native `system.handMaxSizeMod`（KI-020 特例）。横断パスへ寄せて transfer 不要に統一するかは申し送り。
 - スタイル/ワークス述語（`byStyle:` 等）は構造化（辞典ドロップダウン・専用欄）が前提で後続。当面は識別キー/プレフィックス/カテゴリ。
+
+---
+
+### コンディション(BS・戦闘不能)の AE 表現（メカニクス監査＋設計レビュー）（フェーズ9-4）
+
+**日付**: 2026-06-22
+**関連実装**: `scripts/module/conditions.mjs`（CONDITION_KINDS / readCondition / gatherConditionCheckSources / gatherConditionControlPenalty / computeJammingPenalty / getCheckBlock）、`scripts/module/tnx-judgment-flow.mjs`（_execute 重圧遮断・_computeCheckBonus 合流・_computeJammingSource・_gatherConditions）、`scripts/data/actor/cast.mjs`（_applyConditionControlPenalty）、`scripts/tnx.mjs`（statusEffects に conditionKind・詳細タブ effect-value UI）、`tests/module/conditions.test.mjs`
+**ステータス**: 9-4 実装（in-phase 分）完了・実機確認待ち。発火依存(萎縮憎悪/捕縛=12、邪毒/恐慌/メインプロセス不可=13、回復=15)は申し送り
+
+#### メカニクス監査（ルール解釈）
+
+- **condition は自己完結する実体**: 同一性(status id=`conditionKind`/回復/除去可否) ＋ 可変効果値(condition 専用フラグ)。効果値は汎用 changes でなく専用フィールドで設定、適用はコードが kind で行う。D&D と違い TNX の BS は効果値が可変なため(ユーザー確定 2026-06-22)。
+- **5論点裁定**: ①「あらゆる判定」は上方判定のみ(制御は controlCheck/control 指定時のみ)②重圧=該当能力値を使う上方判定を不可(制御は可)③萎縮/憎悪=対象UUID＋`game.user.targets`(発火は12)④重複明記なしは非重複・強度は最大n⑤ウェットは「ウェット」アウトフィットを識別キーで検出(専用フィールド不可)。
+- **重複規則**: condition の非 stackable は**同 kind で重複排除**(同名 BS は複数発生しない)。stackable(衰弱/酩酊小大別/萎縮)は重ねる。憎悪は対象ごとに存在するがペナルティは非重複(同 kind で1回)。
+- **電子妨害**: 準備中アウトフィットのみ。category(武器/アーマーギア/サイバーウェア/トロン/サイコアプリ)＋電制≤n の個数(上限10)。全身義体(fullCyborg)・ヴィークル準備/該当タップでゴースト(isGhost)→10、ウェットで該当1個以上→1。
+
+#### 設計レビュー（技術的妥当性）
+
+- **2注入点に condition 用コードを追加**(Active_Effects v2 と整合): 恒常＝派生パス(`_applyConditionControlPenalty` で全制御値減)、判定時＝`_computeCheckBonus` に酩酊/萎縮憎悪/電子妨害を合流(チャート内訳・HUDプレビューにも反映)。
+- **重圧の遮断は `_execute` 冒頭・playCard 前**。判定に転送された(切り札リマップ後の)suit から能力値を拾う。**カード実体・クリックは読まない**(切り札はあらゆるカードを別スート/数字で使えるため、ユーザー指摘)。
+- **純粋関数に分離**(conditions.mjs は Foundry 非依存): 重複排除・電子妨害計算・遮断判定を単体テスト(20件)。actor/item/targets の解決は呼び出し側。
+- **付与 UI は既存 statusEffects**、効果値は詳細タブの kind 別フィールド(`renderActiveEffectConfig`、重複可と同じ手法で setFlag)。
+
+#### 監査結果
+
+✅ 836 テスト green、lint 0 error。effectMod 廃止後の v2 と一貫(condition は別系統＝kind 駆動・専用フィールド)。萎縮/憎悪・捕縛は器とロジック・UIを用意し、発火フック(isAttack/targets/武器)はフェーズ12 が供給する dormant 状態。
+
+#### 課題・申し送り
+
+- ウェット識別キー実値は辞典(17)で確定。準備制限・技能制限・対象外の enforcement は別スコープ(準備/技能系・12/13)。
+- 持続単位フラグ(durationUnit)・小さなシート積み残し(residence表示・isGhost CS・手札上限統一)は 9-5。発火(メインプロセス不可・継続ダメージ・回復)は 13/15。詳細は Phase_9 積み残し管理表。
