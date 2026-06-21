@@ -1,220 +1,100 @@
-# ActiveEffect 適用モデル
+# ActiveEffect 適用モデル（確定設計 v2）
 
-フェーズ9 の中核設計。**AE（技能効果・アイテム効果・バッドステータス）が実効値にどう流れ込むか**の正本。実装着手（9-1 以降）前にユーザー承認を得る対象（§4.2/§4.3）。
+フェーズ9 の中核。**標準の ActiveEffect 設定 UI（変更タブ＝キー＋モード＋値）だけで完結**させ、マクロや非存在フィールドに依存しない。2026-06-21 に effectMod 方式から**「total 直接適用」方式**へ再設計（ユーザー確定）。
 
-ルール前提は [Character_Creation.md](../Game_Rules/Character_Creation.md)（0clamp）・[Damage_Rules.md](../Game_Rules/Damage_Rules.md)（BS＝AE）・[Time_Management.md](../Game_Rules/Time_Management.md)（持続＝進行単位）。フェーズ全体計画は [Phase_9_Tasks_Detail.md](../Phases/Phase_9_Tasks_Detail.md)。
+ルール前提: [Character_Creation.md](../Game_Rules/Character_Creation.md)（0clamp）・[Damage_Rules.md](../Game_Rules/Damage_Rules.md)・[Time_Management.md](../Game_Rules/Time_Management.md)。フェーズ計画: [Phase_9_Tasks_Detail.md](../Phases/Phase_9_Tasks_Detail.md)。
 
 ---
 
-## 0. バフの適用先（最重要分類）
+## 0. 大原則
 
-バフは**着地先**で2つに分かれる。これが第一の軸であり、後述のモードA/B は「アイテムへのバフをどう適用するか」の下位の実装手段にすぎない。
+1. **base（UI 編集値）と total（実効値）を分離**。UI が編集するのは base（value / growth / mod 等）、表示・判定・ダメージが読むのは total。
+2. **エフェクトは total に直接、ネイティブのモードで効く**（ADD / OVERRIDE / MULTIPLY / UPGRADE / DOWNGRADE）。effectMod のような加算専用の中間枠は持たない（OVERRIDE/MULTIPLY が表現できないため廃止）。
+3. **対象・パラメータは「変更（changes）のキー」で表す**。標準 UI に存在するのはキー（テキスト）＋モード（選択）＋値（テキスト）のみ。これ以外のフィールドは前提にしない。
+4. Foundry の Item は自己効果を適用せず、change.key は他アイテムへ解決できない。よって**アクターの単一適用パスが全 buff を集めて total へ適用**する（ネイティブ applyActiveEffects には依存しない）。
 
-| 分類 | 着地先 | 例 |
+## 1. 注入点は2つ
+
+| 注入点 | 対象 | タイミング |
 |---|---|---|
-| **キャラクターへのバフ** | `actor.system.*` | 「判定に＋n」「○○ダメージに＋n」など、特定アイテムでなくキャラ本体に乗る修正 |
-| **アイテム自体へのバフ** | `item.system.*` | 「武器の攻撃力に＋n」「準備したアウトフィットの危険値に＋n」など、アイテムのパラメータそのものを書き換える修正 |
+| **恒常（適用パス）** | キャラ値・アイテム値 | prepareDerivedData で base→total を出した後、アクターの適用パスが total を改変 |
+| **判定時** | 技能判定への加算 | 判定実行時にエフェクト単位で評価（非スタック） |
 
-アイテムの実効値（base＋AE）は**アイテム内で完結する基盤表現**であり、その算出はアイテム自身の `prepareDerivedData` の責務。武器/防具の表示（フェーズ10）・ダメージ式（フェーズ12）はこの実効値を**読むだけ**の消費者であるため、**実効値の表現はすべてフェーズ9 で確定させる**（§11）。
+## 2. 変更キーの文法（標準 UI で打つ）
 
----
+`<対象セレクタ>.<system パス>`。対象セレクタで「誰の」を、パスで「どのパラメータの total」を指す。
 
-## 1. 基本原則
+| セレクタ | 対象 | 例（キー） |
+|---|---|---|
+| `system.` | **そのエフェクトが乗る/転送されるドキュメント**（キャラ＝アクター値） | `system.reason` |
+| `self.` | **効果が乗っているアイテム自身**（装備中の親アウトフィット等） | `self.attack` |
+| `parent.` | **効果が乗るアイテムの親アウトフィット**（オプション→親） | `parent.attack` |
+| `cat:<小分類キー>.` | その小分類のアイテム群 | `cat:melee.attack` |
+| `<識別キー>.` | その識別キーを持つ技能（技能は一意） | `melee.judgment` |
+| `<プレフィックス>*.` | 識別キーが前方一致する技能群 | `society_*.judgment` |
 
-1. **AE は base を破壊しない。** authored 値（スタイル基本値・武器の素の攻撃力など）には触れず、**`effectMod` 系の専用着地フィールドに ADD で積む**。これにより改造前/改造後・バフ有無を可逆に保てる。
-2. **実効値は `prepareDerivedData` で一本算出。** `total = base + Σ(各種mod) + effectMod`。能力値/制御値は最後に **0clamp**（[Character_Creation.md](../Game_Rules/Character_Creation.md)）。
-3. **着地点が無いパラメータには `effectMod` 相当を新設する**（§4.3 承認案件 → §10）。アクター能力値は既存の `effectMod`/`controlEffectMod` を流用。
-4. **OVERRIDE が要る稀なケース**（「攻撃力を5にする」等）は Foundry の change mode（OVERRIDE/UPGRADE/DOWNGRADE）で base 値を直接狙う。既定は **ADD→effectMod**。
+- パスは total を出すパラメータ。実装上 `attack` 等は内部で `attack.total` に解決する（base は不変）。
+- 大分類は `cat:weapon.` のように同じ `cat:` で（小分類キーは全体一意なので主に小分類を使う）。
+- 識別キー（技能）と `cat:`（アウトフィット）でアイテム種を住み分ける（アウトフィットは識別キーで個体指定しない方針＝Point 1）。
 
-> 「アウトフィット効果を直接書き換える」改造・エンチャント系効果も、内部実装は**素の値の上書きでなく effectMod への ADD**。プレイヤーから見た実効値は書き換わるが、authored 値は保持される（D&D のエンチャント＝アイテムに AE を付与する方式と同型）。
+### 条件付き（標準キーに畳み込む）
 
----
+`<セレクタ>[<条件>].<パス>`。角括弧内に `パス 比較 値`。複数条件は `;` 区切り。
 
-## 1.5 前提: legacyTransferral=false（必須の配線）
+- 例: `cat:melee[hack>=3].attack` = 電制 total が 3 以上の白兵武器の攻撃力。
+- 比較演算: `>= <= > < == !=`。左辺は対象アイテムの system パス（`hack`→`hack.total` 等に解決）。
+- 条件は angle/flag でなく**キー文字列内**で完結（標準 UI のみで書ける）。
 
-**`CONFIG.ActiveEffect.legacyTransferral = false` を init で設定すること（フェーズ9-3、commit ef274fb）。** これが無いと着地点 effectMod を作っても AE は流れ込まない:
+### モード・値
 
-- レガシー（既定 `true`）では **transfer:false の効果がアイテム自身に適用されない**（モードA 不成立）。さらに v13 ではトークンアクターで transfer:true が転送されないバグがある。
-- `false` で transfer:false → アイテム自身へ、transfer:true → アイテム上から親アクターへ仮想適用される（着地点に正しく流れ込む）。
-- 副作用: 転送効果は `actor.effects`（埋め込み）に入らず `actor.allApplicableEffects()` 経由になる。よってアクターシートの効果一覧は allApplicableEffects を列挙する（`EffectsSheetMixin.prepareEffectsContext`）。編集/削除は所有アイテム上の効果も解決する（`resolveEffect`）。
+- モード = 標準の Add / Override / Multiply / Upgrade / Downgrade。
+- 値 = 数値（標準の値欄）。
+- 複数効果は change.priority で順序づけ（Foundry 既定に準拠）。
 
-## 2. 2つの適用モード
-
-Foundry の AE は `change.key` を**その AE が乗るドキュメント自身**にしか解決しない。アクターの AE は `actor.system.*` のみ、アイテムの AE は（transfer に応じ）自分かアクターに効く。**埋め込みアイテム横断は素では不可**。TNX のアイテムバフはこれを 2 モードで吸収する。
-
-### モードA — アイテム自己適用（**Item 側の実装が必須**）
-
-AE をアイテム自身に乗せ `transfer: false` にすると、そのアイテムの `system.*.effectMod` へ適用される。
-
-> **重要（commit d3241c7）**: Foundry の Item は既定で `applyActiveEffects` を持たず、**自分自身の AE を適用しない**（`applyActiveEffects` は Actor のみ）。`legacyTransferral=false` だけではモードA は成立しない。`TokyoNovaItem.prepareEmbeddedDocuments` の後に自前の `applyActiveEffects`（有効な非転送効果の changes を `this` へ `effect.apply`）を実装して初めて、attack.effectMod 等の着地点に値が入る。これが「着地点を作っただけでは動かない」二段目の配線。
-
-- 用途: **改造**（恒久。改造技能の結果としてアイテムに AE を1枚足す）、**そのアイテム固有の常時ボーナス**。
-- 例: ある武器に「攻撃力＋2」AE → `system.attack.effectMod += 2`。
-- 実装コスト低（ネイティブ）。9-3 で着地フィールドさえ用意すれば成立。
-
-### モードB — アクター起点の他アイテム／カテゴリ指定（カスタム層）
-
-アクター（やスタイル技能）が**他のアイテム群／カテゴリ**を対象にするバフ。`change.key` では表現できないため**カスタム照合・注入層**を要する。
-
-- 用途: スタイル技能「〈白兵〉武器すべてに＋1」、**区分バフ**（対象社会技能の identificationKey 列挙、論点3）、判定時の達成値ボーナスなど。
-- target spec（対象指定）は **identificationKey 列挙 / カテゴリ / 技能種別**などを AE flag に持たせ、照合層が解決する。
-- 実装は §3 の順序問題に注意。
-
----
-
-## 3. prepare 順序とモードB 注入タイミング（重要）
-
-Foundry の Actor 準備順:
+## 3. 恒常適用パス（アクター prepareDerivedData）
 
 ```
-Actor.prepareData()
-  ├ prepareBaseData()            … 素の値
-  ├ prepareEmbeddedDocuments()
-  │    ├ 各 item.prepareData()    … item.prepareDerivedData まで完了（モードA はここで適用済み）
-  │    └ applyActiveEffects()     … アクター自身の AE を actor.system.* へ適用
-  └ prepareDerivedData()         … アクター実効値を算出
+1. prepareBaseData / 各アイテム prepareDerivedData: base→total を算出（total = base、エフェクト抜き）
+   - アイテム: total = value（modeValue は mode=value 時のみ）/ defence は X_total = X_defence / 技能 judgmentMod=0 等
+   - 能力値: total = growth + Σ(style×level) + mod（effectMod は廃止）
+2. アクター prepareDerivedData の末尾＝適用パス:
+   a. アクター自身＋全所有アイテムの effects から、有効な変更を集める
+   b. 各変更のキーを parseEffectTargetKey で解析（セレクタ/条件/パス）
+   c. 対象（キャラ＝アクター / self / parent / cat / 識別キー / prefix）を解決し、条件を満たす対象の
+      `<パス>.total` に effect.apply でモード適用（priority 順）
+3. 能力値・制御値は最後に 0clamp
 ```
 
-**問題**: アイテムの prepareDerivedData は、アクター AE 適用より**前**に終わる。よってモードB（アクター→アイテム）を素直にアイテム側で読むと間に合わない。
+- `effect.apply(targetDoc, {...change, key: "system.<path>.total"})` でモード処理（ADD/OVERRIDE/MULTIPLY）をネイティブに再利用。
+- self/parent はそのエフェクトの親アイテム（と parentItemId）で解決。所持時のみ反映（単体プレビューは非対応）。
 
-**採用方針**: モードB は **アクターの `prepareDerivedData` 内で「クロスターゲット注入パス」**として実装する。アクター AE 適用後に、所有アイテムを走査し、target spec で一致する AE 寄与を**各アイテムの `system.<param>.total` へ後追いで加算**する（`item.system` はライブオブジェクトなので後調整可能）。これにより `item.system.<param>.total` が常に単一の真実になる（dnd5e 流の actor 側後処理と同型）。
+## 4. 判定時バフ（技能）
 
-- モードA（自己適用）はアイテムの prepareDerivedData で `base + effectMod` を算出。
-- モードB はアクターの prepareDerivedData で各アイテムの total を再調整。
-- 判定エンジン・ダメージ算出・シート表示はすべて `item.system.<param>.total` を読むだけ。
+技能判定への加算は文脈依存（コンボ）かつ**非スタック**のため、恒常 total でなく**判定実行時にエフェクト単位**で評価する。
 
----
+- 各エフェクトは「技能述語（識別キー完全一致 / プレフィックス / 将来: スタイル・ワークス）＋ボーナス」を持つ（キーは `melee.judgment` / `society_*.judgment` 等）。
+- 判定フローで、参加技能（ベース＋コンボ）のうち**いずれか1つでも述語に該当すれば、そのエフェクトにつき1回だけ**達成値に加算。
+- 単一技能バフ（〈白兵〉+1）は述語が1要素の同枠。
+- 「バサラ/マヤカシに+1、組み合わせても+1」は同一エフェクトで複数該当 → 1回。別エフェクト同士は各1回（スタックする）。
 
-## 4. バフ対象パラメータ 棚卸し
+## 5. 構造化の前提（別途・後続）
 
-「現状フィールド」は着地点（effectMod 相当）の有無。**無し→新設が §10 の承認案件**。
+スタイル/ワークス述語（`byStyle:バサラ` 等）には、スタイル技能の「スタイル」欄・ワークス技能の「組織」欄・専用欄の**構造化（辞典読み取りドロップダウン・キー化）**が前提。ワークス装備フラグも要追加。これらは AE 本体の後の作業。当面は識別キー/プレフィックス/カテゴリで賄う。
 
-| 着地先 | パラメータ | バフ源の例 | 着地（提案） | モード | 現状着地 | 表現/消費フェーズ |
-|---|---|---|---|---|---|---|
-| キャラ | reason/passion/life/mundane 値・制御 | スタイル技能・状況修正 | `effectMod`/`controlEffectMod`（既存） | A(自) / B | **有** | 9 |
-| キャラ | 判定達成値（「判定に＋n」） | 技能効果・コンボ | 判定時収集 or actor の判定 mod | A(自) / B | 無 | 9（基盤）/判定連携 |
-| キャラ | ダメージ修正（「○○ダメージに＋n」） | damageBoost 等 | actor 側 damageMod | A(自) / B | 無 | 9（表現）/12（消費） |
-| キャラ | handMaxSize（User権威） | 手札上限バフ（KI-020） | `handMaxSizeMod`（要設計） | B＋User合流 | 無 | 9 |
-| キャラ | baseAttack/baseDefence/baseGuard・combatSpeed | 地力・素手攻撃 | 各 effectMod 相当（CS はスナップショット方針） | A(自) / B | 一部 | 9（表現）/10・12（消費） |
-| アイテム(weapon) | attack（攻撃力） | 武器強化・改造・スタイル技能 | `attack.effectMod` | A / B | 無 | **9** |
-| アイテム(weapon) | guardValue（受け値）・FAValue | 改造 | 各 `effectMod` | A | 無 | **9** |
-| アイテム(armor) | defence S/P/I（防御力） | 防具強化・改造・スタイル技能 | `defence.*_effectMod` | A / B | 無 | **9** |
-| アイテム(armor) | controlMod（制御修正） | 改造 | `controlMod.effectMod` | A | 無 | **9** |
-| アイテム(各アウトフィット) | appearancePenalty（危険値） | 「準備したアウトフィットの危険値に＋n」 | `appearancePenalty.effectMod`（条件: isPrepared 等） | A / B | 無 | **9** |
-| アイテム(cyborg/vehicle) | attack / defence | 改造 | weapon/armor と同様 | A / B | 無 | **9** |
-| アイテム(skill) | level（=使用スート数） | 稀（条件達成用） | `level.effectMod` 等 | B | 無 | 9（必要時） |
+分類（カテゴリ）の**コードキー化は実装済**（commit 2fc0685、`cat:melee` 等が使える）。
 
-> 「表現/消費フェーズ」: **実効値の表現（base＋AE→total）はすべてフェーズ9**。表示（10）・ダメージ式（12）はその total を消費するだけ（§11）。
-> アウトフィットの `controlMod` / `combatSpeedMod` / `appearancePenalty` は**アクターの outfitMod / appearanceModifier に集約**される派生入力（B-2 でライブ算出）。集約（9-2）は**アイテムの AE 込み実効値 total を読む**必要があるため、アイテム側 effectMod（9-3）が前提（9-2 と 9-3 は連動）。アイテム自体へのバフはモードA でアウトフィット側 effectMod に積み、集約は調整後の値を拾う。
+## 6. 実装計画（substrate 撤去＋適用パス）
 
----
-
-## 5. 改造・エンチャントモデル（モードA／恒久）
-
-- **改造技能による改造**は、対象アウトフィットに **AE を1枚追加**する操作（`transfer:false`、effectMod へ ADD）。アイテムの authored 値は不変。
-- 改造の取り外し＝その AE の削除。可逆。
-- スタイル技能が持つ「この武器の攻撃力を上げる」恒常効果も同型（アイテムに AE）。
-- 付与 UI（改造技能の判定→AE 生成）は購入・改造判定 UI（フェーズ17）と連携。**フェーズ9 では「アイテムに乗る effectMod 着地 AE が実効値に反映される器」までを作る**。
-
----
-
-## 6. target spec / change.key 規約（モードB）— 実装確定（2026-06-20）
-
-モードB の AE は flag `flags["tokyo-nova-axleration"].aeTarget` に **target spec** を持つ（`matchesAeTarget` / `addToItemTotal`、`CastDataModel._applyCrossTargetEffects`）:
-
-```
-aeTarget = {
-  byItemType:          ["weapon", ...],   // アイテム type
-  byMajorCategory:     ["武器", ...],      // 大分類
-  byMinorCategory:     ["白兵武器", ...],  // 小分類（minorCategory）
-  byIdentificationKey: ["...", ...],       // identificationKey 名指し（区分バフは公式キー列挙）
-  param:               "attack" | "guardValue" | "defence.S" | "level" | ...,
-  value:               n,                  // 加算量
-}
-```
-
-- **照合**: 指定された次元のみ AND で評価（各次元はリスト内 OR）。最低1次元の指定が必須（無条件全件マッチを防ぐ）。「全白兵武器」は `byMinorCategory:["白兵武器"]` で表現（ユーザー確定 2026-06-20）。
-- **注入**: アクター `prepareDerivedData` の後処理で所有アイテムを照合し、一致アイテムの `.total`（`defence.S_total` / `levelTotal` 等）に value を加算。**base は触らない**（アイテムの prepareDerivedData は先に走り total 算出済み）。
-- 素の Foundry `changes[]` は**アクター自身・自己アイテム（モードA）にのみ使う**。モードB は changes でなく flag ＋カスタム照合で表現（changes はキー解決できないため）。
-付与方法は2通り。`_applyCrossTargetEffects` はアクター自身＋全所有アイテムの effects を走査する（transfer の有無に依らない）。着地点 effectMod に積んだ後、触れたアイテムの実効値を再計算する（commit a6e1813）。
-
-**(A) changes キー `<識別キー>.<systemパス>`（推奨・標準UIで完結）**
-
-標準の ActiveEffect「変更」UI に、キー＝`<識別キー>.<パス>`、モード＝加算、値＝n を書く。その識別キーを持つアイテムの該当パスにエフェクトが乗る。flag もマクロも不要。
-
-| 例（key） | 効果 |
-|---|---|
-| `hisho-geki.attack.effectMod` | 識別キー hisho-geki のアイテムの攻撃力 +n |
-| `katana.defence.S_effectMod` | 同 katana の防御力S +n |
-| `xxx.guardValue.effectMod` / `xxx.levelEffectMod` | 受け値 / 技能レベル |
-
-- パスはアイテムの **effectMod 着地点**を指す（modeValue系は `<param>.effectMod`、防御は `defence.{S,P,I}_effectMod`、素の値は `<param>EffectMod`）。
-- `transfer` は OFF 推奨（ON だと Foundry が無効キーをアクターへもネイティブ適用し無害な一時プロパティが付く）。`TokyoNovaItem.applyActiveEffects` は横断キー（非 system.）を自己適用しない。
-
-**(B) flag `aeTarget`（型/大分類/小分類でまとめて指定）**
-
-識別キーで名指しできない「全白兵武器」等は flag を使う（型/大分類/小分類/識別キー＋param/value）。現状 flag 設定 UI は無く手動（改造判定=17 / スタイル技能=20 で UI 化）:
-```js
-await effect.update({
-  "flags.tokyo-nova-axleration.aeTarget": { byMinorCategory: ["白兵武器"], param: "attack", value: 1 }
-});
-```
-
----
-
-## 7. 持続時間フラグ（論点4 連携）
-
-- 各 AE は進行単位フラグを持つ（`flags.tokyo-nova.duration = { unit: "act"|"scene"|"cut"|"mainprocess" }`）。
-- 各単位の「開始」でカウンタを進め、AE は生成時カウンタを記録、進めば失効（Foundry duration 同型）。
-- **フェーズ9 はこのフラグ（スキーマ）の確定まで**。境界の実発火・カウンタ増加は 13/14/15。
-
----
-
-## 8. バッドステータス（論点2 連携・9-4）
-
-- 11 ステータス（`CONFIG.statusEffects`）を **changes を持つフル AE** 化し、全自動化を目指す。
-- 機構前提の効果（AR 減少・タイミング制限・カット終了回復）は**実発火が 13/14/15**。9-4 は器＋現機構で表現可能な分を実装し、残りは積み増す。
-- 効果文は**ルール本文でなくユーザー入力テキスト**として AE に持たせる（§4.1）。
-
----
-
-## 9. 0clamp の適用点
-
-- 能力値・制御値の `total` は `max(0, …)`（全 mod 合算後・順序非依存、[Character_Creation.md](../Game_Rules/Character_Creation.md)）。
-- 増減ペアの矛盾（clamp でデメリットだけ消える等）は**自動化しない**（手動 AE 調整）。
-
----
-
-## 10. DataModel 変更提案（§4.3 承認案件）
-
-実装前にユーザー承認が必要な**着地フィールド新設**の一覧（すべてフェーズ9 で配線。アイテム実効値は表現＝9 のため、§11）:
-
-- weapon: `attack.effectMod`、`guardValue.effectMod`
-- armor: `defence.S/P/I_effectMod`、`controlMod.effectMod`
-- cyborg / vehicle: 上記に準ずる
-- skill-base: `level.effectMod`（必要時）
-- cast: `baseAttack/baseDefence/baseGuard` の effectMod 相当、`handMaxSizeMod`（KI-020）
-
-> 命名は `effectMod` 接尾辞で能力値（既存 `effectMod`）と一貫させる。helpers の `attackField()`/`defenceField()` に effectMod を足すか、派生専用の別構造にするかは実装時に確定（承認後）。
-
----
-
-## 11. フェーズ分担（どこまでが9）
-
-**原則: 「実効値の表現（base＋AE）」はすべてフェーズ9。「その実効値の消費（表示・式）」が後続フェーズ。** アイテムの実効値（AE 込み）はアイテム自身に完結する基盤表現であり、武器/防具のデータ表示（10）・ダメージ式（12）はそれを**読むだけ**になる。表現を後回しにすると表示・戦闘を素の値で組んでしまい AE を後付けする逆順になるため、フェーズ9 で確定させる（2026-06-20 ユーザー指摘により旧「歩調を合わせる」案を撤回）。
-
-- **フェーズ9（実効値の表現を確定）**: 派生パイプライン、AE→effectMod 着地、モードA/B の適用機構、クロスターゲット注入パス、0clamp、**全 buff 対象アイテムパラメータ（weapon.attack/guardValue, armor.defence/controlMod, cyborg/vehicle, outfit.appearancePenalty 等）の effectMod 着地＋実効値 total**、KI-020、BS の AE 表現と持続フラグ、効果文入力。
-- **フェーズ10（戦闘タブ）**: 武器・防具の実効値 total を**表示**。
-- **フェーズ12（ダメージ）**: ダメージ式が攻撃力・防御力の total を**消費**。
-- **フェーズ13/14/15**: 持続時間の境界発火・カウンタ。
-- **フェーズ17**: 改造判定 UI から改造 AE（モードA）を生成。
-
----
+1. **effectMod 撤去**: modeValueField/defenceField/attackField/skill level/FAValue/residence の effectMod 系フィールドを削除。能力値の式から effectMod 項を外す。
+2. **base→total 算出**: `computeItemEffectiveValues` は total=base のみに簡素化。能力値 total も effectMod 抜きで算出。
+3. **キー解析**: `parseEffectTargetKey(key)` 新設（セレクタ/条件/パス、テスト可能な純粋関数）。
+4. **適用パス**: `CastDataModel._applyEffectBuffs`（旧 `_applyCrossTargetEffects` を一般化）。集約→解決→`effect.apply` で total へモード適用→0clamp。
+5. **Item オーバーライド撤去**: `TokyoNovaItem.applyActiveEffects` 削除（self は適用パスで解決）。
+6. **判定時バフ**: 判定フローでエフェクト単位の技能加算を収集（非スタック）。
+7. **表示**: 既存の total 参照表示はそのまま使える（total の中身が base+buff になる）。
 
 ## 参照
 
-- [Phase_9_Tasks_Detail.md](../Phases/Phase_9_Tasks_Detail.md)
-- [Character_Creation.md](../Game_Rules/Character_Creation.md) / [Damage_Rules.md](../Game_Rules/Damage_Rules.md) / [Time_Management.md](../Game_Rules/Time_Management.md)
-- [DataModel.md](../Architecture/DataModel.md)
-- [Judgment_System.md](Judgment_System.md) — 判定時のバフ収集連携
+- [Phase_9_Tasks_Detail.md](../Phases/Phase_9_Tasks_Detail.md) / [Judgment_System.md](Judgment_System.md)
+- [Character_Creation.md](../Game_Rules/Character_Creation.md)（0clamp）
 </content>
