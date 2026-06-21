@@ -164,11 +164,20 @@ prepareDerivedData    … 実効値 = growth + Σ(style×level) + mod + effectMo
 - [ ] 実機確認（値バフ・判定バフ・重複可・条件付き category）→ ユーザー確認待ち
 - [ ] 申し送り: スタイル/ワークス述語の構造化（辞典ドロップダウン・専用欄）。手札上限の横断パス統一（現状 native）
 
-### 9-4: バッドステータス／効果の AE 表現
+### 9-4: コンディション（BS・戦闘不能）の AE 表現
 
-- [ ] 11ステータス（`CONFIG.statusEffects`）の AE 化
+> 設計正本: [Conditions.md](../Game_Mechanics/Conditions.md)（4型モデル・5論点裁定済み・承認待ち）。BS（Bad_Status）と戦闘不能（Damage_Rules）を同一モデルで扱う。付与 UI は既存の `CONFIG.statusEffects`。
+
+**5論点 裁定（2026-06-21）**: ①`check.*`=上方判定のみ（制御は明示時のみ）②重圧=該当能力値を使う判定を不可 ③萎縮/憎悪=対象UUID＋`game.user.targets`照合で 9-4 完結（13不要）④重複明記なしは非重複・強度は最大n ⑤専用UIなし（既存ステータスエフェクト）。
+
+- [ ] 文法拡張: `parseEffectTargetKey` にワイルドカード（`check.*`/`controlCheck.*`/`system.ability.*`/`system.control.*`）と block スコープ（`block.*`）
+- [ ] 数値修正型①: 酩酊/衰弱を標準 changes で（既存適用パス・判定バフに乗る）
+- [ ] 行動制限型②: `block.check.<ability>`（重圧）・`block.attackWith.<識別キー>`（捕縛）を判定/攻撃判定時に遮断。恐慌・メインプロセス不可は 13 申し送り
+- [ ] 計算型③: 電子妨害n（category＋電制≤n の所持数→全判定マイナス、上限/特例）
+- [ ] 条件付き攻撃判定デバフ: 萎縮/憎悪を対象UUID＋Foundry targets 照合で
+- [ ] 11 BS＋戦闘不能状態の `CONFIG.statusEffects` 化・型割り当て（Conditions §3/§4）
+- [ ] AE フラグスキーマ（intensity/conditionKind/targetUuid/targetMode/durationUnit。持続は基盤のみ・発火は 13/14/15）
 - [ ] 効果文（ルール本文でなくユーザー入力テキスト）の入力機能
-- [ ] AE 持続時間の「進行単位」表現の**基盤**（flag 設計。境界発火は 13/14/15 申し送り）
 - [ ] 著作権配慮確認（チャート本文・効果文を本体へ焼き込まない。§4.1）
 
 ### 9-5: テスト・仕上げ
