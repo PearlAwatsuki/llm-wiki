@@ -178,10 +178,13 @@ prepareDerivedData    … 実効値 = growth + Σ(style×level) + mod + effectMo
 - [x] 行動制限型②: 重圧＝該当能力値の上方判定を `_execute` 冒頭で完全遮断（転送スートから）。捕縛＝攻撃判定時（萎縮/憎悪と同じく 12 で発火）。恐慌・メインプロセス不可は 13 申し送り
 - [x] 計算型③: 電子妨害n（`computeJammingPenalty`。count/−10/ウェット分岐、ウェットは識別キー検出）
 - [~] 条件付き攻撃判定デバフ: 萎縮/憎悪のロジック・器・UI 済み。発火（isAttack＋targets）は **フェーズ12** が供給（dormant）
-- [x] 11 BS の `CONFIG.statusEffects` に `conditionKind` 付与・kind 割り当て（Conditions §4）
-- [ ] 戦闘不能状態の `CONFIG.statusEffects` 追加・kind 割り当て（気絶/失神/仮死/昏睡/完全死亡 等。Conditions §5）
-- [ ] 効果文（AE 標準 description で対応＝ユーザー入力。確認のみ）
-- [ ] 著作権配慮確認（チャート本文・効果文を本体へ焼き込まない。§4.1）
+- [x] 全状態（BS＋戦闘不能＋負傷 肉体/精神/社会×21）を CONDITION_KINDS へ統合（group/img/inflicts）。`CONFIG.statusEffects` 自動生成
+- [x] 状態カスケード（`inflicts`→別状態を status のみ・hideFromList で自動付与）。ダメージ由来 AE のリスト非表示（技能由来は表示）
+- [x] カードドロー（衰弱/重圧の BS受付→山札→対象能力値・数字）。controlNegate（制御判定で無効/降格・簡易）。`applyDamageChartResult`（ダメージ→負傷付与入口）。実機検証は12
+- [x] AE 設定の status 選択を群（BS/戦闘不能/肉体/精神/社会）へ optgroup 化
+- [x] ダメージチャート効果文の設定アプリ（ワールド設定・系統タブ×1〜21。負傷名同梱・効果文のみ入力）
+- [x] 著作権配慮（§4.1 境界＝負傷名/対応/条件は同梱・効果文のみユーザー入力。Damage_Rules 確定記録）
+- [ ] block 系（恐慌/気絶/捕縛/狼狽）・萎縮憎悪・邪毒の発火 → 12/13/15（このフェーズでは器のみ）
 
 ### 9-5: テスト・仕上げ（9-1〜9-4 の小さな積み残しもここで回収）
 
