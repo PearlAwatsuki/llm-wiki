@@ -12,8 +12,8 @@
 | 項目 | 値 |
 |---|---|
 | 対象 FVTT | v13.351 動作確認済 (`minimum: 11`) |
-| 現バージョン | v0.8.0（フェーズ8 完了） |
-| 現在フェーズ | **フェーズ9** — ActiveEffect / 派生値計算（設計準備。2026-06-20 フェーズ再編） |
+| 現バージョン | v0.9.0（フェーズ9 完了） |
+| 現在フェーズ | **フェーズ10** — 既存シート関連のやり残し総仕上げ（設計確定中。2026-06-25） |
 | 判定方式 | カード (Cards API)。ダイスロールなし |
 | データ定義 | DataModel。`template.json` 廃止済 |
 
@@ -95,7 +95,8 @@
 | [Phase_6_Tasks_Detail.md](Phases/Phase_6_Tasks_Detail.md) | フェーズ6 完了記録 |
 | [Phase_7_Tasks_Detail.md](Phases/Phase_7_Tasks_Detail.md) | フェーズ7 完了記録（判定システム 設計） |
 | [Phase_8_Tasks_Detail.md](Phases/Phase_8_Tasks_Detail.md) | フェーズ8 完了記録（判定システム 実装） |
-| [Phase_9_Tasks_Detail.md](Phases/Phase_9_Tasks_Detail.md) | **現在フェーズ9** — ActiveEffect / 派生値計算（設計中） |
+| [Phase_9_Tasks_Detail.md](Phases/Phase_9_Tasks_Detail.md) | フェーズ9 完了記録（ActiveEffect / 派生値計算） |
+| [Phase_10_Tasks_Detail.md](Phases/Phase_10_Tasks_Detail.md) | **現在フェーズ10** — 既存シート関連のやり残し総仕上げ（設計確定中） |
 
 ## 関連
 
