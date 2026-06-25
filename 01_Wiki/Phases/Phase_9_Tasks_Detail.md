@@ -188,13 +188,13 @@ prepareDerivedData    … 実効値 = growth + Σ(style×level) + mod + effectMo
 
 ### 9-5: テスト・仕上げ（9-1〜9-4 の小さな積み残しもここで回収）
 
-- [ ] residence の登場/セキュリティ列の AE 反映（effectiveValues 経由・9-3 積み残し）
-- [ ] isGhost 時の CS 修正無効化を派生計算側へ移設（9-2 積み残し）
-- [ ] 手札上限を横断パスへ寄せ transfer 不要に統一（9-3 積み残し・任意）
-- [ ] AE 持続単位フラグ（`durationUnit`）のスキーマ＋詳細タブ（発火は 13/14/15）
-- [ ] 派生値計算・AE 適用・clamp の単体テスト
+- [x] residence の登場/セキュリティ列の AE 反映 — **既に解消済み**（outfit-sheet が `appearanceTargetTotal ?? appearanceTarget` 等の effective 値を表示。computeItemEffectiveValues が total を派生）
+- [x] isGhost 時の CS 修正無効化を派生計算側へ移設 — **既に解消済み**（`computeOutfitAggregates(items, isGhost)` が combatSpeedMod を除外し `_prepareOutfitAggregates`＝派生で呼ぶ。tnx.mjs も「再集計不要」明記）
+- [ ] 手札上限を横断パスへ寄せ transfer 不要に統一（任意・現状 native で動作）
+- [~] AE 持続単位フラグ（`durationUnit`）— **回復モデルの裁定が要る**（行動消費回復＝マイナー/メジャー放棄 と 受動失効＝カット/シーン終了 の区別、enum 設計）。発火は 13/14/15 なので、回復タイミングをユーザー裁定のうえ実装/発火を後続でまとめるのが妥当。§4.2 で推測しない
+- [ ] 派生値計算・AE 適用・clamp の単体テスト（主要分は 9-1〜9-4 で逐次追加済み）
 - [ ] wiki 更新（本ページ・関連ルールページ・Audit_and_Review）
-- [ ] CHANGELOG・バージョンアップ（フェーズ完了で MINOR up → v0.9.0）
+- [ ] CHANGELOG・バージョンアップ（フェーズ完了で MINOR up → v0.9.0。タグ付けはユーザー）
 
 ---
 
