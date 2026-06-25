@@ -197,8 +197,14 @@
 
 詳細: [Phase_7_Tasks_Detail.md](Phase_7_Tasks_Detail.md) / [Phase_8_Tasks_Detail.md](Phase_8_Tasks_Detail.md)、[Usage_System.md](../Game_Mechanics/Usage_System.md)、[Judgment_Rules.md](../Game_Rules/Judgment_Rules.md)
 
+### フェーズ9: ActiveEffect / 派生値計算パイプライン（完了 v0.9.0, 2026-06-24）
+
+`prepareDerivedData` 確立・実効値一本化（能力値/制御値 total・0clamp）・outfitMod/appearanceModifier の B-2 派生化。**v2 AE 適用モデル**（base/total 分離・total 直接適用・`system.<名前空間>` 値バフ・`check.`/`controlCheck.` 判定バフ・同一効果の重複適用不可・重複可 UI・条件付き）。**コンディション**（BS・戦闘不能・負傷を CONDITION_KINDS へ統合、効果値の固定/可変区別、詳細タブ UI、判定/派生への適用、電子妨害計算、重圧遮断）。**ダメージチャート**（肉体/精神/社会×0-21 同梱、§4.1 境界＝効果文のみユーザー入力、効果文設定アプリ）。**状態カスケード**（inflicts・状態のみ付与・ダメージ由来 AE のリスト非表示）・**カードドロー**（衰弱/重圧）・**controlNegate**・KI-020 解消。発火（block 系/萎縮憎悪/邪毒/回復）は 12/13/15 申し送り。
+
+詳細: [Phase_9_Tasks_Detail.md](Phase_9_Tasks_Detail.md)、[Active_Effects.md](../Game_Mechanics/Active_Effects.md) / [Conditions.md](../Game_Mechanics/Conditions.md)
+
 ---
 
 ## 今後のフェーズ
 
-現在は **フェーズ9（ActiveEffect / 派生値計算パイプライン）**。以降の一覧・順序・詳細は [Roadmap.md](../../02_System/Roadmap.md) を正本とする（本ファイルは完了フェーズの概要に徹し、未来の番号は重複保持しない）。
+現在は **フェーズ10（戦闘タブ）**。以降の一覧・順序・詳細は [Roadmap.md](../../02_System/Roadmap.md) を正本とする（本ファイルは完了フェーズの概要に徹し、未来の番号は重複保持しない）。
