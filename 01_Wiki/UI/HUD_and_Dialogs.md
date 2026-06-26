@@ -4,7 +4,7 @@
 
 | 項目 | 内容 |
 |---|---|
-| クラス | `TnxHud` extends `Application` (ApplicationV1) |
+| クラス | `TnxHud` extends `HandlebarsApplicationMixin(ApplicationV2)`（フェーズ3 で V2 化） |
 | ファイル | `scripts/module/tnx-hud.mjs` |
 | テンプレート | `templates/hud/hud.hbs` |
 | 配置 | `position: fixed` 独立レイヤー |
@@ -17,16 +17,15 @@
 | `.hud-main-cards` | 右下 (bottom:80px, right:360px) | 山札・捨て札 |
 | `.hand-area` | 下部中央 | 手札 (max-width:680px ≒ 5枚) |
 
-### 将来構造 (フェーズ2 V2 化時)
+### 構造
 
-- 左上: TokenActionHUD 用に空け
-- 右側三層: 上=シーン/ニューロ、中段=情報項目 (予定地)、下=山札/捨て札
-- 他 PC 手札小型表示 (将来)
+- 左上: TokenActionHUD 用に空け（フェーズ19）
+- 右側: シーン/ニューロカード・アクセスカード表示エリア（折りたたみ可）・山札/捨て札
+- カラム折りたたみ・他プレイヤー手札表示（`revealPlayerHands` 設定）を実装済み（フェーズ5）
 
-### 手札取得 (移行中)
+### 手札取得
 
-- **現状**: player Actor の handPileId 等
-- **フェーズ2-3 予定**: `game.user` の User flag 経由
+- **User flag 経由**（フェーズ2 完了・player Actor 廃止）。`game.user` の flag（`handPileId` / `trumpCardPileId`、`user-flag-schema.mjs`）からカード置き場を解決する。
 
 ## レコードシート (ApplicationV2)
 
@@ -63,9 +62,7 @@
 
 ## CSS
 
-`css/tnx.css` — 全 UI スタイル。フェーズ5 で構造リファクタ + サイバーパンクデザイン刷新予定。
-
-HUD デザイン: 構造=V2 化 (フェーズ2)、見た目=フェーズ5
+`css/tnx2.css` — 全 UI スタイル（フェーズ3 で構造リファクタ、フェーズ4 でデザイン刷新。旧 `tnx.css` は廃止）。
 
 ## 削除済み機能
 

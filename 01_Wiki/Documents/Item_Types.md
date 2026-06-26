@@ -74,7 +74,7 @@
 ## styleSkill 特有の注意
 
 - template.json 未定義の ★ フィールド 8 個を DataModel で明示定義
-- `RewritedTarget`, `RewritingMiracle_ID` — タイポ・命名揺れを意図的に維持（KI-018/KI-019）
+- `RewrittenTarget` / `rewritingMiracleId` — 旧 typo 名（`RewritedTarget` / `RewritingMiracle_ID`）から正規化済み（KI-018/019 解消・参照ゼロのため移行不要）
 - `unique` の initial は `"none"`（template.json の `""` は誤りを修正済み）
 - `timing[]` はアウトフィットの `timing`（単一 SchemaField）と**別物**（styleSkill は複数可の配列）
 
@@ -82,7 +82,7 @@
 
 判定システム（フェーズ7/8）の基盤。**構造変更は設計議論必須**。
 
-- `usage-list.hbs` — edit ボタンのハンドラ未実装（KI-002）
+- `usage-list.hbs` — edit ハンドラ実装済み（`_onUsageEdit`・KI-002 解消・フェーズ8-6）
 - `UsageCreationDialog` — 用途作成 UI
 
 ## アウトフィット系の modeValueField
@@ -93,7 +93,7 @@
 ## extensible スロット
 
 `slots[] = [{kind, count: {mode,value}}]` プール方式（フェーズ6-2 で再設計）。
-kind 6 種：weapon-slot / armor-slot / ianus-slot / tap-slot / surface-consciousness / deep-consciousness / unconsciousness（表層意識/深層意識/無意識）。
+kind 6 種（`SLOT_KINDS`、`scripts/data/item/common/extensible.mjs`）：`normal`（スロット）/ `surface`（表層意識）/ `deep`（深層意識）/ `unconscious`（無意識）/ `software`（ソフトウェア）/ `hardware`（ハードウェア）。
 装備側はスロット数のみを設定。オプション品との連携先 kind は `parentSlotKind` で記録。
 
 ## ヘルパー関数（`scripts/data/item/helpers.mjs`）

@@ -18,7 +18,7 @@
 | `system.json` | システム定義・`documentTypes`・互換性・Compendium |
 | `scripts/tnx.mjs` | 初期化・フック登録・シート登録・設定 UI |
 | `lang/ja.json` | 日本語ローカライズ |
-| `css/tnx.css` | 全 UI スタイル |
+| `css/tnx2.css` | 全 UI スタイル（旧 `tnx.css` は廃止） |
 
 ## ディレクトリ構成
 
@@ -28,13 +28,13 @@ scripts/
   data/
     abstract.mjs          # SystemDataModel + mixin()
     helpers.mjs           # Actor 側フィールドヘルパー
-    actor/                # Actor DataModel (5 type + common/)
-    item/                 # Item DataModel (17 type + common/)
-    card/                 # Card DataModel (3 type + common/)
-  actor/                  # Actor シート (ApplicationV1)
-  item/                   # Item シート
-  journal/                # アクトシート (JournalSheet)
-  module/                 # HUD・ダイアログ・同期ロジック等
+    actor/                # Actor DataModel (cast/guest/troop/extra + common/)
+    item/                 # Item DataModel (+ common/)
+    card/                 # Card DataModel (+ common/)
+  actor/                  # Actor シート (ApplicationV2)
+  item/                   # Item シート (ApplicationV2)
+  journal/                # アクトシート (DocumentSheetV2)
+  module/                 # HUD・ダイアログ・判定・コンディション・同期ロジック等
 templates/                # Handlebars テンプレート
 tests/                    # Vitest ユニットテスト
 ```
@@ -45,30 +45,26 @@ tests/                    # Vitest ユニットテスト
 |---|---|
 | FVTT | v13.351 検証済 |
 | モジュール | ESM (`.mjs`) |
-| シート API | **ApplicationV1** 主体。レコードシートのみ ApplicationV2 |
-| データ | **TypeDataModel** (25 type)。`template.json` 廃止 |
+| シート API | **ApplicationV2**（フェーズ3 で V1 全廃。HUD・ダイアログ含む全シート V2） |
+| データ | **TypeDataModel**（型構成は `scripts/data`・`system.json` を正とする）。`template.json` 廃止 |
 | テスト | Vitest |
 | リント | ESLint |
 | CI | GitHub Actions |
 
 ## 派生値の計算方式
 
-`prepareData()` / `prepareDerivedData()` のオーバーライドは**なし**。
+**`CastDataModel.prepareDerivedData` を確立**（フェーズ9、`scripts/data/actor/cast.mjs`）。能力値・制御値の実効値を `system.<key>.total` / `.totalControl` に一本化し、ActiveEffect は適用パス `_applyEffectBuffs` で total へ直接適用、最後に 0clamp する（→ [Active_Effects.md](../Game_Mechanics/Active_Effects.md)）。outfitMod / appearanceModifier も prepareDerivedData で都度算出（B-2、`computeOutfitAggregates`）。
 
-派生値はすべてイベント駆動の手動計算:
-
-- **能力値表示**: `TokyoNovaCastSheet.getData()` → `_getAbilitiesData()` (永続化しない)
-- **EXP**: `TokyoNovaCastSheet.updateCastExp()` — `ready` フックの CRUD 連動
-- **手札上限**: `resolveEffectiveHandMaxSize(user)` — User flag 個別値 → ゲーム設定の順で解決
+- **シート表示**: `TokyoNovaCastSheet._prepareContext()`（ApplicationV2）→ `_getAbilitiesData()` が集約済み total を読む
+- **EXP**: フック駆動の `recalcActorExp()`（CRUD 連動・cast↔User 同期）。EXP は派生化せず User flag が権威（B-2 対象外）
+- **手札上限**: `resolveEffectiveHandMaxSize(user)` — ①既定 ②User flag ③所有 cast の AE 合算（`handMaxSizeMod`、KI-020）を 0clamp で解決
 
 ## Compendium Packs
 
-`system.json` で 7 パック定義 (すべて Item):
-
-`styles`, `miracles`, `general-skills`, `style-skills`, `works-skills`, `outfits`, `works-outfits`
+`system.json` で 11 パック定義（最新は system.json を正とする）。Item パック（styles / miracles / general-skills / style-skills / works-skills / outfits / works-outfits / housing-areas / life-paths）に加え、`npc`（Actor）・`draw-tables`（RollTable）を含む。
 
 デフォルト所有権: PLAYER=OBSERVER, ASSISTANT=OWNER
 
 ## ソケット
 
-`system.json` で `"socket": true` を宣言しているが、`game.socket.emit/on` の実装は**未実装** (KI-006)。`game.tnx.refreshSheets()` は自クライアントのみ更新。
+`system.json` で `"socket": true` を宣言し、**`TnxSocketHandler` で集約実装済み**（KI-006 解消・フェーズ8-1、`scripts/module/tnx-socket-handler.mjs`）。`ready` フックで `game.socket.on("system.tokyo-nova-axleration", TnxSocketHandler.onMessage)` を登録し、RL 要求判定の結果反映・アクセスカード提示などで稼働。`game.tnx.refreshSheets()` は自クライアントの再描画。

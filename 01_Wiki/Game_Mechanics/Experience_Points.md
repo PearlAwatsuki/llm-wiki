@@ -81,14 +81,16 @@ newValue = (newTotal + 170) - (abilityExpCost + itemExpCost)
 
 履歴変更時: cast シート → User flag へキー変換 (`system.history.X` → `flags.TNX.history.X`)
 
-## 能力値コスト (表示用)
+## 能力値の実効値（表示用）
 
-`getData()` → `_getAbilitiesData()` — 永続化しない都度計算:
+実効値は `CastDataModel.prepareDerivedData`（フェーズ9）で `system.<key>.total` / `.totalControl` に一本化。シートは `_prepareContext()`（ApplicationV2）→ `_getAbilitiesData()` で集約済みの total を読む（`getData()` は ApplicationV1 の廃止メソッド）。
 
 ```
-totalValue   = growth + (Σ styleLevel × styleValue) + mod + effectMod
-totalControl = controlGrowth + (Σ styleLevel × styleControl) + controlMod + controlEffectMod
+total        = growth + Σ(styleValue × level) + mod + outfitMod   // effectMod 項は v2 で全廃
+totalControl = controlGrowth + Σ(styleControl × level) + controlMod + outfitControlMod
 ```
+
+値バフ（AE）は適用パス `_applyEffectBuffs` が total へ直接適用し、最後に 0clamp する（`computeAttributeFinal`、`scripts/data/helpers.mjs`）。
 
 ## 既知の設計課題
 

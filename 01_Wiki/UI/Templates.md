@@ -5,23 +5,22 @@
 ```
 templates/
   actor/
-    cast-sheet.hbs          # cast シート本体
-    player-sheet.hbs        # player シート
+    cast-sheet.hbs          # cast シート本体（player-sheet は廃止）
   item/
-    style-sheet.hbs
-    miracle-sheet.hbs
-    general-skill-sheet.hbs
-    style-skill-sheet.hbs
-    organization-sheet.hbs
+    style-sheet.hbs / miracle-sheet.hbs / general-skill-sheet.hbs /
+    style-skill-sheet.hbs / organization-sheet.hbs /
+    outfit-sheet.hbs / housing-area-sheet.hbs / life-path-sheet.hbs   # フェーズ6
   journal/
     scenario-sheet.hbs      # アクトシート
   hud/
     hud.hbs                 # 常駐 HUD
   chat/
-    scene-card.hbs          # チャットカード表示
+    scene-card.hbs / judgment-request.hbs / judgment-result.hbs       # フェーズ8
   user/
     record-sheet.hbs        # レコードシート (フェーズ2)
-  dialog/                   # 8 ファイル
+  app/                      # usage-sheet.hbs / usage-sheet-combo.hbs / rl-request-app.hbs
+  apps/                     # damage-chart-text.hbs
+  dialog/                   # 各種ダイアログ
   parts/                    # 共通パーシャル
 ```
 
@@ -31,7 +30,7 @@ templates/
 |---|---|---|
 | active-effects-list.hbs | ActiveEffect CRUD | miracle, generalSkill, styleSkill, organization, cast |
 | bad-status-list.hbs | バッドステータス | cast |
-| history-list.hbs | EXP 履歴 | cast, player (レコードシートは独自実装) |
+| history-list.hbs | EXP 履歴 | cast (レコードシートは独自実装) |
 | usage-list.hbs | 用途リスト | miracle, generalSkill, styleSkill |
 | prosemirror-editor.hbs | リッチテキスト | 各所 |
 | scenario-setting-wizard.hbs | セットアップ | ウィザード |
@@ -51,9 +50,9 @@ templates/
 | edit | edit |
 | delete | delete |
 
-### 未解決
+### 解消済み
 
-`usage-list.hbs` の `data-action="edit"` — ハンドラ不在 (KI-002)
+`usage-list.hbs` の用途編集ハンドラは実装済み（`_onUsageEdit`・KI-002 解消・フェーズ8-6）
 
 ## フォーム name 属性
 

@@ -4,12 +4,12 @@
 
 ## 概要
 
-| カテゴリ | type 数 | 権威 |
+| カテゴリ | type | 権威 |
 |---|---|---|
-| Actor | 5 | `system.json` → `documentTypes.Actor` + `CONFIG.Actor.dataModels` |
-| Item | 17 | 同上 |
-| Card | 3 | 同上 |
-| **合計** | **25** | `template.json` は廃止 |
+| Actor | cast / guest / troop / extra | `system.json` → `documentTypes.Actor` + `CONFIG.Actor.dataModels` |
+| Item | style ほか（`scripts/data/item/`・system.json を正とする） | 同上 |
+| Card | playingCards / neuroCards / other | 同上 |
+| 型数 | **直書きしない**（`scripts/data`・system.json が正・§3） | `template.json` は廃止 |
 
 ## 命名・配置 (B-0 決定)
 
@@ -28,7 +28,7 @@ scripts/data/
       biography.mjs
       attributes.mjs
       actor-base.mjs
-    cast.mjs, player.mjs, guest.mjs, troop.mjs, extra.mjs
+    cast.mjs, guest.mjs, troop.mjs, extra.mjs
   item/
     common/
       base.mjs, usage.mjs, skill-base.mjs, outfit-base.mjs, extensible.mjs
@@ -82,9 +82,9 @@ CONFIG.Actor.dataModels.cast = CastDataModel;
 
 `system.json` の `documentTypes.*.htmlFields: ["description"]` で宣言:
 
-- Item 全 17 type / Card 全 3 type
+- Item 全 type / Card 全 type
 - Actor: cast, guest, extra (biography 保有 type のみ)
-- troop, player は biography 非保有のため対象外
+- troop は biography 非保有のため対象外（player は廃止済み）
 
 ## シートとの接続
 
@@ -106,7 +106,7 @@ CONFIG.Actor.dataModels.cast = CastDataModel;
 |---|---|
 | `history` | `ObjectField` — ランダム ID キーのオブジェクトマップ。EmbeddedDocument ではない |
 | `styleSkill` 配列 | template.json の `["blank"]` ではなく、シート実装を真実の源として SchemaField 定義 |
-| タイポ維持 | `RewritedTarget`, `RewritingMiracle_ID` — 一貫性のため現状維持 (KI-018/019) |
+| 命名正規化 | `RewritedTarget`→`RewrittenTarget` / `RewritingMiracle_ID`→`rewritingMiracleId` に正規化済み (KI-018/019 解消・参照ゼロのため移行不要) |
 | User | **DataModel 不可**。システムデータは flag のみ (フェーズ2) |
 
 ## 参照

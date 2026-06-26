@@ -16,13 +16,13 @@ TNX の判定はすべて **Foundry Cards API** 経由。ダイスロール (`Ro
 
 ## カード置き場 (Piles)
 
-システム設定 (`renderSettingsConfig`) で Cards ドキュメントを UUID 指定:
+**`TnxCardSetupApp`**（ゲーム設定メニュー、フェーズ5。`scripts/module/tnx-card-setup-app.mjs`）で Cards ドキュメントを設定する:
 
 - 山札 (deck), 捨て札 (discard)
-- 手札 (hand), 切り札 (trump)
-- ニューロデッキ, シーンカード置き場
+- 手札 (hand), 切り札 (trump) — **ユーザーごとに User flag で保持**
+- ニューロデッキ, シーンカード置き場, RL 用切り札捨て場 (`gmTrumpDiscardId`)
 
-設定 UI は v13 DOM API 対応済 (ドロップダウン選択)。
+`TnxActionHandler` の `getActiveDeck()` / `getActiveDiscardPile()` / `getActiveNeuroDeck()` / `getActiveScenePile()` 等が現在の置き場を解決する。
 
 ## カード生成
 
@@ -39,19 +39,13 @@ TNX の判定はすべて **Foundry Cards API** 経由。ダイスロール (`Ro
 
 ## 手札上限
 
-`ready` フックで全 cast の `handMaxSize` を設定値 (+ ActiveEffect `handMaxSizeMod`) で更新。
+手札上限の権威は **User flag**（`handMaxSize`、既定 4）。実効上限は `resolveEffectiveHandMaxSize(user)`（`user-flag-schema.mjs`）が **①既定 ②User flag 明示 ③所有 cast の AE 合算（`cast.system.handMaxSizeMod`）** を 0clamp で解決する。
 
-`handMaxSizeMod` は DataModel 未定義 (KI-005) — フェーズ2 で User flag 設計と合わせて決着。
+`handMaxSizeMod` は cast の AE 着地点として新設済み（KI-005 → KI-020 解消・フェーズ9-3）。User は DataModel/AE を持てないため所有 cast の AE から合流する。
 
-## 所有モデル (移行中)
+## 所有モデル
 
-| 現状 | フェーズ2 移行先 |
-|---|---|
-| player Actor の handPileId / trumpCardPileId | User flag |
-| cast シートの手札表示 | 削除 (2-3) |
-| HUD 手札取得 | `game.user` flag 経由 (2-3) |
-
-手札作成: アクトシートの RL 手札作成を全ユーザー分に拡張 (GM 一括 + ownership 設定)。
+手札・切り札の所有は **User flag**（`handPileId` / `trumpCardPileId`）に一本化済み（フェーズ2 完了・player Actor 廃止）。HUD は `game.user` の flag から手札置き場を取得する。配布・受け渡しは User 単位（`TnxCardSetupApp` / `dealTrumpFromNeuroDeck` / `selectAndPassToUser` 等）。
 
 ## チャット
 
@@ -59,8 +53,6 @@ TNX の判定はすべて **Foundry Cards API** 経由。ダイスロール (`Ro
 
 テンプレート: `templates/chat/scene-card.hbs`
 
-## 今後 (フェーズ7/8)
+## 判定ロジックとの関係
 
-本ドキュメントは**物理的なカード移動**のみ。達成値計算・技能判定ロジックはフェーズ7 (設計) / フェーズ8 (実装) で追加。
-
-usage テンプレートが判定のデータ基盤 → [Usage_System.md](Usage_System.md)
+本ドキュメントは**物理的なカード移動**を扱う。達成値計算・技能判定ロジックはフェーズ7（設計）/8（実装）で実装済み（→ [Judgment_System.md](Judgment_System.md)）。usage テンプレートが判定のデータ基盤（→ [Usage_System.md](Usage_System.md)）。
