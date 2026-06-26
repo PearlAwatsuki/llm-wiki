@@ -66,11 +66,11 @@
 |---|---|
 | value, base, current, mod, freeMod | イニシアチブ計算（`@system.combatSpeed.value`） |
 
-**UI 未実装**（KI-010）— シートに入力欄がなく常に 0。配置先はフェーズ12（戦闘進行）までに決定。
+**UI 未実装**（KI-010）— シートに入力欄がなく常に 0。配置先はフェーズ10（戦闘タブ）で扱う（10-5 で CS 入力 UI を実装し KI-010 解消予定）。
 
 ## アウトフィット集計（cast）
 
-`tnx.mjs` の集計関数群が `createItem` / `deleteItem` / `updateItem` / `updateActor` フックで発火。
+`CastDataModel.prepareDerivedData` → `_prepareOutfitAggregates` が `computeOutfitAggregates(items, isGhost)`（`scripts/data/helpers.mjs`）で**都度算出**する（永続化しない＝B-2、フェーズ9-2）。旧来のフック書き戻し（`updateCastOutfitMods` / `updateCastAppearanceModifier` / `recalcOutfitAggregates`）・起動時スキャン・isGhost 再集計は撤去済み（`scripts/tnx.mjs` L264-267 に明記）。
 
 | 集計対象 | 条件 |
 |---|---|
@@ -78,8 +78,9 @@
 | `outfitMod.control` | 準備済み（isPrepared）かつ携帯中の `controlMod.value` 合算 |
 | `outfitMod.combatSpeed` | 携帯中の `combatSpeedMod.value` 合算（isGhost 時は無効化） |
 
+> `outfitMod` の reason/passion/life/mundane は常に 0（現行ルール上アウトフィットは制御値・CS のみ修正）。値バフ（AE）は `_applyEffectBuffs` が `total` へ直接適用する（フェーズ9-3 v2）。
+
 ## 参照ファイル
 
-- DataModel: `scripts/data/actor/*.mjs`
+- DataModel: `scripts/data/actor/*.mjs`、集計の純関数: `scripts/data/helpers.mjs`（`computeOutfitAggregates`）
 - cast シート: `scripts/actor/tnx-cast-sheet.mjs`
-- アウトフィット集計: `scripts/tnx.mjs`（`calcAppearanceModifier` / `calcOutfitMods`）

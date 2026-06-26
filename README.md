@@ -22,4 +22,4 @@
 
 ## 現在フェーズ
 
-**フェーズ3** — 既存シート ApplicationV2 移行 ([詳細](02_System/Roadmap.md))
+現在フェーズ・バージョンの正本は [02_System/Roadmap.md](02_System/Roadmap.md)（本ファイルは固定値を持たない）。

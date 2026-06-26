@@ -10,7 +10,7 @@ FVTT 実装の技術詳細は [01_Wiki](../01_Wiki/00_Index.md) を参照。
 |---|---|
 | [Project_Overview.md](Project_Overview.md) | プロジェクト概要、著作権、現状 |
 | [Development_Rules.md](Development_Rules.md) | 命名規約、実装方針、禁止事項 |
-| [Roadmap.md](Roadmap.md) | 全12フェーズのロードマップ |
+| [Roadmap.md](Roadmap.md) | 全フェーズのロードマップ（現在フェーズの正本） |
 | [Phase_Operations.md](Phase_Operations.md) | フェーズ進行ルール、TASKS ファイル運用 |
 | [Audit_and_Review.md](Audit_and_Review.md) | メカニクス監査 vs 設計レビュー |
 | [Release_Process.md](Release_Process.md) | バージョニング、リリース手順 |
@@ -26,6 +26,4 @@ FVTT 実装の技術詳細は [01_Wiki](../01_Wiki/00_Index.md) を参照。
 
 ## 現在フェーズ
 
-**フェーズ5**: 修正・軽微な機能追加
-
-→ [Roadmap.md](Roadmap.md)
+現在フェーズの正本は [Roadmap.md](Roadmap.md)（本ファイルは固定値を持たない）。

@@ -11,6 +11,7 @@ llm-wiki/
 │   ├── Architecture/
 │   ├── Documents/
 │   ├── UI/
+│   ├── Game_Rules/      ルール解釈の正本
 │   ├── Game_Mechanics/
 │   ├── Migration/
 │   ├── Issues/
@@ -37,8 +38,8 @@ llm-wiki が運用の正本。更新は該当 Wiki ページを直接編集す�
 
 | 変更種別 | 更新先 |
 |---|---|
-| 新 KI 発見 | 01_Wiki/Issues/Active + CLAUDE.md (重要なら) |
-| フェーズ完了 | CLAUDE.md + 01_Wiki/Phases + 02_System/Roadmap |
+| 新 KI 発見 | 01_Wiki/Issues/Active（正本は Issues 一箇所・§6.3） |
+| フェーズ完了 | 01_Wiki/Phases + 02_System/Roadmap（CLAUDE.md はフェーズを保持しない） |
 | 設計決定 | 02_System/Audit_and_Review + 該当 Wiki |
 | ルール監査 | 02_System/Audit_and_Review |
 

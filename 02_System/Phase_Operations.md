@@ -10,14 +10,14 @@
 
 ## 作業ファイル
 
-| ファイル | フェーズ |
-|---|---|
-| `docs/PHASE_0_TASKS.md` | フェーズ0 |
-| `docs/PHASE_B_TASKS.md` | フェーズB |
-| `docs/PHASE_5_TASKS.md` | フェーズ5 (予定) |
-| `docs/PHASE_2_INVESTIGATION.md` | フェーズ2 調査・設計 |
+フェーズ別の作業・調査記録は **`01_Wiki/Phases/`** に置く（旧 `docs/PHASE_*_TASKS.md` は廃止）。
 
-新フェーズ着手時に `PHASE_N_TASKS.md` または `PHASE_N_INVESTIGATION.md` を作成。
+| ファイル | 内容 |
+|---|---|
+| `01_Wiki/Phases/Phase_N_Tasks_Detail.md` | 各フェーズの作業記録（サブフェーズ・完了条件） |
+| `01_Wiki/Phases/Completed_Phases.md` | 初期フェーズ（0/A/B/1/2）の概要 |
+
+新フェーズ着手時に `01_Wiki/Phases/Phase_N_Tasks_Detail.md` を作成する。
 
 ## 進行ルール
 
@@ -25,10 +25,10 @@
 2. タスク完了時に TASKS ファイルで `- [x]` チェック
 3. 大きな変更前はプラン → 承認 → 実装
 4. フェーズ完了時:
-   - MECHANICS_AUDIT / DESIGN_REVIEW のエントリ最新化
+   - メカニクス監査・設計レビューのエントリ最新化（`02_System/Audit_and_Review.md` / `Design_Review_Entries.md`）
    - CHANGELOG 更新
    - バージョンアップ + git tag
-   - CLAUDE.md §2.2 更新
+   - `02_System/Roadmap.md` の進行状況を更新（CLAUDE.md はフェーズを保持しない）
 
 ## サブフェーズ設計原則
 
@@ -50,18 +50,17 @@
 | 種別 | 主体 | 成果物 |
 |---|---|---|
 | 設計 (7, 9 等) | Claude Code | ルール言語化、データ構造設計、調査記録 |
-| 実装 (8, 10 等) | Claude Code | コード、テスト、DESIGN_REVIEW エントリ |
+| 実装 (8, 10 等) | Claude Code | コード、テスト、設計レビューエントリ |
 
 ## 調査メモ
 
-着手前の制約・トレードオフは `PHASE_N_INVESTIGATION.md` に記録。
+着手前の制約・トレードオフは該当フェーズの `Phase_N_Tasks_Detail.md`（または調査ページ）に記録。
 
 例: フェーズ2 — User は DataModel 不可 → flag 運用確定
 
 ## 将来検討
 
-確定前の項目は `docs/FUTURE_CONSIDERATIONS.md`。
-確定したらロードマップに移し、FUTURE から削除。
+確定前の項目は Roadmap の再編メモ等に記し、確定したらロードマップ本体へ移す（旧 `docs/FUTURE_CONSIDERATIONS.md` は廃止）。
 
 ## 関連
 
