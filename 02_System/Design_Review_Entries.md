@@ -2758,3 +2758,30 @@ armor / cyborg / tap / vehicle / ianus / weapon / housing-area / residence)、
 #### 課題
 
 なし。
+
+---
+
+### 部位（part）管理システム（フェーズ10-1）
+
+**レビュー対象**: `outfit-base.mjs`（part 行スキーマ）、`cast.mjs`（partSlots・エイリアス）、`part-slot-preset-app.mjs`（プリセット設定・編集App）、`tnx.mjs`（流し込み）
+**ステータス**: 基盤実装完了・UI/占有計算 実装中
+
+#### レビュー観点（保守性/拡張性/FVTT慣行/整合）
+
+#### 良かった点
+
+- **加算的スキーマ変更で後方互換**: value/slots/isOption/parentItemId を温存し新フィールドを追加。kind 既定 "other" で旧 {value,slots} データを自由記入へ無損移行（§4.2 文字列推測なし）。既存 857 テスト green。
+- **エイリアス（occupiesOther/targetPart/targetCount）で排他部位を汎用化**: 両手持ち=片手持ち×2 をデータで表現でき、公式に無い排他やルール追加にコード変更なしで対応（YAGNI を侵さず将来対応力を確保）。
+- **プリセット編集 App は既存カード設定様式を踏襲**（standard-form・number-input-spinner・行追加/削除）。設定は world Array、preCreateActor で新規キャストへ deepClone 流し込み。
+- **対象欄の文脈連動（D&D 消費 UI 参考）**: ワールド直下=自由入力／キャラ所属=所有物ドロップダウン。アイテム名は名前ライブ照合（UUID キャッシュ非保持＝[[feedback-no-stale-caches]] と整合）。
+
+#### 課題
+
+- part 行スキーマがフィールド多数（kind/value/slots/isOptional/host*×5/refSubKind）。表示・占有・エディタの各所で kind 分岐が増えるため、純粋関数（占有計算・表示ラベル組み立て）へ早期に切り出してテストで固定する。
+- 旧 isOption/parentItemId/parentSlotKind は当面温存（退行回避）。新オプションモデル（part kind=option＋host*）への一本化と旧フィールド撤去は UI 完成後に別途。
+- プリセットは config:false の world Array で DataModel 検証が効かない。編集 App の #onSubmit で整形（空 value 除去・非エイリアス行の target* クリア）して担保。
+
+#### 推奨アクション
+
+- 占有計算・部位名表示ルールを Foundry 非依存の純粋関数（helpers）に実装し単体テスト（任意・非消費3型・エイリアス展開・relation・表示コネクタ）。
+- UI 安定後に旧 isOption 系の撤去を別コミットで計画。

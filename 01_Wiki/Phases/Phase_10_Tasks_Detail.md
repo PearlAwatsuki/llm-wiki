@@ -91,7 +91,7 @@
 - [x] §4.3 フィールド追加の最終 OK（2026-06-26 ユーザー承認）。実装着手中
 - [x] 部位システム詳細設計の確定・ロック（2026-06-26。5択 kind・relation・表示ルール・占有・プリセット。正本 [Outfits.md](../Game_Rules/Outfits.md)）
 - [ ] 戦闘タブの表示内容・レイアウトのルール言語化（10-6 用。**唯一の未了設計**）
-- [ ] 各サブフェーズ実装時に Audit_and_Review へメカニクス監査・設計レビューを起票（§6.2）
+- [~] 各サブフェーズ実装時に Audit_and_Review へメカニクス監査・設計レビューを起票（§6.2）。**10-1（部位）は起票済（2026-06-26・[Audit_and_Review.md](../../02_System/Audit_and_Review.md)＋[Design_Review_Entries.md](../../02_System/Design_Review_Entries.md)）**、以降の各サブフェーズで追加
 
 ### 10-1: 部位（part）管理
 
