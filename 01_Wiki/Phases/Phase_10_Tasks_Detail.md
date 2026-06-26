@@ -88,17 +88,21 @@
 - [x] 上記決定事項をユーザー裁定（2026-06-25）
 - [x] 準備（isPrepared）モデルの詳細確定（2026-06-26。部位「-」=準備不可/携帯のみ・準備=部位装備・オプション準備=装備対象選択・任意~=重複可/非カウント）
 - [x] 本ページ・[Character_Creation.md](../Game_Rules/Character_Creation.md)・[Outfits.md](../Game_Rules/Outfits.md) へ起票
-- [ ] §4.3 フィールド追加の最終 OK（下記一覧。CLAUDE.md 新 §2.2「設計確定時に一括承認」に従い実装着手時に取得）
+- [x] §4.3 フィールド追加の最終 OK（2026-06-26 ユーザー承認）。実装着手中
+- [x] 部位システム詳細設計の確定・ロック（2026-06-26。5択 kind・relation・表示ルール・占有・プリセット。正本 [Outfits.md](../Game_Rules/Outfits.md)）
 - [ ] 戦闘タブの表示内容・レイアウトのルール言語化（10-6 用。**唯一の未了設計**）
 - [ ] 各サブフェーズ実装時に Audit_and_Review へメカニクス監査・設計レビューを起票（§6.2）
 
 ### 10-1: 部位（part）管理
 
-- [ ] ゲーム設定: 部位プリセット（全アクター共通）の定義＋編集 UI
-- [ ] cast: 部位スロット集合フィールド（新規キャストへプリセット流し込み・追加/削除）
-- [ ] part エントリに種別（`slot` / `outfitName`）追加
-- [ ] 占有判定（単一ホスト・分割不可）と空き/埋まり・超過表示（超過は赤等で強調・非強制）
-- [ ] オプションのホスト導出表示「スロット種別（ホスト名）」、タップの「タップ/ソフトウェア（タップ名）」
+> **詳細設計（ロック・2026-06-26）は [Outfits.md](../Game_Rules/Outfits.md) 「部位管理（フェーズ10）」が正本。** 5択 kind（-／身体部位／オプション／解説参照／その他）・任意チェック・relation(and/or)＋or装備先トグル・表示ルール（+／、もしくは／任意(、)／／／など）・非消費3型（slots0／住宅アクセサリ／任意）・プリセット（体部位のみ・片手持ち/片腕/片脚/指=各2）・完全一致照合。
+
+- [ ] DataModel: outfitBase.part 行を新スキーマへ（kind/isOptional/host*/value/slots）＋ partRelation・partOrChoice。既存データは kind=other へ移行
+- [ ] DataModel: cast に partSlots（部位スロット集合）追加
+- [ ] ゲーム設定: 部位プリセット（全アクター共通）の定義＋編集 UI。新規キャストへ流し込み（キャスト側で追加/削除）
+- [ ] アウトフィットシート: 部位エディタを独立 legend へ（5択 kind 連動 UI・relation・or 装備先トグル）
+- [ ] 占有計算（純粋関数＋テスト）: 部位ラベルごと合算・非消費3型除外・オプションはホスト導出・分割不可
+- [ ] キャストシート: 空き/埋まり・超過表示（超過は赤等で強調・非強制）・表示ルール準拠
 
 ### 10-2: スタイル技能の自動取得
 
@@ -143,10 +147,11 @@
 |---|---|
 | styleSkill | 自動取得対象（アクター ID 保持／アイテム参照）、武器使用義務フラグ、経験点消費なし、秘技/奥義の取得数除外、レベル自動参照（指定識別キー等） |
 | weapon（または outfit 共通） | スタイル技能由来マーク、重複取得不可 |
-| outfit の part エントリ | 種別 discriminator（`slot` / `outfitName`） |
+| outfit の part エントリ | kind（none/bodyPart/option/reference/other）、isOptional、hostMajor、hostMinor、hostMinorExclude、hostFeature、hostName、refSubKind/refSubValue、（兄弟）partRelation・partOrChoice |
 | outfitBase | 「携帯のみで使用可（準備不要）」例外フラグ。準備（isPrepared）の意味づけ変更（準備=部位への装備、部位「-」品は準備フラグを持たない） |
-| cast | 部位スロット集合、取得トループのアクター ID 保持 |
-| ゲーム設定 | 部位プリセット |
+| outfitBase（→10-2 合流） | `派生データ`フラグ（別種別データ＝武器＋タップ等の二重経験点回避）、`変異器官`フラグ（ヒルコの自製生体装備・その他特徴で使用） |
+| cast | 部位スロット集合（partSlots）、取得トループのアクター ID 保持 |
+| ゲーム設定 | 部位プリセット（partSlotPreset） |
 
 ---
 
