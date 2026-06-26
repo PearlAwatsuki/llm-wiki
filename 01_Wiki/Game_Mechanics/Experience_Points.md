@@ -97,7 +97,6 @@ totalControl = controlGrowth + Σ(styleControl × level) + controlMod + outfitCo
 | ID | 内容 | 担当 |
 |---|---|---|
 | KI-008 | 一括更新時の updateCastExp 競合リスク | 表出後に対処 |
-| KI-005 | handMaxSizeMod 未定義 | フェーズ2 |
 
 ## 参照
 
