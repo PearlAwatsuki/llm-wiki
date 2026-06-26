@@ -9,7 +9,7 @@
 |---|---|---|
 | biography | `common/biography.mjs` | charaname_ruby, handle, post, citizenRank, age, gender, 身体情報, **description** (HTMLField) |
 | attributes | `common/attributes.mjs` | reason/passion/life/mundane (value, control, styleA〜C, growth, mod 等), combatSpeed, 各ダメージ |
-| actorBase | `common/actor-base.mjs` | handMaxSize, handPileId, trumpCardPileId |
+| actorBase | `common/actor-base.mjs` | （フィールドなし）手札・切り札の所有（handPileId / trumpCardPileId）・手札上限（handMaxSize）は **User flag の権威へ一本化済み**（フェーズ2 積み残し解消） |
 
 ## 各 Type
 
