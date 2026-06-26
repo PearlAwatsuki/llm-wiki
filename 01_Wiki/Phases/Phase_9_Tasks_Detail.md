@@ -238,5 +238,3 @@ prepareDerivedData    … 実効値 = growth + Σ(style×level) + mod + effectMo
 - [DataModel.md](../Architecture/DataModel.md)
 - [Active_Issues.md](../Issues/Active_Issues.md) — KI-020
 - [Phase_8_Tasks_Detail.md](Phase_8_Tasks_Detail.md)
-</content>
-</invoke>

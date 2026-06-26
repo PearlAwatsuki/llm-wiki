@@ -115,4 +115,3 @@
 
 - [Phase_9_Tasks_Detail.md](../Phases/Phase_9_Tasks_Detail.md) / [Judgment_System.md](Judgment_System.md)
 - [Character_Creation.md](../Game_Rules/Character_Creation.md)（0clamp）
-</content>

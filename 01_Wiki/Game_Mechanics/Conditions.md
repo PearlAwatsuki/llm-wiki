@@ -149,4 +149,3 @@ status id（`CONFIG.statusEffects`）が condition の一意性を担い、`cond
 - [Bad_Status.md](../Game_Rules/Bad_Status.md) / [Damage_Rules.md](../Game_Rules/Damage_Rules.md)
 - [Time_Management.md](../Game_Rules/Time_Management.md)（回復タイミングの時間単位）
 - [Phase_9_Tasks_Detail.md](../Phases/Phase_9_Tasks_Detail.md)
-</content>

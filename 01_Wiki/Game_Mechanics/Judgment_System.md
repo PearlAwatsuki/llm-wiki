@@ -452,7 +452,7 @@ HUD カードホバー時に `card.preview` バッジを表示（`templates/hud/
 
 - [Card_Operations.md](Card_Operations.md) — 物理的なカード移動処理
 - [Usage_System.md](Usage_System.md) — usage テンプレート・KI-002
-- [Active_Issues.md](../Issues/Active_Issues.md) — KI-002, KI-006
+- [Resolved_Issues.md](../Issues/Resolved_Issues.md) — KI-002（用途編集ハンドラ）/ KI-006（ソケット）はともに解消済み
 - [Phase_7_Tasks_Detail.md](../Phases/Phase_7_Tasks_Detail.md)
 - [Judgment_Rules.md](../Game_Rules/Judgment_Rules.md) — ゲームルール正本
 - [Bounty_Points.md](../Game_Rules/Bounty_Points.md) — 報酬点・usesBounty フィールド詳細
