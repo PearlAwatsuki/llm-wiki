@@ -1222,9 +1222,9 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 ### 部位（part）管理システム（フェーズ10-1）
 
-**日付**: 2026-06-26
-**関連実装**: `scripts/data/item/common/outfit-base.mjs`（part 行スキーマ・PART_KINDS/PART_RELATIONS）、`scripts/data/actor/cast.mjs`（partSlots・エイリアス）、`scripts/module/part-slot-preset-app.mjs`（プリセット設定・編集App）、`scripts/tnx.mjs`（設定登録・preCreateActor 流し込み）。正本 [Outfits.md](../01_Wiki/Game_Rules/Outfits.md)「部位管理(フェーズ10)」
-**ステータス**: 設計ロック済・DataModel/プリセット/エイリアス基盤 実装完了。部位エディタ UI・占有計算・キャストパネルは実装中
+**日付**: 2026-06-26（実装完了 2026-06-27）
+**関連実装**: `scripts/data/item/common/outfit-base.mjs`（part 行スキーマ・PART_KINDS/PART_RELATIONS・isOption 派生）、`scripts/data/item/part-helpers.mjs`（表示・占有の純粋関数）、`scripts/data/item/outfit-categories.mjs`（SLOT_KIND_MINOR_HOSTS）、`scripts/data/actor/cast.mjs`（partSlots・エイリアス）、`scripts/module/part-slot-preset-app.mjs`（プリセット設定・編集App）、`scripts/item/tnx-outfit-sheet.mjs`（部位エディタ・装備先UI）、`scripts/actor/tnx-cast-sheet.mjs`（占有パネル）、`scripts/tnx.mjs`（設定登録・preCreateActor 流し込み・既定プリセット自動設定）。正本 [Outfits.md](../01_Wiki/Game_Rules/Outfits.md)「部位管理(フェーズ10)」
+**ステータス**: ✅ 実装完了（DataModel/プリセット/エイリアス/部位エディタ UI/装備先UI/占有計算①身体部位②③ホストスロット/キャスト占有パネル/部位表示ルール）。実機確認済（2026-06-27）
 
 #### ルール解釈（ユーザー裁定 2026-06-25〜26）
 
@@ -1234,16 +1234,21 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 - **非消費3型**: slots=0（武器0 等）／小分類=住宅アクセサリ／任意。占有母数から外す。
 - **プリセット**: 体部位のみ。片手持ち/片腕/片脚/指=各2、他1。完全一致照合（耳≠両耳・腕部≠腕）。下垂体は脳下垂体を正、任意(下垂体)は非カウントで衝突せず。
 - **エイリアス（occupiesOther）**: 両手持ち=片手持ち×2 等を「指定部位を複数占有」で表現。公式に無い排他部位・ルール追加にユーザー設定で対応。
-- **オプションのホスト照合**: 大分類サイバーウェア指定は isCyber=true も拾う（※付き＝サイバーウェア扱いの裁定）。小分類は単一選択＋除外トグル（搭載兵器以外）。その他特徴は当面 isLaser。変異器官は 10-2 で新造。
+- **オプションのホスト照合**: 大分類サイバーウェア指定は isCyber=true も拾う（※付き＝サイバーウェア扱いの裁定）。小分類は単一選択＋除外トグル（搭載兵器以外）。その他特徴は isLaser／**isCyber（武器(サイバーウェア)）**（2026-06-27 追加）。変異器官は 10-2 で新造。
 - **解説参照**: 表示は常に「解説参照」（説明タブはルルブ踏襲）。実部位を入れ子で持ち占有計算に含む。入れ子の解説参照は不可。
+- **部位表示は正本リスト（ユーザー提供）に逐条準拠**（2026-06-27 確定）。**例外は特殊弾のみ**＝「特殊弾」「特殊弾(スリング)＝種別(ホスト名)」（武器に畳まない）。タップの soft/hard は「タップ」。意識3種は固有名のまま（IANUS に畳まない）。意識系は「IANUS で解放される身体部位」とも見なせる（精神という部位の存在）。
+- **isOption は部位 kind=option から派生**（旧チェック撤去を吸収。`prepareDerivedData`）。「オプション選択時」に装備先 UI が出る挙動と一致。
+- **ホストスロット占有（②③）**: オプションは装備先ホスト（`parentItemId`）の `parentSlotKind` スロットを消費。占有チップのスロット名は意識3種・soft/hard は種別名のみ、normal はカテゴリ名。**ホスト名は同名スロット複数時のみ併記**（IANUS は単一準備で `IANUS(IANUS)` を出さない）。**スロット0／無スロットは装備不可ゆえ拾わない**（容量>0 のみ）。
 
 #### 実装
 
-- DataModel は加算的（value/slots 維持、kind 既定 other で旧データ移行）。占有計算・部位名表示ルールは実装中（Foundry 非依存の純粋関数＋テスト予定）。
+- DataModel は加算的（value/slots 維持、kind 既定 other で旧データ移行）。
+- 表示・占有は **Foundry 非依存の純粋関数**（`part-helpers.mjs`・40 テスト）: `formatPartDesignation`／`formatOptionLabel`／`joinPartDesignations`（部位名表記）、`computePartOccupancy`（①身体部位 vs partSlots）、`computeHostOccupancy`（②③ホストスロット vs オプション消費）。kind→ラベル解決は呼び出し側（`SLOT_KINDS`）。
+- 装備先 UI は撤去されていた `parentItemId`/`parentSlotKind`（孤児だった選択肢構築・変更ハンドラ）を部位カード最下段に再建。占有パネルは身体部位チップ＋ホストチップを 1 列統合（超過は赤）。
 
 #### 監査結果
 
-⚠️（進行中）設計はユーザー裁定でロック済。DataModel/プリセット/エイリアスは実装・857+テスト green・lint 0。占有計算・表示ルール・部位エディタ UI は未実装のため、実機でのルール整合確認は UI 完成後。
+✅ 実装完了・実機確認済（2026-06-27）。設計はユーザー裁定でロック、表示は正本リストに逐条準拠。全 896 テスト green・lint 0。残課題は下記「課題・申し送り」。
 
 #### 課題・申し送り
 
