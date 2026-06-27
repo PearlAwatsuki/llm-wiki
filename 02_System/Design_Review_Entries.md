@@ -2763,8 +2763,8 @@ armor / cyborg / tap / vehicle / ianus / weapon / housing-area / residence)、
 
 ### 部位（part）管理システム（フェーズ10-1）
 
-**レビュー対象**: `outfit-base.mjs`（part 行スキーマ）、`cast.mjs`（partSlots・エイリアス）、`part-slot-preset-app.mjs`（プリセット設定・編集App）、`tnx.mjs`（流し込み）
-**ステータス**: 基盤実装完了・UI/占有計算 実装中
+**レビュー対象**: `outfit-base.mjs`（part 行スキーマ・isOption 派生）、`part-helpers.mjs`（表示/占有 純粋関数）、`cast.mjs`/`tnx-cast-sheet.mjs`（partSlots・占有パネル・一覧入れ子）、`tnx-outfit-sheet.mjs`（部位エディタ・装備先UI）、`part-slot-preset-app.mjs`（プリセット/編集App）、`tnx.mjs`（流し込み・既定自動設定）
+**ステータス**: ✅ 実装完了・実機確認済（2026-06-27。基盤＋UI＋占有計算①②③＋部位表示ルール＋準備状態入れ子＋スロットゲージ）
 
 #### レビュー観点（保守性/拡張性/FVTT慣行/整合）
 
@@ -2785,3 +2785,10 @@ armor / cyborg / tap / vehicle / ianus / weapon / housing-area / residence)、
 
 - 占有計算・部位名表示ルールを Foundry 非依存の純粋関数（helpers）に実装し単体テスト（任意・非消費3型・エイリアス展開・relation・表示コネクタ）。
 - UI 安定後に旧 isOption 系の撤去を別コミットで計画。
+
+#### 実装結果（2026-06-27）
+
+- 占有/表示の純粋関数を実装（`computePartOccupancy`／`computeHostOccupancy`／`formatPartDesignation`／`formatOptionLabel` 等・part-helpers 40 テスト）。推奨どおり Foundry 非依存で固定。
+- **旧 isOption は「撤去」でなく「部位 kind=option から派生」へ転換**（`prepareDerivedData`）。`parentItemId`/`parentSlotKind` は孤児化していたが、撤去された装備先 UI を**部位カード最下段に再建して活用**（撤去せず）。→ 課題「旧フィールドの一本化/撤去」は派生＋再建という形で解消（別コミットでの撤去計画は不要に）。
+- 部位表示は正本（ユーザー提供の部位名リスト）に逐条準拠（**例外は特殊弾のみ**）。一覧は準備済みオプションのみ入れ子（回路トレース調）＋スロット保有ホストにスロット使用ゲージ（種別ごと色分け）。
+- UI 整合（[Sheets.md](../01_Wiki/UI/Sheets.md) 等）の最終更新は 10-8 で実施予定。

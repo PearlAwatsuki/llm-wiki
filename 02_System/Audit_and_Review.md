@@ -1239,12 +1239,14 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 - **部位表示は正本リスト（ユーザー提供）に逐条準拠**（2026-06-27 確定）。**例外は特殊弾のみ**＝「特殊弾」「特殊弾(スリング)＝種別(ホスト名)」（武器に畳まない）。タップの soft/hard は「タップ」。意識3種は固有名のまま（IANUS に畳まない）。意識系は「IANUS で解放される身体部位」とも見なせる（精神という部位の存在）。
 - **isOption は部位 kind=option から派生**（旧チェック撤去を吸収。`prepareDerivedData`）。「オプション選択時」に装備先 UI が出る挙動と一致。
 - **ホストスロット占有（②③）**: オプションは装備先ホスト（`parentItemId`）の `parentSlotKind` スロットを消費。占有チップのスロット名は意識3種・soft/hard は種別名のみ、normal はカテゴリ名。**ホスト名は同名スロット複数時のみ併記**（IANUS は単一準備で `IANUS(IANUS)` を出さない）。**スロット0／無スロットは装備不可ゆえ拾わない**（容量>0 のみ）。
+- **準備＝装備（一覧表示。2026-06-27）**: 準備済み（`isPrepared`）オプションのみホスト配下に入れ子表示＝装着済みを表す。**未準備（携帯のみ）は装備対象に装着されていないので、配下から外して独立行で通常表示**する。
 
 #### 実装
 
 - DataModel は加算的（value/slots 維持、kind 既定 other で旧データ移行）。
 - 表示・占有は **Foundry 非依存の純粋関数**（`part-helpers.mjs`・40 テスト）: `formatPartDesignation`／`formatOptionLabel`／`joinPartDesignations`（部位名表記）、`computePartOccupancy`（①身体部位 vs partSlots）、`computeHostOccupancy`（②③ホストスロット vs オプション消費）。kind→ラベル解決は呼び出し側（`SLOT_KINDS`）。
 - 装備先 UI は撤去されていた `parentItemId`/`parentSlotKind`（孤児だった選択肢構築・変更ハンドラ）を部位カード最下段に再建。占有パネルは身体部位チップ＋ホストチップを 1 列統合（超過は赤）。
+- アウトフィット一覧の入れ子は**記号を廃し回路トレース調**（縦トレース＋分岐ひし形＋横ブランチ＋名前横の丸ポチ・発光・`outfit-row--option`/`--last-option` で枝端制御）。スロット保有ホストに**スロット使用ゲージ**を常時表示（種別ごと・`--c` で色分け＝normal シアン/software 緑/hardware マゼンタ/表層意識 藤色/深層意識 青紫/無意識 藍・種別名ツールチップ・未準備でも 0/容量）。オプションに占有スロット種別タグ。表セル値は `squeeze` で縮小。
 
 #### 監査結果
 
