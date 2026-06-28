@@ -2792,3 +2792,29 @@ armor / cyborg / tap / vehicle / ianus / weapon / housing-area / residence)、
 - **旧 isOption は「撤去」でなく「部位 kind=option から派生」へ転換**（`prepareDerivedData`）。`parentItemId`/`parentSlotKind` は孤児化していたが、撤去された装備先 UI を**部位カード最下段に再建して活用**（撤去せず）。→ 課題「旧フィールドの一本化/撤去」は派生＋再建という形で解消（別コミットでの撤去計画は不要に）。
 - 部位表示は正本（ユーザー提供の部位名リスト）に逐条準拠（**例外は特殊弾のみ**）。一覧は準備済みオプションのみ入れ子（回路トレース調）＋スロット保有ホストにスロット使用ゲージ（種別ごと色分け）。
 - UI 整合（[Sheets.md](../01_Wiki/UI/Sheets.md) 等）の最終更新は 10-8 で実施予定。
+
+---
+
+### 技能の組み合わせ解決・用途エディタの自動構成（フェーズ10-2＋判定）
+
+**レビュー対象**: `skill-chain-resolution.mjs`（純関数）、`skill-dictionary.mjs`（辞典ローダ）、`tnx-usage-sheet.mjs`（用途設定時の解決 enforcement・個数制限・トリムダイアログ）、`tnx-skill-utils.mjs`（comboSkill 表示逆引き）、`tnx-style-skill-sheet.mjs`/`style-skill-sheet.hbs`（カスケードUI・対決分離）、`tnx-cast-sheet.mjs`/`item.mjs`（ロール挙動・用途不備検知）、`style-skill-acquisition.mjs`（自動取得）
+**ステータス**: ✅ 実装完了（純関数層テスト済み）。用途エディタの一部 UI（render時 enforcement・DialogV2 トリム）は実機未検証
+
+#### 良かった点
+
+- **解決ロジックを Foundry 非依存の純関数に分離**（`skill-chain-resolution.mjs`）: `resolveSkillChain`（クロージャ走査・アクション=ベース・循環防止）／`resolveUsageSkills`（actor アイテムへ橋渡し・seed 閉包・全体でのベース再決定）／`comboLockAnalysis`+`isComboRequired`（トリムのロック）／`mandatoryComboNames`/`alternativeComboNames`。ユーザー裁定をテストで固定し UI と分離。
+- **判定は用途解決済みを前提**（解決は用途設定時）。判定起動側は据え置きで augment（既存解決経路を壊さない）。
+- **表示の都度逆引き**（識別キー→技能名）で保持名キャッシュを持たない（[[feedback-no-stale-caches]] と整合）。
+- **ベース固定はハードロックでなく候補制限**（指定技能＋代用）。「自動確定＝既定値・ロックではない／候補が増えれば選択可能」の合意を満たす。
+- **アクション技能はコンボから一律除外**（ベース専用）で、代用ベース時の旧アクション残留・ベース入れ替わりでの降格を構造的に防止。
+
+#### 課題
+
+- **enforcement を `_onRender` で実行**（冪等・変更時のみ update→再レンダリングで収束）。リアルタイム反映優先だが、レンダリング中の自己 update は収束を冪等性に依存。実機で無限レンダリングが無いことの確認が必要（あれば再入ガード追加）。
+- **トリムダイアログのインタラクティブ部（DialogV2 actions のロック再計算）は engine 未検証**。data-action トグルボタン方式（既存 AmountInputDialog の actions 慣行に倣う）。
+- `tnx-usage-sheet`/`tnx-cast-sheet` は複数機能が同居し肥大化。将来 enforcement 周りの責務分離を検討。
+
+#### 推奨アクション
+
+- 実機で render時 enforcement の収束とトリムダイアログのインタラクティブ挙動を確認。問題あれば再入ガード／ダイアログ機構を調整。
+- 10-8 で関連 wiki（Usage_System 反映済み・[Judgment_System.md](../01_Wiki/Game_Mechanics/Judgment_System.md)）の整合最終化。
