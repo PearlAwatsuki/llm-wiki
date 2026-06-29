@@ -1288,3 +1288,27 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 - 用途エディタの enforcement はレンダリング後に冪等で走り収束する設計。実機での収束（無限レンダリング無し）は要確認。
 - トリムダイアログのインタラクティブなロック再計算（DialogV2 actions）は engine 未検証。
 - 10-3（経験点消費なし取得・取得数表示・レベル自動参照）は未着手。
+
+### 派生データ・変異器官・式神装備フラグ／専用の辞典参照化／部位プリセット並び見直し（フェーズ10-2 後追い）
+
+**日付**: 2026-06-29
+**関連実装**: `scripts/data/item/common/outfit-base.mjs`（`isMutantOrgan`/`isShiki`/`shikiType`/`isDerivedData`/`hasDerivedData`/`derivedDataRefs`＋`SHIKI_TYPES`）、`scripts/data/item/part-helpers.mjs`（`PART_HOST_FEATURE_LABELS` に `isMutantOrgan`）、`scripts/item/tnx-outfit-sheet.mjs`＋`templates/item/outfit-sheet.hbs`（特性セクション・式神タイプ・派生データ参照UI・説明タブのタイプ表示）、`scripts/module/style-skill-acquisition.mjs`（`autoImportDerivedData`）、`scripts/tnx.mjs`（`createItem` フック）、`scripts/actor/tnx-cast-sheet.mjs`（経験点集計の `isDerivedData` 除外）、`scripts/module/part-slot-preset-app.mjs`（`DEFAULT_PART_SLOT_PRESET` 並び）。正本 [Outfits.md](../01_Wiki/Game_Rules/Outfits.md)
+**ステータス**: ✅ 実装完了（全テスト green）。新規 UI は engine 未検証
+
+#### ルール解釈（ユーザー裁定 2026-06-29）
+
+- **派生データ（`isDerivedData`）**＝別アイテムから派生した従属データ。**常備化経験点を消費しない**（派生元が経験点を負担＝二重計上回避）。
+- **派生元（`hasDerivedData`＋`derivedDataRefs`）**＝派生データを持つアウトフィット。取得（インポート）時に参照先を**全て自動生成**し `isDerivedData=true` を付す。**選択ダイアログは出さない**（派生データは親に内在＝ユーザーの選択対象でない）。例: Tウェポン（派生元）→ タップ＋武器（派生データ）。
+- **変異器官（`isMutantOrgan`）**＝ヒルコの自製生体装備等。部位オプションの「その他特徴」ホスト条件で対象を絞る。
+- **式神装備（`isShiki`＋`shikiType`）**＝しきそうび。タイプは攻撃/防御/操縦/独立の4種。説明タブではタイプを「部位」の1つ前に表示する。
+- **専用（`exclusive`）**＝スタイル辞典・オーガニゼーション辞典からのプルダウン（2オプショングループ・複数指定可・`{type,key}[]`・名前は都度解決）。**自動化なし**（指定のみ）。模造技能・別組織のアウトフィット取得効果との兼ね合いで enforcement を持たせない（スタイル技能・ワークス専用技能の指定も同様）。旧自由記述文字列は移行で空配列にクリア。
+- **部位プリセットの並び**＝頭→足→全身/組織→内的（心・電脳・霊）→スコープ。装着物は装着先の身体部位群末尾／装着先が不定の装着物（衣類・携帯・装飾・外付けの護符/結界/操縦）は全身近く／各部・独立は最も非局所として末尾。魂を追加。
+
+#### 監査結果
+
+✅ ルール解釈はユーザー裁定に逐条準拠。経験点二重計上回避（派生データ除外）・自動生成の無選択方針・式神タイプの表示位置を仕様どおり実装。
+
+#### 課題・申し送り
+
+- 派生データの UI（特性セクションのチェック・派生データのドロップ/参照ボタン/右クリック・説明タブのタイプ・自動派生インポート・「その他特徴」変異器官）は engine 未検証。
+- 部位プリセット並びは**ワールド初回ロードのみ自動設定**。既存ワールドはプリセット編集 UI で再適用が必要。

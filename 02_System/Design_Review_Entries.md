@@ -2818,3 +2818,27 @@ armor / cyborg / tap / vehicle / ianus / weapon / housing-area / residence)、
 
 - 実機で render時 enforcement の収束とトリムダイアログのインタラクティブ挙動を確認。問題あれば再入ガード／ダイアログ機構を調整。
 - 10-8 で関連 wiki（Usage_System 反映済み・[Judgment_System.md](../01_Wiki/Game_Mechanics/Judgment_System.md)）の整合最終化。
+
+### 派生データ・変異器官・式神装備フラグ／専用の辞典参照化／部位プリセット並び見直し（フェーズ10-2 後追い）
+
+**レビュー対象**: `outfit-base.mjs`（フラグ群＋`SHIKI_TYPES`）、`part-helpers.mjs`（`PART_HOST_FEATURE_LABELS`）、`tnx-outfit-sheet.mjs`/`outfit-sheet.hbs`（特性セクション・派生データ参照UI）、`style-skill-acquisition.mjs`（`autoImportDerivedData`）、`tnx.mjs`（`createItem` フック）、`tnx-cast-sheet.mjs`（経験点除外）、`part-slot-preset-app.mjs`（並び）
+**ステータス**: ✅ 実装完了（全テスト green・eslint 0 error）。新規 UI は実機未検証
+
+#### 良かった点
+
+- **自動取得の既存パターンを踏襲**（[[feedback-reuse-existing-ui-precedent]]）: 派生データ参照UI（ドロップエリア＋参照ボタン＋右クリック閲覧/編集/削除）はスタイル技能の取得UI（`tnx-style-skill-sheet`）と同形。ドロップは既存 `_onDropZone`（`data-drop-area` ディスパッチ）に `derived-data` 分岐を足すだけで流用。
+- **自動派生インポートは自動取得モジュールに同居**（`autoImportDerivedData`）。`createItem` フックは `styleSkill`→自動取得 / `hasDerivedData`→派生インポートに分岐し、責務が一貫。
+- **派生データ参照は名前ライブ解決**（`_resolveDerivedRefs`＝fromUuid・削除済みは「(不明)」フォールバック）でキャッシュを持たない（[[feedback-no-stale-caches]] と整合）。
+- **経験点二重計上回避を集計側で1行除外**（cast-sheet の `isDerivedData→0`）。既存の `isCheckAcquired`/`preserveExp.mode` 判定列に同居し augment。
+- **式神タイプの表示位置は summary 配列へ splice 挿入**（部位行の直前）。型別の push 分岐を増やさず1箇所で「部位の1つ前」を実現。
+- **専用の辞典プルダウンは前フェーズの辞典基盤を再利用**（`loadSkillChoices([STYLE_PACK])`/`[ORGANIZATION_PACK]`）。`exclusive` を `{type,key}[]` 配列化し、行ごとに2オプショングループ＋選択フラグを事前計算（hbs で `eq`/`concat` を使わず `opt.selected` をベイク）。**UI はタイミング欄の `.array-row`/`.row-controls`/`.tnx-row-btn`(+)・`tnx-row-btn--delete`(ゴミ箱) を再利用**（1行目＝＋、2行目以降＝削除）——独自 CSS を持たず比率も view-mode 無効化も既存 CSS に委ねる（初版で `.tnx-btn` の `width:100%` を流用し削除ボタンが伸びた件を是正）。保存は部位行と同じ全体更新（`_updateExclusive`・空でも1行から）。`migrateData` で旧 string→[] を吸収。
+
+#### 課題
+
+- 特性セクションは純フラグ（サイバーウェア/消費/変異器官/式神/派生データ）に整理し、**表示に関わる設定（式神タイプ・派生データを持つ＋派生データ参照UI）を「アウトフィット 詳細設定」へ集約**（タイプ＝電脳制御値の直下／派生データを持つ＝使用回数の上）。`hasDerivedData` ON 時は `isDerivedData` チェックを非表示（派生元は自身が派生データでない）。（2026-06-29 再配置）
+- 派生データのドロップは型を限定していない（任意 Item を受ける）。`isDerivedData` は outfit-base にしか無いため非アウトフィットでは無視されるが、誤ドロップ時の警告は今は出さない（YAGNI・必要になれば追加）。
+
+#### 推奨アクション
+
+- 実機で特性セクション・派生データUI・説明タブのタイプ・自動派生インポート・「その他特徴」変異器官を確認。
+- 部位プリセット並びは既存ワールドへは自動反映されない（初回ロードのみ）。既存ワールドはプリセット編集 UI で再適用。
