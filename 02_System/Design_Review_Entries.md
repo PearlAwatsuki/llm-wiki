@@ -2842,3 +2842,28 @@ armor / cyborg / tap / vehicle / ianus / weapon / housing-area / residence)、
 
 - 実機で特性セクション・派生データUI・説明タブのタイプ・自動派生インポート・「その他特徴」変異器官を確認。
 - 部位プリセット並びは既存ワールドへは自動反映されない（初回ロードのみ）。既存ワールドはプリセット編集 UI で再適用。
+
+### スタイル技能の取得・経験点（経験点消費なし／取得数表示／レベル自動参照）（フェーズ10-3）
+
+**レビュー対象**: `style-skill.mjs`（`expFree`/`excludeFromCount`/`levelRef`＋`prepareDerivedData`）、`style-skill-acquisition.mjs`（純関数 `resolveLevelRef`/`groupStyleSkillsByStyle`）、`tnx-style-skill-sheet.mjs`/`style-skill-sheet.hbs`（取得・経験点UI）、`tnx-cast-sheet.mjs`/`cast-sheet.hbs`（EXP・連動ガード・スタイル別グループ化＋取得数見出し）、`tnx2.css`（`.style-skill-group-header`）
+**ステータス**: ✅ 実装完了（全テスト green 967・eslint 0 error・stylelint clean）。新規 UI は実機未検証
+
+#### 良かった点
+
+- **レベル参照を派生パイプラインで解決**（[[feedback-representation-belongs-to-pipeline-phase]] と整合）: `StyleSkillDataModel.prepareDerivedData` で `level`/`levelTotal` を1回上書きし、判定・表示・組み合わせ個数上限（usage-sheet が読む `system.level`）・AE バフ着地（`levelTotal`）が全て確定値を読む。**判定フローは無改変**（ユーザー懸念の「毎判定参照」を回避）。
+- **純関数を既存モジュールに同居**（`style-skill-acquisition.mjs`）。`resolveLevelRef`/`groupStyleSkillsByStyle` は Foundry 非依存で、`idKeyPrefix`/`hasDuplicateStyleWeapon` と同じテスト基盤に乗る。
+- **EXP 0 化は既存の除外列に augment**（[[feedback-never-consider-overwriting]]）: `_calcSingleItemCost`/`_getSkillExpCost` の styleSkill 分岐に `expFree || levelRef.enabled → 0` を足すのみ。EXP 同期機構（KI-008 圏）の構造は不変。
+- **アクター上の参照先はドロップダウン**（識別キー値・既存キー自動選択）。辞典/直下は識別キー入力——「辞典は識別キー・アクターはプルダウン」という既存方針（`substituteTarget`・自動取得の出し分け）に沿う。
+- **取得数はスタイル単位・グループ見出しに表示**（[[feedback-reuse-existing-ui-precedent]]）。表示場所はユーザーと2往復で確定: 見出し1か所への全体合算（混雑）も、スタイル表示エリア（セクションから遠く関連不明）も却下し、**スタイル技能リストをスタイル別グループ化**して各群小見出しに「秘技 n/上限・奥義 n/上限」を出す＝該当技能の直上・スタイル単位・一か所集中を回避。`groupStyleSkillsByStyle` がスタイル表示順でグループを返し（未一致は末尾「その他」）、template は `styleSkillGroups` を回す。グループ loop ネストに伴い edit-mode の `../TNX.SUITS` を `../../TNX.SUITS` へ補正。表示のみ・非強制（部位占有超過と同思想）。CSS は `.style-skill-group-header` にスコープ（[[feedback-css-scoped-changes]]）。
+
+#### 課題
+
+- **suit↔level 連動のガード**: cast シートのインライン技能行は suit トグルで level=スート数を再計算し EXP を増減する。`levelRef.enabled` の技能では level が派生確定するため、`_onSkillPropertyChange` 冒頭でガードし suit のみ更新・level/EXP に触れない。level 入力欄は両シートで `disabled`。
+- **連鎖参照**は非対応（規約で連鎖しない）。`resolveLevelRef` は base レベルを読むため循環でも無限ループはしない。
+
+#### 推奨アクション
+
+- 実機で「経験点消費なし」「取得数に含まない（種別別ラベル）」「他スタイル技能のレベルを参照（辞典＝識別キー／アクター＝ドロップダウン）」と、レベル上書き・EXP/取得数の二重計上回避・suit 手動選択を確認。
+- 残: 10-4 住宅エリア表示 → 10-5 combatSpeed UI（KI-010）→ 10-6 戦闘タブ（要 layout 言語化）→ 10-7 棚卸し → 10-8 仕上げ（v0.10.0）。
+
+**追記（2026-07-01・設定タブの再分類）**: ユーザー指摘「詳細設定にチェックが集中しすぎ／ヘルプ(ⓘ)有無で行が不揃い」を受け、`style-skill-sheet.hbs` の `setting` タブを**関心別フィールドセットへ再分類**: 分類（種別/スタイル/特別な/上限）・発動（タイミング/対象/射程/目標値/使用回数）・特技専用（`{{#if special}}` で gate＝ワークス/代用/書き換え）・取得・経験点（取得と同時に/経験点消費なし/取得数に含まない/レベル参照）。上3トグル（アクション/報酬点/組み合わせ不可）は1行で崩れていないため上部に据置。**ブロックの深い移動はせず**、既存の連続境界にフィールドセット境界を挿入＋特技 special 群を自前 fieldset で包む（`name`/`data-*`/ハンドラ不変＝挙動リスク無し）。**不揃いの根因**は、`tnx-form-field > .form-group` の grid（`130px 1fr`）が `:has(checkbox)` の flex 規則より display を勝ち取り**ラベル列 130px 固定→長い和文ラベルが折返し**だった点。`.tokyo-nova.sheet.item.skill` スコープで toggle 行のみ `grid-template-columns: 1fr auto` に上書きし、ラベル可変・チェック右端で折返し解消（[[feedback-css-scoped-changes]]）。stylelint clean・全テスト green(968)。実機未検証。
