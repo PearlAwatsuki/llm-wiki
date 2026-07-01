@@ -117,6 +117,14 @@
 - **原因**: `system.housingArea` は辞典選択（`_housingAreaChoices` の `entry.uuid`）・ドロップ（`dropped.uuid`）のいずれも **UUID** を格納するが、`TokyoNovaCastSheet._resolveHousingAreaMods` が `useHousingAreaDrop` で分岐し、非ドロップ時に `pack.getDocument(ref)` を呼んでいた。`getDocument` は素の `_id` を要求するため UUID では解決できず null。供給値とバッジが同経路のため両方欠落。`useHousingAreaDrop` は入力 UI のモード切替であり保存形式は区別しない、という誤解に起因。
 - **解消内容**: `_resolveHousingAreaMods` を住宅施設シートと同様 **`fromUuid(ref)` で無条件解決**（`type === "housingArea"` ガード付き）に統一。死んだ `HOUSING_AREA_PACK` 静的・`useHousingAreaDrop` 分岐を撤去。辞典選択・ドロップ双方で供給値・バッジが表示される。**既存不具合（供給値表示は 6-6 以来潜在）を 10-4 が顕在化**。
 
+## KI-023: V2 シートで DEFAULT_OPTIONS.dragDrop が効かずアイテムのドロップ不可
+
+- **発見**: スタイルシートへの神業ドロップが効かない（ユーザー報告 2026-07-02）。調査中に同根の scenario(アクト)シートも発覚。
+- **解消**: フェーズ10 途中 (2026-07-02)
+- **症状**: スタイルシートに神業アイテムをドロップしてもリンクされない（「作成してリンク」ボタンは機能）。同様に scenario シートへのカード(デッキ/山)ドロップも不可（UI は「設定タブでドロップしてください」と案内するのに効かない）。
+- **原因**: ApplicationV2（`DocumentSheetV2`/`ItemSheetV2`）は V1 の `options.dragDrop` を自動処理しない。両シートは V1 流の `dragDrop:[{…}]` オプション＋`_onDrop` オーバーライドに依存し、`foundry.applications.ux.DragDrop` を手動で束ねていなかったため `_onDrop` が一度も呼ばれなかった（死んだ設定＋死んだハンドラ）。アウトフィット/キャストシートは `_onRender` で手動束ねしていて動作＝乖離。フェーズ3 の V2 移行時の取りこぼし。
+- **解消内容**: 両シートの `_onRender` で `new foundry.applications.ux.DragDrop.implementation({ dropSelector:".tnx-import-box--dropzone", permissions:{drop:()=>this.isEditable}, callbacks:{drop:this._onDrop.bind(this)} }).bind(this.element)` を追加（アウトフィットシートと同方式）。死んだ `dragDrop` オプションを撤去。`_onDrop` は既存のまま。**教訓: V2 シートのドロップは `_onRender` で DragDrop を手動束ねする（options.dragDrop は不活性）。**
+
 ---
 
 ## フェーズ2 で部分的解消
