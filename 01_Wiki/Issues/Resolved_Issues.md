@@ -109,6 +109,14 @@
 - **症状**: KI-005 の AE 修正層（層③）。`handMaxSizeMod` が未定義・参照0件で手札上限バフが機能しなかった（既定上限・個別設定は正常）。
 - **解消内容**: `CastDataModel` に AE 着地点 `handMaxSizeMod` を新設（User は DataModel/AE を持てないため、所有 cast の AE がここに ADD で着地）。`resolveEffectiveHandMaxSize` を3層化（①既定 ②User flag 明示 ③所有 cast の handMaxSizeMod 合算、0clamp）。`computeEffectiveHandMaxSize` / `gatherHandMaxSizeMod` を分離しテスト可能化。派生値計算パイプライン（9-1〜9-3）の確立が前提だった。
 
+## KI-022: キャストシートで辞典選択した住宅エリアが解決されない
+
+- **発見**: フェーズ10-4 実装中（住宅エリアランクのバッジが出ない、2026-07-01）
+- **解消**: フェーズ10-4 (2026-07-01)
+- **症状**: 住宅施設に住宅エリアを**辞典ドロップダウンで紐づける**と、キャストのアウトフィットタブで**エリア供給値（修正後の登/セ）も住宅エリアランクのバッジ（10-4）も表示されない**。ドロップで紐づけた場合のみ表示されていた。住宅施設シート側は常に正常表示で乖離していた。
+- **原因**: `system.housingArea` は辞典選択（`_housingAreaChoices` の `entry.uuid`）・ドロップ（`dropped.uuid`）のいずれも **UUID** を格納するが、`TokyoNovaCastSheet._resolveHousingAreaMods` が `useHousingAreaDrop` で分岐し、非ドロップ時に `pack.getDocument(ref)` を呼んでいた。`getDocument` は素の `_id` を要求するため UUID では解決できず null。供給値とバッジが同経路のため両方欠落。`useHousingAreaDrop` は入力 UI のモード切替であり保存形式は区別しない、という誤解に起因。
+- **解消内容**: `_resolveHousingAreaMods` を住宅施設シートと同様 **`fromUuid(ref)` で無条件解決**（`type === "housingArea"` ガード付き）に統一。死んだ `HOUSING_AREA_PACK` 静的・`useHousingAreaDrop` 分岐を撤去。辞典選択・ドロップ双方で供給値・バッジが表示される。**既存不具合（供給値表示は 6-6 以来潜在）を 10-4 が顕在化**。
+
 ---
 
 ## フェーズ2 で部分的解消

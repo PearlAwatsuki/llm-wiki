@@ -136,9 +136,11 @@
 
 本体: `style-skill.mjs`／`style-skill-acquisition.mjs`（純関数 `resolveLevelRef`/`countStyleSkillAcquisitions`・テスト済）／`tnx-style-skill-sheet.mjs`＋`style-skill-sheet.hbs`／`tnx-cast-sheet.mjs`＋`cast-sheet.hbs`／`tnx2.css`。記録: [Audit_and_Review.md](../../02_System/Audit_and_Review.md)・[Design_Review_Entries.md](../../02_System/Design_Review_Entries.md)。正本ルール [Character_Creation.md](../Game_Rules/Character_Creation.md)。**新規 UI は engine 未検証**。
 
-### 10-4: 住宅アウトフィットのエリア表示
+### 10-4: 住宅アウトフィットのエリア表示 ✅ 実装完了（2026-07-01）
 
-- [ ] アウトフィットタブの住宅アイテムにエリア表示
+- [x] アウトフィットタブの住宅施設に**エリア（セキュリティ・ランク）バッジ**を表示（名前置換でなく名前横バッジ・ランク別色分け・なしも可視色）。住宅エリアは `_resolveHousingAreaMods`（`fromUuid` 無条件解決）で live 解決し `HOUSING_AREA_RANKS` でラベル化。本体: `tnx-cast-sheet.mjs`／`cast-sheet.hbs`／`tnx2.css`（`.outfit-area-badge`）。記録: [Audit_and_Review.md](../../02_System/Audit_and_Review.md)・[Design_Review_Entries.md](../../02_System/Design_Review_Entries.md)。**engine 未検証**
+- [x] **KI-022 解消（実装中に発見）**: 旧 `_resolveHousingAreaMods` が `useHousingAreaDrop` 分岐で `pack.getDocument(UUID)` を呼び、**辞典で紐づけた住宅エリアを解決できず供給値（登/セ）もバッジも欠落**していた既存不具合を修正（`fromUuid` 無条件解決へ統一）。バッジが出ない真因はこれ＝CSS でなく解決ロジック。正本 [Resolved_Issues.md](../Issues/Resolved_Issues.md) KI-022
+- [x] **追補修正5点（2026-07-01 実機 FB）**: ①バッジ色 イエロー/サンクチュアリ差別化 ②住宅エリア辞典ドロップダウンをエリアランク順ソート（レッド→…→サンクチュアリ→なし・なしは別枠で最下部・同ランク内は辞典順を保持） ③`DEFAULT_PART_SLOT_PRESET` 外付け系に「住宅」追加（既存ワールドは要再適用） ④住宅施設アイテムシートのヘッダー携帯トグル除外 ⑤**住宅エリアの常備化経験点修正（`preserveExpMod`）を実 EXP 消費へ反映**（`updateCastExp` に加味・`_resolveHousingAreaMods` を static 化して共有）。詳細 [Audit_and_Review.md](../../02_System/Audit_and_Review.md)「追補修正」
 
 ### 10-5: combatSpeed 入力 UI（KI-010 解消）
 
@@ -176,7 +178,9 @@
 
 ## 現状・次セッションへの申し送り（2026-06-30 更新）
 
-**10-3（取得・経験点）実装完了（2026-06-30）。** 経験点消費なし(`expFree`)・秘技/奥義の取得数表示＋除外(`excludeFromCount`)・レベル自動参照(`levelRef`)を実装。ユーザー補正2点に対応: ①「自動参照は便宜上の別ブロックで実体は1技能」→レベルは派生(`prepareDerivedData`)で1回解決＝判定フロー無改変、経験点・取得数は二重計上しない。②「取得数はスタイル単位・見出し合算は混雑／スタイル表示エリアは遠くて不可」→**スタイル技能リストをスタイル別グループ化し各群小見出しに取得数＋上限**を表示（`groupStyleSkillsByStyle`）。純関数テスト済み・全テスト green(968)・lint clean。**新規 UI は engine 未検証＝実機確認待ち。** 次は **10-4（住宅アウトフィットのエリア表示）から**。以下は 10-2 完了時点の申し送り（参考に残す）。
+**10-3（取得・経験点）実装完了（2026-06-30）。** 経験点消費なし(`expFree`)・秘技/奥義の取得数表示＋除外(`excludeFromCount`)・レベル自動参照(`levelRef`)を実装。ユーザー補正2点に対応: ①「自動参照は便宜上の別ブロックで実体は1技能」→レベルは派生(`prepareDerivedData`)で1回解決＝判定フロー無改変、経験点・取得数は二重計上しない。②「取得数はスタイル単位・見出し合算は混雑／スタイル表示エリアは遠くて不可」→**スタイル技能リストをスタイル別グループ化し各群小見出しに取得数＋上限**を表示（`groupStyleSkillsByStyle`）。純関数テスト済み・全テスト green(968)・lint clean。**新規 UI は engine 未検証＝実機確認待ち。** 10-3 は本体 `afe8d7c`／wiki `07f924d` でコミット済（未 push）。
+
+**10-4（住宅アウトフィットのエリア表示）実装完了（2026-07-01）。** アウトフィットタブの住宅施設に住宅エリアのランク（なし/レッド/イエロー/グリーン/ホワイト/サンクチュアリ）を名前横バッジで表示（既存 live 解決を流用）。次は **10-5（combatSpeed 入力 UI・KI-010）から**。以下は 10-2 完了時点の申し送り（参考に残す）。
 
 ---
 

@@ -2766,6 +2766,8 @@ armor / cyborg / tap / vehicle / ianus / weapon / housing-area / residence)、
 **レビュー対象**: `outfit-base.mjs`（part 行スキーマ・isOption 派生）、`part-helpers.mjs`（表示/占有 純粋関数）、`cast.mjs`/`tnx-cast-sheet.mjs`（partSlots・占有パネル・一覧入れ子）、`tnx-outfit-sheet.mjs`（部位エディタ・装備先UI）、`part-slot-preset-app.mjs`（プリセット/編集App）、`tnx.mjs`（流し込み・既定自動設定）
 **ステータス**: ✅ 実装完了・実機確認済（2026-06-27。基盤＋UI＋占有計算①②③＋部位表示ルール＋準備状態入れ子＋スロットゲージ）
 
+**追記（2026-07-01）**: 部位スロットプリセット/キャスト部位の編集リスト（`PartSlotPresetApp`）に**行の手動並び替え（グリップのドラッグ＆ドロップ）**を追加。専用グリップのみ `draggable`（テキスト入力の選択を奪わない）、drop 時に `_harvest` で未保存編集を保ってから `_rows` を並べ替え→ render→保存で順序永続化。**TNX 標準方針＝表・リスト系は既定で並び替え可能**（ユーザー確定・[[feedback-tables-sortable-by-default]]）。あわせて `DEFAULT_PART_SLOT_PRESET` 外付け系に「住宅」追加（住宅施設の装備先部位・既存ワールドは要再適用）。
+
 #### レビュー観点（保守性/拡張性/FVTT慣行/整合）
 
 #### 良かった点
@@ -2867,3 +2869,24 @@ armor / cyborg / tap / vehicle / ianus / weapon / housing-area / residence)、
 - 残: 10-4 住宅エリア表示 → 10-5 combatSpeed UI（KI-010）→ 10-6 戦闘タブ（要 layout 言語化）→ 10-7 棚卸し → 10-8 仕上げ（v0.10.0）。
 
 **追記（2026-07-01・設定タブの再分類）**: ユーザー指摘「詳細設定にチェックが集中しすぎ／ヘルプ(ⓘ)有無で行が不揃い」を受け、`style-skill-sheet.hbs` の `setting` タブを**関心別フィールドセットへ再分類**: 分類（種別/スタイル/特別な/上限）・発動（タイミング/対象/射程/目標値/使用回数）・特技専用（`{{#if special}}` で gate＝ワークス/代用/書き換え）・取得・経験点（取得と同時に/経験点消費なし/取得数に含まない/レベル参照）。上3トグル（アクション/報酬点/組み合わせ不可）は1行で崩れていないため上部に据置。**ブロックの深い移動はせず**、既存の連続境界にフィールドセット境界を挿入＋特技 special 群を自前 fieldset で包む（`name`/`data-*`/ハンドラ不変＝挙動リスク無し）。**不揃いの根因**は、`tnx-form-field > .form-group` の grid（`130px 1fr`）が `:has(checkbox)` の flex 規則より display を勝ち取り**ラベル列 130px 固定→長い和文ラベルが折返し**だった点。`.tokyo-nova.sheet.item.skill` スコープで toggle 行のみ `grid-template-columns: 1fr auto` に上書きし、ラベル可変・チェック右端で折返し解消（[[feedback-css-scoped-changes]]）。stylelint clean・全テスト green(968)。実機未検証。
+
+### 住宅アウトフィットのエリア表示（フェーズ10-4）
+
+**レビュー対象**: `tnx-cast-sheet.mjs`（`_resolveHousingAreaMods` に `area` 追加・`_prepareOutfitRow` で `housingAreaRank` 付与）、`cast-sheet.hbs`（バッジ）、`tnx2.css`（`.outfit-area-badge`）
+**ステータス**: ✅ 実装完了（全テスト green 968・eslint 0 error・stylelint clean）。実機未検証
+
+#### 良かった点
+
+- **既存の解決経路に最小 augment**（[[feedback-never-consider-overwriting]]）: 住宅施設行は既に `_resolveHousingAreaMods` でエリアを live 解決していたため、戻り値に `area` を1行足し `HOUSING_AREA_RANKS` でラベル化するだけ。新規の解決・キャッシュを作らない（[[feedback-no-stale-caches]]）。
+- **バッジは既存 `.outfit-slot-tag` の作りを再利用**（[[feedback-reuse-existing-ui-precedent]]）: `--c` カスタムプロパティ方式のベース宣言を共有セレクタに足し、ランク別 `--c` のみ追加（宣言の重複なし）。色はランク名に対応（レッド/グリーン/ホワイト/サンクチュアリ）＋なし=ミュート。CSS は `.tab[data-tab="outfits"]` にスコープ。
+- **名前置換でなくバッジ**を採用＝アイテム名を保ち、判定起動リンク（名前の `<a>`）を壊さない。
+
+#### 課題
+
+- リンク無し（住宅エリア未設定）の住宅施設はバッジ非表示＝意図どおり。ランク「なし」も可視色（`--tnx2-text-secondary`）で明示バッジ表示（エリアが「なし」と設定されている事実を示す。当初ミュート色で見えづらかったため修正）。
+- **実装中に既存不具合 KI-022 を発見・解消**: `_resolveHousingAreaMods` が `useHousingAreaDrop` 分岐で `pack.getDocument(UUID)` を呼び、辞典で紐づけた住宅エリアを解決できず**供給値もバッジも欠落**していた（住宅施設シートは `fromUuid` で正常＝乖離）。`fromUuid` 無条件解決へ統一。バッジが出ない真因はこれであり、CSS ではなかった（ユーザー指摘どおり）。正本 KI-022。
+
+#### 推奨アクション
+
+- 実機でランク別バッジ色・名前横配置・未設定時の非表示、および**辞典で紐づけた住宅施設の供給値（登/セ）が出ること**を確認。
+- 残: 10-5 combatSpeed UI（KI-010）→ 10-6 戦闘タブ（要 layout 言語化）→ 10-7 棚卸し → 10-8 仕上げ（v0.10.0）。
