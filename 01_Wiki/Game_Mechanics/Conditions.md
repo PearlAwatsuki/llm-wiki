@@ -132,7 +132,7 @@ status id（`CONFIG.statusEffects`）が condition の一意性を担い、`cond
 - **除外**: 邪毒のクリンナップ毎ドローは**効果決定でなく継続ダメージの発火**＝フェーズ13（別系統）。衰弱(-数字)/萎縮/憎悪/電子妨害は引かない。
 
 ### 確定仕様（ユーザー 2026-06-23）
-- **数値**: N◎VA 値（絵札=10・A=11）で**統一・例外なし**（`getCardJudgmentValue` と同一）。
+- **数値**: N◎VA 値（絵札=10・A=11）で**統一・例外なし**（`getCardCheckValue` と同一）。
 - **ドロー主体は BS で異なる**: **重圧＝受けたキャラクター（プレイヤー）**、**衰弱＝RL（GM）** が引く。
 - **自動ドローしない**。付与時に**「BS受付状態」**（判定の pending と同様の待機状態）へ入り、適切な主体がドローして確定する。発火タイミングは付与時。
 - **ジョーカー**: 明記なし。ダイアログで (a) 引き直し / (b) 引いた本人がワイルドカードとして**スート＋数字を任意決定**、のいずれかを選べるようにする。
@@ -140,8 +140,8 @@ status id（`CONFIG.statusEffects`）が condition の一意性を担い、`cond
 - ドローしたカードは**捨て札へ**（消費）。結果は `flags.tokyo-nova-axleration.conditions[<kind>]`（targetAbility ＋ 衰弱は magnitude）へ書き込み、**チャットに記録**（例「衰弱: ♥7 → 生命の制御値 −7」）。
 
 ### 実装メモ（既存インフラ）
-- 山札/捨て札: `TnxActionHandler.getActiveDeck()` / `getActiveDiscardPile()`。スート→能力値: `SUIT_TO_ABILITY`。数値: `getCardJudgmentValue`。
-- 「BS受付状態」は判定の pending（`TnxJudgmentFlow.context`・HUD 表示・RL 要求フロー）と同型を流用しうる。主体振り分け（プレイヤー/GM）は RL 要求フローと同様。
+- 山札/捨て札: `TnxActionHandler.getActiveDeck()` / `getActiveDiscardPile()`。スート→能力値: `SUIT_TO_ABILITY`。数値: `getCardCheckValue`。
+- 「BS受付状態」は判定の pending（`TnxCheckFlow.context`・HUD 表示・RL 要求フロー）と同型を流用しうる。主体振り分け（プレイヤー/GM）は RL 要求フローと同様。
 
 ## 参照
 

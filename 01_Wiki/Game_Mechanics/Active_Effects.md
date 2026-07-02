@@ -4,7 +4,7 @@
 
 ルール前提: [Character_Creation.md](../Game_Rules/Character_Creation.md)（0clamp）・[Damage_Rules.md](../Game_Rules/Damage_Rules.md)・[Time_Management.md](../Game_Rules/Time_Management.md)。フェーズ計画: [Phase_9_Tasks_Detail.md](../Phases/Phase_9_Tasks_Detail.md)。
 
-> **用語**: 「判定」は英語で **check**（TRPG 標準。judge/judgment ではない）。キーも `check.` / `controlCheck.` を用いる。
+> **用語**: 「判定」は英語で **check**（TRPG 標準。judge/judgment ではない）。キーも `check.` / `controlCheck.` を用いる。コード全体の英名も Check に統一済み（2026-07-03、旧 Judgment 系を改名）。
 
 ---
 
@@ -99,7 +99,7 @@
 
 ### 判定フローへの配線
 
-`tnx-judgment-flow.mjs` `_computeCheckBonus(actor, ctx, abilityKey)` が effects を集め、判定種別で criteria を作る:
+`tnx-check-flow.mjs` `_computeCheckBonus(actor, ctx, abilityKey)` が effects を集め、判定種別で criteria を作る:
 - controlCheck → `{type:"control", ability}`、skillCheck → `{type:"skill", skillKeys:[参加技能の識別キー]}`、それ以外 → `{type:"ability", ability}`。
 - `calcSkillCheck` は達成値に `+checkBonus`、`calcControlCheck` は制御値を `+checkBonus`（成功条件が緩む）。報酬点プレビューにも反映。
 
@@ -115,5 +115,5 @@
 
 ## 参照
 
-- [Phase_9_Tasks_Detail.md](../Phases/Phase_9_Tasks_Detail.md) / [Judgment_System.md](Judgment_System.md)
+- [Phase_9_Tasks_Detail.md](../Phases/Phase_9_Tasks_Detail.md) / [Check_System.md](Check_System.md)
 - [Character_Creation.md](../Game_Rules/Character_Creation.md)（0clamp）

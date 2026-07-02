@@ -55,4 +55,4 @@ TNX の判定はすべて **Foundry Cards API** 経由。ダイスロール (`Ro
 
 ## 判定ロジックとの関係
 
-本ドキュメントは**物理的なカード移動**を扱う。達成値計算・技能判定ロジックはフェーズ7（設計）/8（実装）で実装済み（→ [Judgment_System.md](Judgment_System.md)）。usage テンプレートが判定のデータ基盤（→ [Usage_System.md](Usage_System.md)）。
+本ドキュメントは**物理的なカード移動**を扱う。達成値計算・技能判定ロジックはフェーズ7（設計）/8（実装）で実装済み（→ [Check_System.md](Check_System.md)）。usage テンプレートが判定のデータ基盤（→ [Usage_System.md](Usage_System.md)）。

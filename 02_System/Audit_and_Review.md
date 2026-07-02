@@ -558,7 +558,7 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 ### [判定エンジン・カード値計算・スート対応](フェーズ8-2)
 
 **日付**: 2026-06-15
-**関連実装**: `scripts/module/tnx-judgment-engine.mjs`
+**関連実装**: `scripts/module/tnx-check-engine.mjs`
 **ステータス**: 監査済(問題なし)
 
 #### ルール解釈
@@ -574,7 +574,7 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 #### 実装
 
 - `SUIT_TO_ABILITY` 定数: `{ spade: "reason", club: "passion", heart: "life", diamond: "mundane" }` を `Object.freeze` で不変化。
-- `getCardJudgmentValue({ numericValue, isJoker, fixedAt21, declaredValue, isFromDeck })`: Symbol 値（FUMBLE_VALUE / FIXED_21）を使い、型安全に「ファンブル」「21固定」を表現。
+- `getCardCheckValue({ numericValue, isJoker, fixedAt21, declaredValue, isFromDeck })`: Symbol 値（FUMBLE_VALUE / FIXED_21）を使い、型安全に「ファンブル」「21固定」を表現。
 - `calcSkillCheck`: `bountyUsed` を加算。A の 21固定は `fixedAt21 === true` のとき `achievement = 21` で完全固定（能力値・報酬点を加算しない）。
 - `calcControlCheck`: 制御値 = `abilitiesCtx[key].totalControl`。`success = cardValue <= controlVal`。
 - `getComboSuits(skillSystems)`: `ALL_SUITS.filter` で積集合を計算。
@@ -592,7 +592,7 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 ### [判定フロー・HUD 連携・報酬点フロー](フェーズ8-3)
 
 **日付**: 2026-06-15
-**関連実装**: `scripts/module/tnx-judgment-flow.mjs`, `scripts/module/tnx-judgment-dialog.mjs`, `scripts/module/tnx-hud.mjs`
+**関連実装**: `scripts/module/tnx-check-flow.mjs`, `scripts/module/tnx-check-dialog.mjs`, `scripts/module/tnx-hud.mjs`
 **ステータス**: 監査済(問題なし)
 
 #### ルール解釈
@@ -605,10 +605,10 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 #### 実装
 
-- `TnxJudgmentFlow` (singleton 静的クラス): `_context` / `_trumpMode` で状態管理。ダイアログクラスは `tnx.mjs` で注入（循環 import 回避）。
+- `TnxCheckFlow` (singleton 静的クラス): `_context` / `_trumpMode` で状態管理。ダイアログクラスは `tnx.mjs` で注入（循環 import 回避）。
 - `_execute`: ① ダイアログ close・state clear → ② カードプレイ（`TnxActionHandler.playCard`）→ ③ HUD 再描画 → ④ `_promptBountyUsage`（スート不一致・制御判定はスキップ）→ ⑤ 達成値計算 → ⑥ チャット投稿。
-- `TnxJudgmentDialog._onClose`: `TnxJudgmentFlow.cancel()` を呼び、×ボタンでも判定キャンセルを実現。
-- HUD カード達成値プレビュー: `getCardJudgmentValue + getAbilityBySuit` でホバー時に数値バッジを表示。スート不一致は赤バッジで「0」表示。
+- `TnxCheckDialog._onClose`: `TnxCheckFlow.cancel()` を呼び、×ボタンでも判定キャンセルを実現。
+- HUD カード達成値プレビュー: `getCardCheckValue + getAbilityBySuit` でホバー時に数値バッジを表示。スート不一致は赤バッジで「0」表示。
 
 #### 監査結果
 
@@ -623,7 +623,7 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 ### [報酬点フロー修正: usesBounty チェック・spinner 修正](フェーズ8-3 バグ修正)
 
 **日付**: 2026-06-15
-**関連実装**: `scripts/module/tnx-judgment-flow.mjs`, `scripts/actor/tnx-cast-sheet.mjs`
+**関連実装**: `scripts/module/tnx-check-flow.mjs`, `scripts/actor/tnx-cast-sheet.mjs`
 **ステータス**: 監査済(修正完了)
 
 #### ルール解釈
@@ -679,7 +679,7 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 ### [RL 判定要求フロー](フェーズ8-5)
 
 **日付**: 2026-06-15
-**関連実装**: `scripts/module/tnx-rl-request-app.mjs`, `scripts/tnx.mjs`, `templates/app/rl-request-app.hbs`, `templates/chat/judgment-request.hbs`
+**関連実装**: `scripts/module/tnx-rl-request-app.mjs`, `scripts/tnx.mjs`, `templates/app/rl-request-app.hbs`, `templates/chat/check-request.hbs`
 **ステータス**: 監査済
 
 #### ルール解釈
@@ -693,9 +693,9 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 #### 実装
 
-- `TnxRlRequestApp` (ApplicationV2 + HandlebarsApplicationMixin): フォーム送信で `ChatMessage.create` を呼び、`flags.judgmentRequest` にデータを保持。
+- `TnxRlRequestApp` (ApplicationV2 + HandlebarsApplicationMixin): フォーム送信で `ChatMessage.create` を呼び、`flags.checkRequest` にデータを保持。
 - `renderChatMessage` フック: 対象 PL（または GM）にのみ「判定する」ボタンを表示。結果 (`results[actorId]`) が存在する場合はボタンを結果表示に切り替え。
-- `TnxRlRequestApp.onDoJudgment()`: identificationKey でアクター上の技能を解決し、`getComboSuits()` で validSuits を取得。技能未所持の場合は warn して早期 return。
+- `TnxRlRequestApp.onDoCheck()`: identificationKey でアクター上の技能を解決し、`getComboSuits()` で validSuits を取得。技能未所持の場合は warn して早期 return。
 - `getSceneControlButtons` フック: V13 では controls がオブジェクト（`tokens` キー）。配列・Map・オブジェクトの全パターンをハンドリング。
 
 #### 監査結果
@@ -713,7 +713,7 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 ### [Joker 宣言ダイアログ修正](フェーズ8)
 
 **日付**: 2026-06-15
-**関連実装**: `scripts/module/tnx-judgment-flow.mjs`
+**関連実装**: `scripts/module/tnx-check-flow.mjs`
 **ステータス**: 監査済
 
 #### ルール解釈
@@ -728,7 +728,7 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 - `_promptJokerDeclaration()` から `validSuits` 引数を廃止し、常に全4スート（`ALL_SUITS`）を表示。
 - 値入力を「1〜13の数値スピナー」から「A, 2-10, J, Q, K のドロップダウン」に変更。
 - 戻り値を `{ suit, numericValue }` に変更（旧: `{ suit, value }`）。
-- `executeFromHand` / `executeFromDeck` / `_executeAsTrumpJoker` で `getCardJudgmentValue({ numericValue })` を呼び出す（`isJoker: true` の特例ルートを廃止）。
+- `executeFromHand` / `executeFromDeck` / `_executeAsTrumpJoker` で `getCardCheckValue({ numericValue })` を呼び出す（`isJoker: true` の特例ルートを廃止）。
 - `_handleAceChoice` に `extraParams = {}` を追加し、`fromDeck` / `trumpUsed` を引き継ぎ可能に。
 
 #### 監査結果
@@ -744,7 +744,7 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 ### [山札判定スート読み取りバグ修正](フェーズ8)
 
 **日付**: 2026-06-15
-**関連実装**: `scripts/module/tnx-judgment-flow.mjs`
+**関連実装**: `scripts/module/tnx-check-flow.mjs`
 **ステータス**: 監査済
 
 #### ルール解釈
@@ -770,7 +770,7 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 ### [報酬点ダイアログ改善・FUMBLE 時スキップ](フェーズ8)
 
 **日付**: 2026-06-15
-**関連実装**: `scripts/module/tnx-judgment-flow.mjs`
+**関連実装**: `scripts/module/tnx-check-flow.mjs`
 **ステータス**: 監査済
 
 #### ルール解釈
@@ -780,7 +780,7 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 #### 実装
 
-- `_execute` の条件に `cardJudgmentValue !== "FUMBLE"` を追加。FUMBLE 確定時は `_promptBountyUsage` を呼ばない。
+- `_execute` の条件に `cardCheckValue !== "FUMBLE"` を追加。FUMBLE 確定時は `_promptBountyUsage` を呼ばない。
 - `abilitiesCtx` を `_execute` の先頭で一度だけ構築（従来: 計算直前）。
 - 報酬点 0 時のベース達成値を `calcSkillCheck(bountyUsed: 0)` で先計算し、`_promptBountyUsage` に `baseAchievement` として渡す。
 - ダイアログに「現在の達成値: N（報酬点1点 = +1 加算）」を表示。
@@ -798,7 +798,7 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 ### [手札補充自動化](フェーズ8)
 
 **日付**: 2026-06-15
-**関連実装**: `scripts/module/tnx-action-handler.mjs`（`autoReplenishHand`）、`scripts/module/tnx-judgment-flow.mjs`（`_execute`）
+**関連実装**: `scripts/module/tnx-action-handler.mjs`（`autoReplenishHand`）、`scripts/module/tnx-check-flow.mjs`（`_execute`）
 **ステータス**: 監査済
 
 #### ルール解釈
@@ -810,7 +810,7 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 #### 実装
 
 - `TnxActionHandler.autoReplenishHand()` を新設: 上限 - 現在手札枚数を計算し、その枚数を山札からドロー。
-- `TnxJudgmentFlow._execute()` で `playCard()` の直後に `autoReplenishHand()` を呼び出す（`!fromDeck` のブランチ内）。
+- `TnxCheckFlow._execute()` で `playCard()` の直後に `autoReplenishHand()` を呼び出す（`!fromDeck` のブランチ内）。
 
 #### 監査結果
 
@@ -876,7 +876,7 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 #### 監査結果
 
-✅ 全 Cards API 呼び出し箇所（`tnx-action-handler.mjs` / `tnx-hud.mjs` / `tnx-scenario-sheet.mjs` / `tnx-card-setup-app.mjs` / `tnx-judgment-flow.mjs`）に `chatNotification: false` が付与されていることを確認。
+✅ 全 Cards API 呼び出し箇所（`tnx-action-handler.mjs` / `tnx-hud.mjs` / `tnx-scenario-sheet.mjs` / `tnx-card-setup-app.mjs` / `tnx-check-flow.mjs`）に `chatNotification: false` が付与されていることを確認。
 
 ---
 
@@ -979,7 +979,7 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 ### [用途シート発動タブ拡張・使用回数消費（メカニクス監査）](フェーズ8後追い)
 
 **日付**: 2026-06-20
-**関連ルール**: 射程の優先度・使用回数の消費（[Judgment_Rules.md](../01_Wiki/Game_Rules/Judgment_Rules.md)）
+**関連ルール**: 射程の優先度・使用回数の消費（[Check_Rules.md](../01_Wiki/Game_Rules/Check_Rules.md)）
 
 #### 監査対象のルール解釈（ユーザー確定）
 
@@ -996,7 +996,7 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 ### [用途シート発動タブ再構成・自動入力・使用回数消費（設計レビュー）](フェーズ8後追い)
 
 **日付**: 2026-06-20
-**関連実装**: `scripts/data/item/common/usage.mjs`、`scripts/module/tnx-usage-sheet.mjs`、`templates/app/usage-sheet.hbs`、`templates/app/usage-sheet-combo.hbs`（新設）、`scripts/tnx.mjs`（partial 登録）、`scripts/module/tnx-judgment-flow.mjs`、`scripts/actor/tnx-cast-sheet.mjs`、`css/tnx2.css`
+**関連実装**: `scripts/data/item/common/usage.mjs`、`scripts/module/tnx-usage-sheet.mjs`、`templates/app/usage-sheet.hbs`、`templates/app/usage-sheet-combo.hbs`（新設）、`scripts/tnx.mjs`（partial 登録）、`scripts/module/tnx-check-flow.mjs`、`scripts/actor/tnx-cast-sheet.mjs`、`css/tnx2.css`
 **ステータス**: 設計レビュー済
 
 #### 設計
@@ -1018,7 +1018,7 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 ### [対決の解釈・使用回数の spent 化（メカニクス監査）](フェーズ8後追い)
 
 **日付**: 2026-06-20
-**関連ルール**: 対決の解釈・使用回数の消費（[Judgment_Rules.md](../01_Wiki/Game_Rules/Judgment_Rules.md)）
+**関連ルール**: 対決の解釈・使用回数の消費（[Check_Rules.md](../01_Wiki/Game_Rules/Check_Rules.md)）
 
 #### 監査対象のルール解釈（ユーザー確定）
 
@@ -1036,7 +1036,7 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 ### [使用回数 spent 化・mixin 静的 migrateData 合成（設計レビュー）](フェーズ8後追い)
 
 **日付**: 2026-06-20
-**関連実装**: `scripts/data/abstract.mjs`、`scripts/data/item/helpers.mjs`、`scripts/data/item/style-skill.mjs`、`scripts/data/item/common/outfit-base.mjs`、`scripts/module/tnx-judgment-flow.mjs`、`scripts/item/tnx-style-skill-sheet.mjs`、`scripts/item/tnx-outfit-sheet.mjs`、`templates/item/style-skill-sheet.hbs`、`templates/item/outfit-sheet.hbs`、`templates/app/usage-sheet.hbs`
+**関連実装**: `scripts/data/abstract.mjs`、`scripts/data/item/helpers.mjs`、`scripts/data/item/style-skill.mjs`、`scripts/data/item/common/outfit-base.mjs`、`scripts/module/tnx-check-flow.mjs`、`scripts/item/tnx-style-skill-sheet.mjs`、`scripts/item/tnx-outfit-sheet.mjs`、`templates/item/style-skill-sheet.hbs`、`templates/item/outfit-sheet.hbs`、`templates/app/usage-sheet.hbs`
 **ステータス**: 設計レビュー済
 
 #### 設計
@@ -1086,7 +1086,7 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 ### 能力値実効値の派生パイプライン確立（設計レビュー）（フェーズ9-1）
 
 **日付**: 2026-06-20
-**関連実装**: `scripts/data/actor/cast.mjs`、`scripts/data/helpers.mjs`、`scripts/actor/tnx-cast-sheet.mjs`、`scripts/module/tnx-judgment-flow.mjs`、`tests/data/helpers.test.mjs`
+**関連実装**: `scripts/data/actor/cast.mjs`、`scripts/data/helpers.mjs`、`scripts/actor/tnx-cast-sheet.mjs`、`scripts/module/tnx-check-flow.mjs`、`tests/data/helpers.test.mjs`
 **ステータス**: 設計レビュー済
 
 #### 設計
@@ -1160,7 +1160,7 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 ### AE 適用モデル v2「total 直接適用」（メカニクス監査＋設計レビュー）（フェーズ9-3 v2）
 
 **日付**: 2026-06-21
-**関連実装**: `scripts/data/item/helpers.mjs`（`parseEffectTargetKey` / `computeCheckBonus` / `checkChangeMatches` / `computeItemEffectiveValues`）、`scripts/data/actor/cast.mjs`（`_applyEffectBuffs` / `_resolveBuffApplications`）、`scripts/data/helpers.mjs`（`computeAttributeFinal`）、`scripts/module/tnx-judgment-engine.mjs`・`tnx-judgment-flow.mjs`（checkBonus）、`scripts/tnx.mjs`（重複可 UI フック）、各 DataModel・テスト
+**関連実装**: `scripts/data/item/helpers.mjs`（`parseEffectTargetKey` / `computeCheckBonus` / `checkChangeMatches` / `computeItemEffectiveValues`）、`scripts/data/actor/cast.mjs`（`_applyEffectBuffs` / `_resolveBuffApplications`）、`scripts/data/helpers.mjs`（`computeAttributeFinal`）、`scripts/module/tnx-check-engine.mjs`・`tnx-check-flow.mjs`（checkBonus）、`scripts/tnx.mjs`（重複可 UI フック）、各 DataModel・テスト
 **ステータス**: 実装完了・実機確認待ち（9-3a の effectMod/モードB 設計を**全面置換**）
 
 #### メカニクス監査（ルール解釈）
@@ -1193,7 +1193,7 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 ### コンディション(BS・戦闘不能)の AE 表現（メカニクス監査＋設計レビュー）（フェーズ9-4）
 
 **日付**: 2026-06-22
-**関連実装**: `scripts/module/conditions.mjs`（CONDITION_KINDS / readCondition / gatherConditionCheckSources / gatherConditionControlPenalty / computeJammingPenalty / getCheckBlock）、`scripts/module/tnx-judgment-flow.mjs`（_execute 重圧遮断・_computeCheckBonus 合流・_computeJammingSource・_gatherConditions）、`scripts/data/actor/cast.mjs`（_applyConditionControlPenalty）、`scripts/tnx.mjs`（statusEffects に conditionKind・詳細タブ effect-value UI）、`tests/module/conditions.test.mjs`
+**関連実装**: `scripts/module/conditions.mjs`（CONDITION_KINDS / readCondition / gatherConditionCheckSources / gatherConditionControlPenalty / computeJammingPenalty / getCheckBlock）、`scripts/module/tnx-check-flow.mjs`（_execute 重圧遮断・_computeCheckBonus 合流・_computeJammingSource・_gatherConditions）、`scripts/data/actor/cast.mjs`（_applyConditionControlPenalty）、`scripts/tnx.mjs`（statusEffects に conditionKind・詳細タブ effect-value UI）、`tests/module/conditions.test.mjs`
 **ステータス**: 9-4 実装（in-phase 分）完了・実機確認待ち。発火依存(萎縮憎悪/捕縛=12、邪毒/恐慌/メインプロセス不可=13、回復=15)は申し送り
 
 #### メカニクス監査（ルール解釈）
@@ -1264,7 +1264,7 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 ### 技能の組み合わせ解決・技能/対決欄の辞典カスケード・スタイル技能の自動取得（フェーズ10-2＋判定）
 
 **日付**: 2026-06-29
-**関連実装**: `scripts/module/skill-dictionary.mjs`（辞典ローダ・カスケード・カテゴリ全体トークン・comboSkill 名逆引き）、`scripts/module/skill-chain-resolution.mjs`（技能チェーン解決・必須/候補/ロック判定の純関数）、`scripts/module/style-skill-acquisition.mjs`（インポート時自動取得）、`scripts/data/item/style-skill.mjs`（comboSkill/confrontation のカスケード化・usesBounty/noCombo・自動取得・代用フィールド）、`scripts/item/tnx-style-skill-sheet.mjs`＋`templates/item/style-skill-sheet.hbs`（技能/対決の別セクション・カスケードUI）、`scripts/module/tnx-usage-sheet.mjs`＋`templates/app/usage-sheet-combo.hbs`（用途設定時の解決・個数制限・トリムダイアログ）、`scripts/actor/tnx-cast-sheet.mjs`＋`scripts/item/item.mjs`（ロール挙動・用途不備検知）。正本 [Usage_System.md](../01_Wiki/Game_Mechanics/Usage_System.md)・[Judgment_Rules.md](../01_Wiki/Game_Rules/Judgment_Rules.md)
+**関連実装**: `scripts/module/skill-dictionary.mjs`（辞典ローダ・カスケード・カテゴリ全体トークン・comboSkill 名逆引き）、`scripts/module/skill-chain-resolution.mjs`（技能チェーン解決・必須/候補/ロック判定の純関数）、`scripts/module/style-skill-acquisition.mjs`（インポート時自動取得）、`scripts/data/item/style-skill.mjs`（comboSkill/confrontation のカスケード化・usesBounty/noCombo・自動取得・代用フィールド）、`scripts/item/tnx-style-skill-sheet.mjs`＋`templates/item/style-skill-sheet.hbs`（技能/対決の別セクション・カスケードUI）、`scripts/module/tnx-usage-sheet.mjs`＋`templates/app/usage-sheet-combo.hbs`（用途設定時の解決・個数制限・トリムダイアログ）、`scripts/actor/tnx-cast-sheet.mjs`＋`scripts/item/item.mjs`（ロール挙動・用途不備検知）。正本 [Usage_System.md](../01_Wiki/Game_Mechanics/Usage_System.md)・[Check_Rules.md](../01_Wiki/Game_Rules/Check_Rules.md)
 **ステータス**: ✅ 実装完了・実機レビュー済（2026-07-02・問題なし。具体データ依存の項目は未検証のまま持ち越し）
 
 #### ルール解釈（ユーザー裁定 2026-06-28〜29）

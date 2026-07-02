@@ -196,7 +196,7 @@
 **テスト**: 757 件グリーン
 **解消 KI**: KI-002, KI-006
 
-詳細: [Phase_7_Tasks_Detail.md](Phase_7_Tasks_Detail.md) / [Phase_8_Tasks_Detail.md](Phase_8_Tasks_Detail.md)、[Usage_System.md](../Game_Mechanics/Usage_System.md)、[Judgment_Rules.md](../Game_Rules/Judgment_Rules.md)
+詳細: [Phase_7_Tasks_Detail.md](Phase_7_Tasks_Detail.md) / [Phase_8_Tasks_Detail.md](Phase_8_Tasks_Detail.md)、[Usage_System.md](../Game_Mechanics/Usage_System.md)、[Check_Rules.md](../Game_Rules/Check_Rules.md)
 
 ### フェーズ9: ActiveEffect / 派生値計算パイプライン（完了 v0.9.0, 2026-06-24）
 

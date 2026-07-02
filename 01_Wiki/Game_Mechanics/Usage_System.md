@@ -125,7 +125,7 @@ actions: ArrayField(SchemaField({
 2. `baseSkillRef.itemId` からベース技能を決定（未設定時は親アイテム ID にフォールバック）
 3. `skillRefs` からコンボ技能を収集
 4. 用途所持技能がベース技能でない場合は自動的にコンボに追加（非アクション技能からの起動）
-5. 全技能スートの積集合で `validSuits` を計算し `TnxJudgmentFlow.open()` へ渡す
+5. 全技能スートの積集合で `validSuits` を計算し `TnxCheckFlow.open()` へ渡す
 
 ## スタイル技能の「技能」欄(comboSkill)の意味（2026-06-28 ユーザー言語化／解決は下記「組み合わせ解決」で実装済み）
 
@@ -160,11 +160,11 @@ actions: ArrayField(SchemaField({
 
 ## 使用回数の消費（2026-06-20）
 
-判定起動時に参加技能の使用回数を消費する（ルール: [Judgment_Rules.md](../Game_Rules/Judgment_Rules.md#使用回数の消費確定-2026-06-20)）。
+判定起動時に参加技能の使用回数を消費する（ルール: [Check_Rules.md](../Game_Rules/Check_Rules.md#使用回数の消費確定-2026-06-20)）。
 
 - 使用回数は D&D 方式の **`uses.spent`（消費済み）** で保持（残り = `max − spent`）。旧 `uses.value`（残り回数）から `migrateUsesValueToSpent()` で移行（`helpers.mjs`、style-skill / outfit-base 共用）。
-- `TnxJudgmentFlow.planUsesConsumption(actor, skillIds)`: `_onStartSkillCheck` が `open()` の前に呼ぶ。`uses.isLimit` を持つ参加技能があれば D&D 方式の消費ダイアログを表示。チェック済みで残り（`max − spent`）0なら起動不可（null 返却）。確定した消費対象を `open()` の `consumeUses` として渡す
-- `TnxJudgmentFlow._consumeUses(actor, skillIds)`: `_execute` 内（カードプレイ直後）で `updateEmbeddedDocuments` により各技能の `uses.spent` を +1（max 上限）。組み合わせ技能は別アイテムのため遠隔消費
+- `TnxCheckFlow.planUsesConsumption(actor, skillIds)`: `_onStartSkillCheck` が `open()` の前に呼ぶ。`uses.isLimit` を持つ参加技能があれば D&D 方式の消費ダイアログを表示。チェック済みで残り（`max − spent`）0なら起動不可（null 返却）。確定した消費対象を `open()` の `consumeUses` として渡す
+- `TnxCheckFlow._consumeUses(actor, skillIds)`: `_execute` 内（カードプレイ直後）で `updateEmbeddedDocuments` により各技能の `uses.spent` を +1（max 上限）。組み合わせ技能は別アイテムのため遠隔消費
 - 消費の確定は起動時、減算は実行時。カード選択キャンセル時は `_execute` 未到達＝非消費
 
 ## 変更制約

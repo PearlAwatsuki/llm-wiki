@@ -50,7 +50,7 @@
 | [Character_Creation.md](Game_Rules/Character_Creation.md) | キャラクター作成・技能体系・スタイル・経験点・能力値clamp |
 | [Bounty_Points.md](Game_Rules/Bounty_Points.md) | 報酬点ルール |
 | [Outfits.md](Game_Rules/Outfits.md) | 装備品ルール・フィールド解釈 |
-| [Judgment_Rules.md](Game_Rules/Judgment_Rules.md) | 判定ルール（能力・技能・カード値・スート対応） |
+| [Check_Rules.md](Game_Rules/Check_Rules.md) | 判定ルール（能力・技能・カード値・スート対応） |
 | [Damage_Rules.md](Game_Rules/Damage_Rules.md) | ダメージ算出・適用（物理/精神/社会・チャート・戦闘不能・治療） |
 | [Combat_Flow.md](Game_Rules/Combat_Flow.md) | カット進行（プロセス・アクション・AR・コンバットスピード） |
 | [Scenario_Progress.md](Game_Rules/Scenario_Progress.md) | アクト進行（アンダー/プレ/メイン/ポスト・シーン進行・舞台裏・経験点） |
@@ -67,7 +67,7 @@
 | [Card_Operations.md](Game_Mechanics/Card_Operations.md) | 山札・手札・切り札・ニューロ操作 |
 | [Experience_Points.md](Game_Mechanics/Experience_Points.md) | EXP 計算・同期・User 移行 |
 | [Usage_System.md](Game_Mechanics/Usage_System.md) | usage テンプレート (判定基盤) |
-| [Judgment_System.md](Game_Mechanics/Judgment_System.md) | 判定システム実装設計（UIフロー・データ構造） |
+| [Check_System.md](Game_Mechanics/Check_System.md) | 判定システム実装設計（UIフロー・データ構造） |
 | [Active_Effects.md](Game_Mechanics/Active_Effects.md) | AE 適用モデル（派生値・モードA/B・棚卸し。フェーズ9 中核設計） |
 
 ### Migration — 移行・互換

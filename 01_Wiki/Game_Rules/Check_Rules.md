@@ -240,10 +240,10 @@ PLが目標値を手入力するフローは採用しない（Foundry VTT のデ
 **解釈・採用（2026-06-20 裁定）**: この特例は**購入判定に限ったルール**として扱う。〈信用〉を使う一般の技能判定では通常通りカードを出す。
 （※当初は「〈信用〉を使うすべての判定に適用」と読む案もあったが、適用範囲を購入判定に限定する裁定に確定した。）
 
-**実装方針**: フェーズ8 の汎用判定フローには特例分岐を設けない。購入判定（辞典ブラウザ経由＝フェーズ17）の実装時に、購入フロー内でカードなし達成値計算（外界 + 報酬点）を扱う。判定種別「購入判定」は [Judgment_System.md](../Game_Mechanics/Judgment_System.md) の通り辞典ブラウザ後送り。
+**実装方針**: フェーズ8 の汎用判定フローには特例分岐を設けない。購入判定（辞典ブラウザ経由＝フェーズ17）の実装時に、購入フロー内でカードなし達成値計算（外界 + 報酬点）を扱う。判定種別「購入判定」は [Check_System.md](../Game_Mechanics/Check_System.md) の通り辞典ブラウザ後送り。
 
 ## 参照
 
-- [Judgment_System.md](../Game_Mechanics/Judgment_System.md) — 実装設計（UIフロー・データ構造）
+- [Check_System.md](../Game_Mechanics/Check_System.md) — 実装設計（UIフロー・データ構造）
 - [Card_Operations.md](../Game_Mechanics/Card_Operations.md) — カード物理操作
 - [Bounty_Points.md](Bounty_Points.md) — 報酬点の詳細ルール

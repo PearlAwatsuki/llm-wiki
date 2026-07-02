@@ -38,7 +38,7 @@ bountyBase: new fields.NumberField({ initial: 0, integer: true }),  // 外界点
 
 ### 判定フローとの連携
 
-`JudgmentContext.bountyAvailable` に使用可能報酬点を入れて `TnxJudgmentFlow` に渡す。
+`CheckContext.bountyAvailable` に使用可能報酬点を入れて `TnxCheckFlow` に渡す。
 
 | 判定種別 | `bountyAvailable` の設定 |
 |---|---|
@@ -47,7 +47,7 @@ bountyBase: new fields.NumberField({ initial: 0, integer: true }),  // 外界点
 | 制御判定 (`controlCheck`) | 常に `0`（制御判定に報酬点は使えない） |
 | スート不一致 | 常に `0`（`_execute` 内でスキップ） |
 
-`TnxJudgmentFlow._execute` 内でカードをプレイした後、`bountyAvailable > 0` の場合のみ `_promptBountyUsage` を呼ぶ。
+`TnxCheckFlow._execute` 内でカードをプレイした後、`bountyAvailable > 0` の場合のみ `_promptBountyUsage` を呼ぶ。
 
 ### 報酬点入力ダイアログ（`_promptBountyUsage`）
 

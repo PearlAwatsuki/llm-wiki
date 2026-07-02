@@ -1,6 +1,6 @@
 # Phase 8: 判定システム 実装
 
-> ✅ **完了 (v0.8.0, 2026-06-20)**。8-0〜8-7 に加え、発動タブ拡張（対象/射程/目標値/変更不可※/対決不可）・効果タブ統合・参加技能からの自動入力・対決の読み取り表示・使用回数の消費（D&D 方式・遠隔消費・spent 管理）・mixin の静的 migrateData 合成を実装。攻撃判定＋ダメージ算出はフェーズ12 に分離。詳細は [Usage_System.md](../Game_Mechanics/Usage_System.md) / [Judgment_Rules.md](../Game_Rules/Judgment_Rules.md) / Audit_and_Review を参照。タグ付け・push はユーザー。
+> ✅ **完了 (v0.8.0, 2026-06-20)**。8-0〜8-7 に加え、発動タブ拡張（対象/射程/目標値/変更不可※/対決不可）・効果タブ統合・参加技能からの自動入力・対決の読み取り表示・使用回数の消費（D&D 方式・遠隔消費・spent 管理）・mixin の静的 migrateData 合成を実装。攻撃判定＋ダメージ算出はフェーズ12 に分離。詳細は [Usage_System.md](../Game_Mechanics/Usage_System.md) / [Check_Rules.md](../Game_Rules/Check_Rules.md) / Audit_and_Review を参照。タグ付け・push はユーザー。
 
 ## 目的
 
@@ -16,8 +16,8 @@ KI-002（usage edit ハンドラ不在）・KI-006（socket 未実装）を同�
 
 ## 設計の前提
 
-- [Judgment_Rules.md](../Game_Rules/Judgment_Rules.md) がルール正本
-- [Judgment_System.md](../Game_Mechanics/Judgment_System.md) が実装設計の正本
+- [Check_Rules.md](../Game_Rules/Check_Rules.md) がルール正本
+- [Check_System.md](../Game_Mechanics/Check_System.md) が実装設計の正本
 
 ---
 
@@ -45,7 +45,7 @@ type 値域を `check` / `attack` / `declaration` / `damageBoost` / `damageReduc
 ```javascript
 // メッセージ種別
 const SOCKET_MSG = {
-  JUDGMENT_RESULT: "judgmentResult",   // PL → GM: 判定結果を送信
+  CHECK_RESULT: "checkResult",   // PL → GM: 判定結果を送信
 };
 
 // 登録（tnx.mjs の ready フック内）
@@ -54,18 +54,18 @@ game.socket.on("system.tokyo-nova-axleration", TnxSocketHandler.onMessage);
 
 - [x] ソケットハンドラクラス新設
 - [x] `tnx.mjs` への登録（ready フック）
-- [x] メッセージ種別: `judgmentResult`（PL → GM、ChatMessage 更新用）
+- [x] メッセージ種別: `checkResult`（PL → GM、ChatMessage 更新用）
 
 ---
 
 ### 8-2: 判定エンジン
 
-**新規: `scripts/module/tnx-judgment-engine.mjs`**
+**新規: `scripts/module/tnx-check-engine.mjs`**
 
 核心的な計算ロジックを UI から分離して保持する。
 
 ```javascript
-class TnxJudgmentEngine {
+class TnxCheckEngine {
   /**
    * カード値を算出する
    * @param {Card} card
@@ -112,8 +112,8 @@ class TnxJudgmentEngine {
 
 ### 8-3: 判定ダイアログ
 
-**新規: `scripts/module/tnx-judgment-dialog.mjs`**
-**新規: `templates/dialog/judgment-dialog.hbs`**
+**新規: `scripts/module/tnx-check-dialog.mjs`**
+**新規: `templates/dialog/check-dialog.hbs`**
 
 プレイヤーがカードを選択・報酬点を入力して判定を実行するダイアログ。
 
@@ -131,7 +131,7 @@ class TnxJudgmentEngine {
 ```
 
 - [x] 手札カード一覧表示（HUD で実装。有効スートを強調表示）
-- [x] カード選択（HUD カードクリック。`TnxJudgmentFlow.executeFromHand`）
+- [x] カード選択（HUD カードクリック。`TnxCheckFlow.executeFromHand`）
 - [x] Joker 選択時: スート・値の宣言フォーム表示（`_promptJokerDeclaration`）
 - [x] 切り札使用: HUD の切り札モードボタン → 手札から追加で1枚選択
 - [x] A 選択時: 「11 として使う」/「達成値を21に固定する」ダイアログ（`_handleAceChoice`）
@@ -141,7 +141,7 @@ class TnxJudgmentEngine {
 
 **設計変更 (2026-06-15)**: 当初の「ダイアログ内カード選択」案から「HUD 中心フロー」案に変更。
 ダイアログは判定コンテキスト（種別・スート・目標値）のみ表示。カード選択は HUD で行い、
-クリック時に `TnxJudgmentFlow.executeFromHand` を呼び出す。
+クリック時に `TnxCheckFlow.executeFromHand` を呼び出す。
 ダイアログを×ボタンで閉じると判定キャンセル。報酬点はカード選択後に別プロンプトで入力（ルール順序に準拠）。
 達成値プレビューをカードホバー時にバッジ表示。
 
@@ -159,11 +159,11 @@ class TnxJudgmentEngine {
 
 **`scripts/journal/tnx-scenario-sheet.mjs`** に infoItem skill クリックハンドラ追加
 
-- [x] キャストシート: 技能行クリック（一般・スタイル両方）→ `TnxJudgmentFlow.open`（スートは技能 Item の suits から算出）
-- [x] キャストシート: 能力値クリック → `TnxJudgmentFlow.open`（abilityCheck モード。対応スート1択）
-- [x] キャストシート: 制御値クリック → `TnxJudgmentFlow.open`（controlCheck モード。対応スート1択）
-- [x] アクトシート: infoItem skill 行のハンマーボタン → `TnxJudgmentFlow.open`（TN=tn、技能名=name テキスト、validSuits=全スート）
-- [x] 判定結果 → `templates/chat/judgment-result.hbs` でチャット投稿（8-3 で実装済み）
+- [x] キャストシート: 技能行クリック（一般・スタイル両方）→ `TnxCheckFlow.open`（スートは技能 Item の suits から算出）
+- [x] キャストシート: 能力値クリック → `TnxCheckFlow.open`（abilityCheck モード。対応スート1択）
+- [x] キャストシート: 制御値クリック → `TnxCheckFlow.open`（controlCheck モード。対応スート1択）
+- [x] アクトシート: infoItem skill 行のハンマーボタン → `TnxCheckFlow.open`（TN=tn、技能名=name テキスト、validSuits=全スート）
+- [x] 判定結果 → `templates/chat/check-result.hbs` でチャット投稿（8-3 で実装済み）
 
 ---
 
@@ -171,9 +171,9 @@ class TnxJudgmentEngine {
 
 **新規: `scripts/module/tnx-rl-request-app.mjs`**
 **新規: `templates/app/rl-request-app.hbs`**
-**新規: `templates/chat/judgment-request.hbs`**
+**新規: `templates/chat/check-request.hbs`**
 
-> 設計は当初案から一部変更。rollMode 廃止（全公開のみ）、identificationKey による技能照合、「その他」自由入力、description フィールド追加。詳細は [Judgment_System.md](../Game_Mechanics/Judgment_System.md#rl-判定要求フローフェーズ-8-5) を参照。
+> 設計は当初案から一部変更。rollMode 廃止（全公開のみ）、identificationKey による技能照合、「その他」自由入力、description フィールド追加。詳細は [Check_System.md](../Game_Mechanics/Check_System.md#rl-判定要求フローフェーズ-8-5) を参照。
 
 #### RL 側（GM）
 
@@ -186,17 +186,17 @@ class TnxJudgmentEngine {
   - 目標値（number-input-spinner + targetValueHidden 非公開フラグ）
   - 説明テキストエリア（省略可）
   - rollMode 廃止（全公開のみ）
-- [x] 送信 → ChatMessage 作成（`judgmentRequest` フラグ付き）
+- [x] 送信 → ChatMessage 作成（`checkRequest` フラグ付き）
 
 #### PL 側
 
 - [x] `renderChatMessage` フック: 要求カードの「判定する」ボタンをバインド（自分のキャラ or GM のみ表示）
-- [x] ボタンクリック → `TnxRlRequestApp.onDoJudgment()` → identificationKey でキャラ上技能を解決 → `TnxJudgmentFlow.open()`
-- [x] 判定完了 → socket emit（`judgmentResult`）→ GM が ChatMessage.update() で results フラグ更新 → renderChatMessage 再発火で結果表示
+- [x] ボタンクリック → `TnxRlRequestApp.onDoCheck()` → identificationKey でキャラ上技能を解決 → `TnxCheckFlow.open()`
+- [x] 判定完了 → socket emit（`checkResult`）→ GM が ChatMessage.update() で results フラグ更新 → renderChatMessage 再発火で結果表示
 
 #### ChatMessage フラグ構造（実装後確定版）
 
-→ [Judgment_System.md#chatmessage-フラグ構造](../Game_Mechanics/Judgment_System.md) を参照。
+→ [Check_System.md#chatmessage-フラグ構造](../Game_Mechanics/Check_System.md) を参照。
 
 ---
 
@@ -224,8 +224,8 @@ class TnxJudgmentEngine {
 
 ### 8-7: テスト・仕上げ ✅ 完了
 
-- [x] `TnxJudgmentEngine` の全計算パターンに単体テストを追加（`tests/module/tnx-judgment-engine.test.mjs`。カード値/技能/制御/コンボ/スート対応を網羅）
-- [x] wiki: Judgment_Rules.md / Judgment_System.md / Usage_System.md / Phase_8_Tasks_Detail.md 更新（2026-06-17）
+- [x] `TnxCheckEngine` の全計算パターンに単体テストを追加（`tests/module/tnx-check-engine.test.mjs`。カード値/技能/制御/コンボ/スート対応を網羅）
+- [x] wiki: Check_Rules.md / Check_System.md / Usage_System.md / Phase_8_Tasks_Detail.md 更新（2026-06-17）
 - [x] wiki: Audit_and_Review エントリ追加（8-2〜8-5 ＋バグ修正多数を記録）
 - [x] CHANGELOG 更新・v0.8.0 バージョンアップ（commit c9ea3bb）
 
@@ -241,6 +241,6 @@ class TnxJudgmentEngine {
 ## 参照
 
 - [Roadmap.md](../../02_System/Roadmap.md)
-- [Judgment_Rules.md](../Game_Rules/Judgment_Rules.md)
-- [Judgment_System.md](../Game_Mechanics/Judgment_System.md)
+- [Check_Rules.md](../Game_Rules/Check_Rules.md)
+- [Check_System.md](../Game_Mechanics/Check_System.md)
 - [Phase_7_Tasks_Detail.md](Phase_7_Tasks_Detail.md)

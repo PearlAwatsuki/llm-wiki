@@ -135,7 +135,7 @@ TNX のキャスト作成・成長に関するルール解釈の正本。フェ�
 
 - 定義: **行動の基準になる技能**。攻撃・防御など、何らかの行動を行う技能。
 - 戦闘の「アクション」と直接対応するわけではないが、戦闘中の行動を行う技能はアクション技能であることが多い。
-- **アクション技能同士は組み合わせ不可**（矛盾する2つの行動を同時に行うことになるため）。判定コンボでは常にベース技能になる（→ [Judgment_Rules.md](Judgment_Rules.md) のコンボ規則）。
+- **アクション技能同士は組み合わせ不可**（矛盾する2つの行動を同時に行うことになるため）。判定コンボでは常にベース技能になる（→ [Check_Rules.md](Check_Rules.md) のコンボ規則）。
 - 現ルールのアクション技能: 射撃・心理・自我・回避・白兵・圧力・信用、および芸術を除く固有名詞技能。
 
 データ: `skill-base` の `isAction`。
@@ -168,7 +168,7 @@ TNX のキャスト作成・成長に関するルール解釈の正本。フェ�
 
 ## 参照
 
-- [Judgment_Rules.md](Judgment_Rules.md) — 判定（能力値・技能の使われ方）
+- [Check_Rules.md](Check_Rules.md) — 判定（能力値・技能の使われ方）
 - [Outfits.md](Outfits.md) — アウトフィット（購入値・常備化経験点・住居）
 - [Bounty_Points.md](Bounty_Points.md) — 報酬点
 - [Experience_Points.md](../Game_Mechanics/Experience_Points.md) — 経験点（User 単位管理）

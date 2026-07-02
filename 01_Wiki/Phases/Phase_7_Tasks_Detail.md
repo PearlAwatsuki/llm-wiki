@@ -28,7 +28,7 @@ TNX の判定はすべて **Foundry Cards API** 経由のカードドロー。�
 
 ### 7-1: 判定ルールの言語化 ✅ 確定（2026-06-14）
 
-確定内容は [Judgment_System.md](../Game_Mechanics/Judgment_System.md) を正本とする。
+確定内容は [Check_System.md](../Game_Mechanics/Check_System.md) を正本とする。
 
 #### 確定済み事項
 
@@ -68,12 +68,12 @@ TNX の判定はすべて **Foundry Cards API** 経由のカードドロー。�
 - [x] KI-006: socket 実装をフェーズ8 で同時実施
 - [x] AE ボーナス集計はフェーズ8 スコープ外（ActiveEffect Phase 後）
 - [x] チャット表示: 技能名を「+」連結・制御判定は「達成値 ≤ 制御値 ▶ 成功」
-- [x] 詳細: [Judgment_System.md](../Game_Mechanics/Judgment_System.md)
+- [x] 詳細: [Check_System.md](../Game_Mechanics/Check_System.md)
 
 ### 7-3: 設計書ドラフトとユーザー承認 ✅ 完了（2026-06-15）
 
-- [x] 設計書: [Judgment_System.md](../Game_Mechanics/Judgment_System.md)（実装設計）
-- [x] ルール正本: [Judgment_Rules.md](../Game_Rules/Judgment_Rules.md)
+- [x] 設計書: [Check_System.md](../Game_Mechanics/Check_System.md)（実装設計）
+- [x] ルール正本: [Check_Rules.md](../Game_Rules/Check_Rules.md)
 - [x] フェーズ8 実装計画: [Phase_8_Tasks_Detail.md](Phase_8_Tasks_Detail.md)
 - [ ] メカニクス監査・設計レビューエントリ → フェーズ8 実装後に記録
 

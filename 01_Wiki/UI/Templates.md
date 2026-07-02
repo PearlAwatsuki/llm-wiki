@@ -15,7 +15,7 @@ templates/
   hud/
     hud.hbs                 # 常駐 HUD
   chat/
-    scene-card.hbs / judgment-request.hbs / judgment-result.hbs       # フェーズ8
+    scene-card.hbs / check-request.hbs / check-result.hbs       # フェーズ8
   user/
     record-sheet.hbs        # レコードシート (フェーズ2)
   app/                      # usage-sheet.hbs / usage-sheet-combo.hbs / rl-request-app.hbs

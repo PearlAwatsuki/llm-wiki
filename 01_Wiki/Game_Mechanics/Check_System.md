@@ -90,7 +90,7 @@ totalValue = growth + Σ(style.value × styleLevel) + mod + effectMod + abilityO
 #### プレイヤー主導（自発判定）
 
 1. キャストシートの技能行/能力値/制御値クリック、またはアクトシートのハンマーボタン
-2. `TnxJudgmentFlow.open(context)` → `TnxJudgmentDialog` 起動（コンテキスト表示のみ）+ HUD がペンディング状態に
+2. `TnxCheckFlow.open(context)` → `TnxCheckDialog` 起動（コンテキスト表示のみ）+ HUD がペンディング状態に
 3. プレイヤーが HUD 上の手札カードをクリック（有効スートのカードを強調表示）
    - カードホバー時: 達成値プレビューをバッジ表示（**報酬点含まない暫定値**）
    - スート不一致カードをクリックした場合: 達成値0の失敗として処理（プレイを拒否しない）
@@ -100,7 +100,7 @@ totalValue = growth + Σ(style.value × styleLevel) + mod + effectMod + abilityO
 7. カードがプレイされる（捨て札へ移動）
 8. 報酬点入力ダイアログ（`_promptBountyUsage`）— スート不一致・制御判定・`bountyAvailable=0` の場合はスキップ
 9. 達成値計算 → チャットに結果カード投稿
-10. ダイアログを閉じると判定キャンセル（`_onClose` → `TnxJudgmentFlow.cancel()`）
+10. ダイアログを閉じると判定キャンセル（`_onClose` → `TnxCheckFlow.cancel()`）
 
 #### RL 主導（判定要求、フェーズ8-5で実装予定）
 
@@ -260,17 +260,17 @@ Phase 8 では基本判定メカニクス（カード選択・達成値計算・
 
 | ファイル | 役割 |
 |---|---|
-| `scripts/module/tnx-judgment-engine.mjs` | 計算ロジック（UI なし）。`getCardJudgmentValue`, `calcSkillCheck`, `calcControlCheck`, `getComboSuits`, `getAbilityBySuit`, `ALL_SUITS`, `SUIT_TO_ABILITY` をエクスポート |
-| `scripts/module/tnx-judgment-flow.mjs` | フロー管理シングルトン（`TnxJudgmentFlow` static class）|
-| `scripts/module/tnx-judgment-dialog.mjs` | `TnxJudgmentDialog`（ApplicationV2）— コンテキスト表示のみ |
-| `templates/dialog/judgment-dialog.hbs` | ダイアログ本体（スート表示・山札から判定ボタン）|
-| `templates/chat/judgment-result.hbs` | 判定結果チャットカード |
+| `scripts/module/tnx-check-engine.mjs` | 計算ロジック（UI なし）。`getCardCheckValue`, `calcSkillCheck`, `calcControlCheck`, `getComboSuits`, `getAbilityBySuit`, `ALL_SUITS`, `SUIT_TO_ABILITY` をエクスポート |
+| `scripts/module/tnx-check-flow.mjs` | フロー管理シングルトン（`TnxCheckFlow` static class）|
+| `scripts/module/tnx-check-dialog.mjs` | `TnxCheckDialog`（ApplicationV2）— コンテキスト表示のみ |
+| `templates/dialog/check-dialog.hbs` | ダイアログ本体（スート表示・山札から判定ボタン）|
+| `templates/chat/check-result.hbs` | 判定結果チャットカード |
 
-### `JudgmentContext` typedef
+### `CheckContext` typedef
 
 ```javascript
 /**
- * @typedef {object} JudgmentContext
+ * @typedef {object} CheckContext
  * @property {"skillCheck"|"controlCheck"|"abilityCheck"} type
  * @property {string}        actorId          - 判定を行うキャスト Actor ID
  * @property {string[]}      skillIds         - 使用技能 Item ID（能力値判定は空 []）
@@ -282,25 +282,25 @@ Phase 8 では基本判定メカニクス（カード選択・達成値計算・
  */
 ```
 
-### `TnxJudgmentFlow` 公開 API
+### `TnxCheckFlow` 公開 API
 
 ```javascript
 // 判定状態の確認
-TnxJudgmentFlow.isPending     // boolean: 判定進行中か
-TnxJudgmentFlow.context       // JudgmentContext | null
-TnxJudgmentFlow.trumpMode     // boolean: 切り札モード中か
+TnxCheckFlow.isPending     // boolean: 判定進行中か
+TnxCheckFlow.context       // CheckContext | null
+TnxCheckFlow.trumpMode     // boolean: 切り札モード中か
 
 // 起動・キャンセル
-await TnxJudgmentFlow.open(context)   // 判定開始。ダイアログ + HUD を更新
-TnxJudgmentFlow.cancel()             // 判定中止。ダイアログ閉じ、HUD リフレッシュ
-TnxJudgmentFlow.toggleTrumpMode()    // 切り札モード切替
+await TnxCheckFlow.open(context)   // 判定開始。ダイアログ + HUD を更新
+TnxCheckFlow.cancel()             // 判定中止。ダイアログ閉じ、HUD リフレッシュ
+TnxCheckFlow.toggleTrumpMode()    // 切り札モード切替
 
 // 実行（HUD から呼ぶ）
-await TnxJudgmentFlow.executeFromHand(cardId)  // 手札カードをクリック
-await TnxJudgmentFlow.executeFromDeck()        // 山札から判定
+await TnxCheckFlow.executeFromHand(cardId)  // 手札カードをクリック
+await TnxCheckFlow.executeFromDeck()        // 山札から判定
 
 // 内部注入（tnx.mjs の init で設定）
-TnxJudgmentFlow.dialogClass = TnxJudgmentDialog
+TnxCheckFlow.dialogClass = TnxCheckDialog
 ```
 
 ### 判定起動のエントリーポイント一覧
@@ -311,7 +311,7 @@ TnxJudgmentFlow.dialogClass = TnxJudgmentDialog
 | キャストシート 能力値クリック | `_onStartAbilityCheck` → `open()` | `abilityCheck` 型。`validSuits` は1スートのみ |
 | キャストシート 制御値クリック | `_onStartControlCheck` → `open()` | `controlCheck` 型。`bountyAvailable: 0` 固定 |
 | アクトシート ハンマーボタン | `_onStartInfoSkillCheck` → `open()` | `game.user.character` をアクターとして使用。`validSuits: ALL_SUITS`（全スート） |
-| RL 要求チャット「判定する」 | `TnxRlRequestApp.onDoJudgment()` → `open()` | identificationKey でキャラ上の技能を解決。技能未所持なら早期 return |
+| RL 要求チャット「判定する」 | `TnxRlRequestApp.onDoCheck()` → `open()` | identificationKey でキャラ上の技能を解決。技能未所持なら早期 return |
 
 ### `_onStartSkillCheck` のコンボ解決フロー（フェーズ8 改訂）
 
@@ -319,7 +319,7 @@ TnxJudgmentFlow.dialogClass = TnxJudgmentDialog
 2. `selectedUsage.baseSkillRef.itemId` からベース技能を解決（空の場合は親技能 ID にフォールバック）
 3. `selectedUsage.skillRefs` からコンボ技能を収集
 4. 用途所持技能（親）がベース技能と異なる場合はコンボに自動追加（非アクション技能からの起動）
-5. 全技能スートの積集合で `validSuits` を計算 → `TnxJudgmentFlow.open()` へ渡す
+5. 全技能スートの積集合で `validSuits` を計算 → `TnxCheckFlow.open()` へ渡す
 
 ---
 
@@ -335,7 +335,7 @@ GM がシーンコントロールの「判定要求」ボタンからダイア�
 |---|---|
 | `scripts/module/tnx-rl-request-app.mjs` | `TnxRlRequestApp` — ダイアログ本体・送信処理・判定実行ハンドラ |
 | `templates/app/rl-request-app.hbs` | 判定要求ダイアログ UI |
-| `templates/chat/judgment-request.hbs` | 判定要求チャットカード（静的 HTML）|
+| `templates/chat/check-request.hbs` | 判定要求チャットカード（静的 HTML）|
 | `scripts/tnx.mjs` | `getSceneControlButtons` フック・`renderChatMessage` フック |
 
 ### フロー詳細
@@ -354,7 +354,7 @@ GM がシーンコントロールの「判定要求」ボタンからダイア�
 
 3. 送信 → TnxRlRequestApp._onSubmit():
    - skillLabel, validSuits, targetValue, targets を組み立てる
-   - ChatMessage.create({ content, flags.judgmentRequest: {...} })
+   - ChatMessage.create({ content, flags.checkRequest: {...} })
 
 4. 全クライアントが ChatMessage を受信 → renderChatMessage フック:
    - targetValueHidden かつ非 GM → 目標値を「（非公開）」表示
@@ -362,7 +362,7 @@ GM がシーンコントロールの「判定要求」ボタンからダイア�
    - それ以外の PL → 「待機中…」を注入
    - results[actorId] が存在する場合 → 結果を注入（ボタンを置き換え）
 
-5. PL が「判定する」クリック → TnxRlRequestApp.onDoJudgment(flagData, actorId, messageId):
+5. PL が「判定する」クリック → TnxRlRequestApp.onDoCheck(flagData, actorId, messageId):
    - skillCheck + identificationKey: actor.items から identificationKey 一致の generalSkill を検索
      - 未所持なら warn して return
      - 所持なら skillIds=[matchedItem.id], getComboSuits([matchedItem.system]) で validSuits を解決
@@ -370,7 +370,7 @@ GM がシーンコントロールの「判定要求」ボタンからダイア�
    - abilityCheck: bountyAvailable = actorBounty（全技能で報酬点使用可）
    - controlCheck: bountyAvailable = 0
    - skillCheck + その他: bountyAvailable = 0, validSuits = flagSuits
-   - TnxJudgmentFlow.open(context) で判定開始
+   - TnxCheckFlow.open(context) で判定開始
 
 6. 判定完了 → TnxSocketHandler → message.update(flags.results) → renderChatMessage 再発火 → 結果表示
 ```
@@ -378,9 +378,9 @@ GM がシーンコントロールの「判定要求」ボタンからダイア�
 ### ChatMessage フラグ構造
 
 ```javascript
-// flags["tokyo-nova-axleration"].judgmentRequest
+// flags["tokyo-nova-axleration"].checkRequest
 {
-    judgmentType:      "skillCheck" | "abilityCheck" | "controlCheck",
+    checkType:      "skillCheck" | "abilityCheck" | "controlCheck",
     identificationKey: string | null,    // 技能識別キー（その他・能力値判定時は null）
     skillLabel:        string,            // 表示用名称
     validSuits:        string[],          // skillCheck(識別キーあり) は []（PL 側で解決）
@@ -404,7 +404,7 @@ GM がシーンコントロールの「判定要求」ボタンからダイア�
 ### 設計上の注意点
 
 - `identificationKey` が空の場合（その他）: PL の技能アイテムを検索しない。RL が指定したスートを使用。
-- `validSuits: []`（識別キーあり）の場合: `onDoJudgment` 内で `getComboSuits()` により PL 自身の技能から解決する。
+- `validSuits: []`（識別キーあり）の場合: `onDoCheck` 内で `getComboSuits()` により PL 自身の技能から解決する。
 - `renderChatMessage` は ChatMessage の更新ごとに再発火するため、results が追記された時点で自動的にボタン→結果に切り替わる。
 - 目標値が `null` の場合はチャットカードに「—」表示。成否判定はスキップ（達成値のみ表示）。
 
@@ -443,7 +443,7 @@ const result = await foundry.applications.api.DialogV2.wait({
 
 HUD カードホバー時に `card.preview` バッジを表示（`templates/hud/hud.hbs`、`.card-preview-value` CSS）。
 
-- **スート一致**: `getCardJudgmentValue(card.value) + getAbilityBySuit(suit, abilitiesCtx)` を表示
+- **スート一致**: `getCardCheckValue(card.value) + getAbilityBySuit(suit, abilitiesCtx)` を表示
 - **スート不一致**: `"0"` を赤背景で表示
 - **Joker**: `"?"` を表示（宣言前のため不明）
 - **A**: `null`（ダイアログ選択後に確定するため表示なし）
@@ -455,5 +455,5 @@ HUD カードホバー時に `card.preview` バッジを表示（`templates/hud/
 - [Usage_System.md](Usage_System.md) — usage テンプレート・KI-002
 - [Resolved_Issues.md](../Issues/Resolved_Issues.md) — KI-002（用途編集ハンドラ）/ KI-006（ソケット）はともに解消済み
 - [Phase_7_Tasks_Detail.md](../Phases/Phase_7_Tasks_Detail.md)
-- [Judgment_Rules.md](../Game_Rules/Judgment_Rules.md) — ゲームルール正本
+- [Check_Rules.md](../Game_Rules/Check_Rules.md) — ゲームルール正本
 - [Bounty_Points.md](../Game_Rules/Bounty_Points.md) — 報酬点・usesBounty フィールド詳細

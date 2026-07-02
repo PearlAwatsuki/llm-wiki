@@ -61,6 +61,6 @@ TNX では「失敗してもよい判定」が手札をより良く入れ替え�
 ## 参照
 
 - [Scenario_Progress.md](Scenario_Progress.md) — シーン進行・チーム・登場
-- [Judgment_Rules.md](Judgment_Rules.md) — 判定（社会・コネ技能・目標値）
+- [Check_Rules.md](Check_Rules.md) — 判定（社会・コネ技能・目標値）
 - [Outfits.md](Outfits.md) — 危険値（appearancePenalty、負のペナルティ）
 - [Combat_Flow.md](Combat_Flow.md) — セットアッププロセスでの登場判定

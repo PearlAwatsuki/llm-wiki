@@ -35,7 +35,7 @@ N◎VA のダメージ適用＝チャート式効果累積（＝ActiveEffect）�
 |---|---|
 | `tnx-cast-sheet.mjs` `_prepareAbilitiesContext`（~L1383） | シート表示 |
 | `tnx-cast-sheet.mjs` `_computeMundaneTotalValue`（~L2021） | mundane 単独（bountyBase 算出） |
-| `tnx-judgment-flow.mjs` `_buildAbilitiesCtx`（~L367） | 判定の達成値 |
+| `tnx-check-flow.mjs` `_buildAbilitiesCtx`（~L367） | 判定の達成値 |
 | `tnx-cast-sheet.mjs` `updateCastExp`（~L2042） | EXP コスト（**触れない**。形だけ同型） |
 
 ### 派生値パイプライン未確立

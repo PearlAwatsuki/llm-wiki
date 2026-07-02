@@ -93,13 +93,13 @@
 
 - **解消**: フェーズ8-1 (2026-06-15)
 - **解消コミット**: 22a0c51（`TnxSocketHandler` 新設・ソケット集約）
-- `scripts/module/tnx-socket-handler.mjs` で emit/on を集約。`ready` フックで `game.socket.on("system.tokyo-nova-axleration", ...)` を登録。RL 要求判定の結果反映（`emitJudgmentResult` → `ChatMessage.update`）・アクセスカード提示で稼働。
+- `scripts/module/tnx-socket-handler.mjs` で emit/on を集約。`ready` フックで `game.socket.on("system.tokyo-nova-axleration", ...)` を登録。RL 要求判定の結果反映（`emitCheckResult` → `ChatMessage.update`）・アクセスカード提示で稼働。
 
 ## KI-021: 判定の達成値からスタイル基本値が欠落
 
 - **発見**: フェーズ9-1 着手時のコード精査（2026-06-20）
 - **解消**: フェーズ9-1 (2026-06-20)
-- **症状**: `TnxJudgmentFlow._buildAbilitiesCtx` が `actor.items.filter(i => i.system.equipped)` でスタイルを抽出していたが、`style` DataModel に `equipped` フィールドは存在せず常に空配列。結果、技能・能力判定の達成値が `growth + mod + effectMod + outfitMod` のみとなり、能力値の大半を占める**スタイル基本値（×レベル）が丸ごと欠落**していた（達成値が大幅に過小）。シート表示・bountyBase は全スタイルで正しく算出されていたため表面化しにくかった。
+- **症状**: `TnxCheckFlow._buildAbilitiesCtx` が `actor.items.filter(i => i.system.equipped)` でスタイルを抽出していたが、`style` DataModel に `equipped` フィールドは存在せず常に空配列。結果、技能・能力判定の達成値が `growth + mod + effectMod + outfitMod` のみとなり、能力値の大半を占める**スタイル基本値（×レベル）が丸ごと欠落**していた（達成値が大幅に過小）。シート表示・bountyBase は全スタイルで正しく算出されていたため表面化しにくかった。
 - **原因**: 能力値の最終実効値が `prepareDerivedData` で保持されず、4箇所が同式を各自再計算。判定の再計算だけが実在しない `equipped` フィルタを残していた（派生値パイプライン未整備に起因する分岐バグ）。
 - **解消内容**: `CastDataModel.prepareDerivedData` で実効値を `system.<key>.total` / `.totalControl` に一本化（`computeAttributeFinal` 純粋関数＋0clamp）。シート表示・mundane 算出・判定の3箇所を集約値参照に置換。判定はシート表示と同一値になった。
 

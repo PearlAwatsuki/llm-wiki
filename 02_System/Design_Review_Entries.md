@@ -2652,10 +2652,10 @@ armor / cyborg / tap / vehicle / ianus / weapon / housing-area / residence)、
 
 ---
 
-### [TnxJudgmentEngine — 判定計算エンジン](フェーズ8-2)
+### [TnxCheckEngine — 判定計算エンジン](フェーズ8-2)
 
 **日付**: 2026-06-15
-**レビュー対象**: `scripts/module/tnx-judgment-engine.mjs`
+**レビュー対象**: `scripts/module/tnx-check-engine.mjs`
 **ステータス**: レビュー済(問題なし)
 
 #### レビュー観点
@@ -2664,7 +2664,7 @@ armor / cyborg / tap / vehicle / ianus / weapon / housing-area / residence)、
 - 拡張性: AE ボーナス追加時は呼び出し側の `abilitiesCtx` を拡張するだけ。エンジン関数の署名変更は不要。
 - パフォーマンス: 単純な算術計算のみ。問題なし。
 - FVTT 慣行: Foundry の Cards API や Actor 型に依存しない純粋計算層として設計。
-- 既存設計との整合: `SUIT_TO_ABILITY` を `TnxJudgmentFlow` と `TnxHud` が共有インポートで参照。重複定義なし。
+- 既存設計との整合: `SUIT_TO_ABILITY` を `TnxCheckFlow` と `TnxHud` が共有インポートで参照。重複定義なし。
 
 #### 良かった点
 
@@ -2673,7 +2673,7 @@ armor / cyborg / tap / vehicle / ianus / weapon / housing-area / residence)、
 
 #### 課題
 
-- ⚠️ `getAbilityBySuit` は `abilitiesCtx[key].totalValue` を参照するが、`totalValue` の計算は `TnxJudgmentFlow._buildAbilitiesCtx` で行っており、それが AE を考慮しない暫定実装。ActiveEffect フェーズで修正が必要。
+- ⚠️ `getAbilityBySuit` は `abilitiesCtx[key].totalValue` を参照するが、`totalValue` の計算は `TnxCheckFlow._buildAbilitiesCtx` で行っており、それが AE を考慮しない暫定実装。ActiveEffect フェーズで修正が必要。
 
 #### 推奨アクション
 
@@ -2681,19 +2681,19 @@ armor / cyborg / tap / vehicle / ianus / weapon / housing-area / residence)、
 
 ---
 
-### [TnxJudgmentFlow / TnxJudgmentDialog — 判定フロー制御](フェーズ8-3)
+### [TnxCheckFlow / TnxCheckDialog — 判定フロー制御](フェーズ8-3)
 
 **日付**: 2026-06-15
-**レビュー対象**: `scripts/module/tnx-judgment-flow.mjs`, `scripts/module/tnx-judgment-dialog.mjs`
+**レビュー対象**: `scripts/module/tnx-check-flow.mjs`, `scripts/module/tnx-check-dialog.mjs`
 **ステータス**: レビュー済(問題なし)
 
 #### レビュー観点
 
-- 保守性: `TnxJudgmentFlow` が Singleton 静的クラスとして状態を一元管理。`_context` / `_trumpMode` の二変数のみ。
+- 保守性: `TnxCheckFlow` が Singleton 静的クラスとして状態を一元管理。`_context` / `_trumpMode` の二変数のみ。
 - 拡張性: ダイアログクラスを `tnx.mjs` でインジェクションすることで循環 import を回避。将来のダイアログ実装変更に強い。
 - パフォーマンス: 判定ごとに1回だけ `_buildAbilitiesCtx` を呼び出す。HUD の `_prepareContext` でも呼ぶが、Actor のアイテムスキャンは許容範囲。
 - FVTT 慣行: `ApplicationV2 / HandlebarsApplicationMixin` 準拠。`_onClose` のオーバーライドでキャンセル処理を実装（V2 のライフサイクル活用）。
-- 既存設計との整合: `TnxActionHandler.playCard` を介してカードプレイ操作を委譲。HUD の `_onPlayCard` が `TnxJudgmentFlow.isPending` を確認してインターセプト。
+- 既存設計との整合: `TnxActionHandler.playCard` を介してカードプレイ操作を委譲。HUD の `_onPlayCard` が `TnxCheckFlow.isPending` を確認してインターセプト。
 
 #### 良かった点
 
@@ -2702,7 +2702,7 @@ armor / cyborg / tap / vehicle / ianus / weapon / housing-area / residence)、
 
 #### 課題
 
-- ⚠️ `TnxJudgmentFlow._buildAbilitiesCtx` はプライベート命名だが `TnxHud` から直接呼ばれている。将来的に `tnx-judgment-engine.mjs` に `buildAbilitiesCtx` をエクスポートする関数として昇格させると依存関係が明確になる（現時点では機能上の問題なし）。
+- ⚠️ `TnxCheckFlow._buildAbilitiesCtx` はプライベート命名だが `TnxHud` から直接呼ばれている。将来的に `tnx-check-engine.mjs` に `buildAbilitiesCtx` をエクスポートする関数として昇格させると依存関係が明確になる（現時点では機能上の問題なし）。
 
 #### 推奨アクション
 
@@ -2819,7 +2819,7 @@ armor / cyborg / tap / vehicle / ianus / weapon / housing-area / residence)、
 #### 推奨アクション
 
 - 実機で render時 enforcement の収束とトリムダイアログのインタラクティブ挙動を確認。問題あれば再入ガード／ダイアログ機構を調整。
-- 10-8 で関連 wiki（Usage_System 反映済み・[Judgment_System.md](../01_Wiki/Game_Mechanics/Judgment_System.md)）の整合最終化。
+- 10-8 で関連 wiki（Usage_System 反映済み・[Check_System.md](../01_Wiki/Game_Mechanics/Check_System.md)）の整合最終化。
 
 ### 派生データ・変異器官・式神装備フラグ／専用の辞典参照化／部位プリセット並び見直し（フェーズ10-2 後追い）
 
@@ -2942,3 +2942,29 @@ armor / cyborg / tap / vehicle / ianus / weapon / housing-area / residence)、
 
 - ~~実機でランク別バッジ色・名前横配置・未設定時の非表示、および辞典で紐づけた住宅施設の供給値（登/セ）が出ることを確認~~ → **実機レビュー済（2026-07-02・問題なし）**。
 - ~~残: 10-5 combatSpeed UI（KI-010）→ 10-6 戦闘タブ（要 layout 言語化）→ 10-7 棚卸し → 10-8 仕上げ（v0.10.0）~~ → **フェーズ10 完了（v0.10.0・2026-07-02）**。
+
+### 「判定」英名の Check 統一リネーム（フェーズ10-11 間の軽微修正）
+
+**日付**: 2026-07-03
+**レビュー対象**: 旧 `tnx-judgment-engine/flow/dialog.mjs` → `tnx-check-engine/flow/dialog.mjs`、旧 `judgment-dialog/request/result.hbs` → `check-*.hbs`、`tnx2.css`、関連識別子全般
+**ステータス**: ✅ 実装完了（全テスト green 980・eslint 0 error・stylelint clean）
+
+#### 経緯と根拠
+
+- 「判定」の正しい英訳は **check**（TRPG 輸入時の訳語対応。[Active_Effects.md](../01_Wiki/Game_Mechanics/Active_Effects.md) 冒頭の用語注記で確定済み）。フェーズ7-8 実装時の Judgment 系命名はこの用語確定（フェーズ9）より古く、混在状態だった。
+- AE キー（`check.` / `controlCheck.`）・判定種別（`skillCheck` 等）・用途タイプ（`"check"`）は既に check 系であり、本リネームで命名が一本化された。
+
+#### 変更内容
+
+- クラス: `TnxJudgmentEngine/Flow/Dialog` → `TnxCheckEngine/Flow/Dialog`。関数・変数・typedef（`JudgmentCheckResult` → `CheckResult`）・CSS クラス（`judgment-*` → `check-*`）・グローバル（`game.tnx.judgment` → `game.tnx.check`）。
+- ファイル 7 本を git mv（scripts 3・test 1・templates 3）。wiki も [Check_Rules.md](../01_Wiki/Game_Rules/Check_Rules.md)・[Check_System.md](../01_Wiki/Game_Mechanics/Check_System.md) に改名し全参照を更新。
+- ChatMessage フラグキー `judgmentRequest`/`judgmentResult` → `checkRequest`/`checkResult`、ソケット種別も同名変更。
+- 本体 CHANGELOG は当時の名称の記録として原文保持（wiki の過去記録は検索性優先で機械的に新名称へ置換）。
+
+#### 課題
+
+- ⚠️ **既存ワールドの過去チャットの「判定する」ボタンは失効**（旧フラグキーのため新コードが認識しない）。開発中 0.x のため migration は設けない（意図的に妥協）。
+
+#### 推奨アクション
+
+- 実機で判定フロー一巡（シート起動・RL 要求・山札判定・チャットカード表示・CSS 崩れなし）を確認。

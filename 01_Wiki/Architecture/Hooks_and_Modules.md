@@ -7,7 +7,7 @@
 | TnxActionHandler | `scripts/module/tnx-action-handler.mjs` | カード操作 (判定・ドロー・プレイ・切り札・ニューロ) |
 | TnxHud | `scripts/module/tnx-hud.mjs` | 常駐 HUD (**ApplicationV2**) |
 | TnxDialog | `scripts/module/tnx-dialog.mjs` | 各種ダイアログ (Promise ベース `prompt()`) |
-| 判定 | `tnx-judgment-engine.mjs` / `tnx-judgment-flow.mjs` / `tnx-judgment-dialog.mjs` / `tnx-rl-request-app.mjs` | 達成値計算・判定フロー・ダイアログ・RL 要求 (フェーズ7-8) |
+| 判定 | `tnx-check-engine.mjs` / `tnx-check-flow.mjs` / `tnx-check-dialog.mjs` / `tnx-rl-request-app.mjs` | 達成値計算・判定フロー・ダイアログ・RL 要求 (フェーズ7-8) |
 | usage 編集 | `tnx-usage-sheet.mjs` | 用途シート (ApplicationV2、フェーズ8) |
 | コンディション | `conditions.mjs` / `condition-resolution.mjs` / `condition-resolution-core.mjs` | BS・戦闘不能の AE 表現・カードドロー解決 (フェーズ9-4) |
 | ダメージチャート | `damage-chart.mjs` / `damage-chart-text-app.mjs` | チャート定義・効果文設定アプリ (フェーズ9-4) |
@@ -43,7 +43,7 @@
 
 ## ready フック
 
-`ready` で HUD 生成（`TnxHud`）、判定フローのダイアログ注入（`game.tnx.judgment`）、ソケット受信登録（`TnxSocketHandler.onMessage`）を行い、以下を登録する。
+`ready` で HUD 生成（`TnxHud`）、判定フローのダイアログ注入（`game.tnx.check`）、ソケット受信登録（`TnxSocketHandler.onMessage`）を行い、以下を登録する。
 
 | フック | 処理 |
 |---|---|

@@ -133,5 +133,5 @@ CS＝プレアクト決定・CSカレント＝セットアップ末決定）。*
 ## 参照
 
 - [Damage_Rules.md](Damage_Rules.md) — メジャーアクションでのダメージ算出
-- [Judgment_Rules.md](Judgment_Rules.md) — 命中判定・対決・制御値
+- [Check_Rules.md](Check_Rules.md) — 命中判定・対決・制御値
 - [Character_Creation.md](Character_Creation.md) — 能力値（CS の素となる理性/感情/生命）
