@@ -16,26 +16,31 @@
 
 | フィールド | 型 | 備考 |
 |---|---|---|
-| isPrepared | BooleanField | 準備済み（即使用可能） |
+| isPrepared | BooleanField | 準備済み（＝部位への装備。即使用可能） |
 | isCarrying | BooleanField | 携帯中（アクトに持参） |
 | isCyber | BooleanField | サイバーウェア |
 | `isPre-play` | BooleanField | プレアクト購入 |
-| isOption | BooleanField | 別アウトフィットに装備するオプション品 |
+| isCheckAcquired | BooleanField | 判定取得 |
+| isOption | BooleanField | （残置）オプション判定はフェーズ10 で部位行 `kind=option` から派生する方式へ吸収 |
 | isConsumption | BooleanField | 消費アイテム |
+| noPrepareRequired | BooleanField | 準備不要で使用可の例外（部位「-」品など・2026-06-26） |
+| fromStyleSkillKey | StringField | スタイル技能由来マーク（フェーズ10-2・自動取得の重複防止。プレフィックス照合） |
+| isMutantOrgan / isShiki / shikiType | Boolean/String | 特性フラグ（フェーズ10-2）: 変異器官・式神装備（タイプ= attack/defense/drive/independent） |
+| isDerivedData / hasDerivedData / derivedDataRefs | Boolean/Array | 派生データ（フェーズ10-2）: 本体＝常備化経験点を消費しない／派生元＝取得時に `derivedDataRefs`（uuid+name）から自動生成 |
 | quantity | SchemaField | `{value, max}` — 消費アイテムの現在/最大個数 |
 | buy | SchemaField | `{mode: none/value/reference, value}` — 購入値 |
 | preserveExp | SchemaField | `{mode: none/value, value}` — 常備化経験点 |
 | hide | SchemaField | `{mode: none/value/reference/control, value}` — 隠匿値 |
 | appearancePenalty | SchemaField | `{mode: none/value, value}` — 危険値 |
-| hack | NumberField | 電脳制御値（nullable。null = なし） |
+| hack | SchemaField | `{mode: none/value, value}` — 電脳制御値 |
 | timing | SchemaField | `{value, actionName, processName, timingOther}` — タイミング単一（6-3 で配列から変更） |
-| exclusive | StringField | 専用（自由記述） |
-| part | ArrayField | `[{value, slots}]` — 装備部位（複数可） |
-| uses | SchemaField | `{type, isLimit, max, value}` — 使用回数 |
+| exclusive | ArrayField | 専用（フェーズ10-2 で自由記述→**辞典参照の配列** `{type: style/organization, key}` へ。指定のみで enforcement なし） |
+| part | ArrayField | 部位行（フェーズ10-1 で種別ベースへ拡張）: `{kind: none/bodyPart/option/reference/other, value, slots, hostMajor, hostMinor, hostMinorExclude, hostFeature, hostName, refSubKind}`。兄弟フィールド `partRelation`（and/or）・`partOrChoice`（or 時の占有行）・`partOptional`（部位全体に効く任意フラグ・占有非カウント） |
+| uses | SchemaField | `{isLimit, type, max, spent}` — 使用回数（spent=消費済み・D&D 方式） |
 | majorCategory | StringField | 大分類（choices 付き）|
 | minorCategory | StringField | 小分類（choices 付き、大分類と Item type で絞込） |
 | identificationKey | StringField | 識別キー（全アイテム型共通） |
-| parentSlotKind | StringField | 親アウトフィットのスロット種別（オプション品用） |
+| parentItemId / parentSlotKind | StringField | 親アウトフィットの ID／スロット種別（オプション品用） |
 | combineGroupId | StringField | コンバイン連携グループ ID |
 
 > `isBiological` はフェーズ6-4 で削除済み。生体装備はカテゴリ「生体装備」で識別。
@@ -47,16 +52,16 @@
 | **style** | base | isPersona, isKey, level(1-3), miracle, reason/passion/life/mundane (value/control) |
 | **miracle** | base + usage | furigana, usageCondition, isKill/Defence/All/Used, usageCount |
 | **generalSkill** | base + usage + skillBase | generalSkillCategory, initialSkill, onomasticSkill |
-| **styleSkill** | base + usage + skillBase | unique, style, comboSkill[], timing[], target, range, confrontation[], uses, special/performance/secret/mystery |
-| **weapon** | base + outfitBase + extensible | attack `{damageType, value}`, guardValue `{mode,value}`, range `{min,max}` |
+| **styleSkill** | base + usage + skillBase | unique, style, comboSkill[], timing[], target, range, confrontation[], uses, special/performance/secret/mystery, 自動取得（フェーズ10-2: acquiresOutfit, autoAcquireItems[], autoAcquireActors[], weaponUseMandatory）, 取得・経験点（フェーズ10-3: expFree, excludeFromCount, levelRef `{enabled, key}`） |
+| **weapon** | base + outfitBase + extensible | attack `{damageType, value}`, guardValue `{mode,value}`, range `{min,max}`, **isFleshChange**（生身変更装備・フェーズ10-6） |
 | **armor** | base + outfitBase | defence `{mode,S_defence,P_defence,I_defence}`, controlMod `{mode,value}` |
 | **ianus** | base + outfitBase + extensible | controlMod `{mode,value}` |
 | **cyborg** | base + outfitBase | defence, attack `{damageType, value}`, guardValue `{mode,value}` |
 | **tron** | base + outfitBase + extensible | なし |
-| **tap** | base + outfitBase + extensible | cycle `{mode,value}`, combatSpeedMod `{mode,value}` |
+| **tap** | base + outfitBase + extensible | cycle `{mode,value}`, combatSpeedMod `{mode,value}`, **combatSpeedModGhostIgnore**（ゴースト時無視・フェーズ10-5） |
 | **vehicle** | base + outfitBase + extensible | speedFactor `{mode,value}`, passenger `{mode,value}`, controlMod `{mode,value}`, attack, defence |
-| **residence** | base + outfitBase + extensible | appearanceTarget, cyberSecurity, useHousingAreaDrop |
-| **housingArea** | base | area（セキュリティランク）, buyRatingMod, preserveExpMod, slotMod, *Mod 群（hideMod は廃止） |
+| **residence** | base + outfitBase + extensible | appearanceTarget, cyberSecurity, analogSecurity, housingArea（UUID・エリアランクをバッジ表示＝フェーズ10-4）, useHousingAreaDrop |
+| **housingArea** | base | area（セキュリティランク: なし/レッド/**イエロー**(10-4追加)/グリーン/ホワイト/サンクチュアリ）, buyRatingMod, preserveExpMod, slotMod, *Mod 群（hideMod は廃止） |
 | **combiner** | base + outfitBase | combine `{source1, source2, appearance, params}`, isCombineActive, combatSpeedMod |
 | **general** | base + outfitBase | なし |
 | **organization** | base | なし |
@@ -101,6 +106,7 @@ kind 6 種（`SLOT_KINDS`、`scripts/data/item/common/extensible.mjs`）：`norm
 - `defenceField()` — armor/cyborg/vehicle 共用
 - `attackField()` — weapon/cyborg 共用
 - `modeValueField(choices?)` — `{mode,value}` SchemaField（全アウトフィット型で共用）
+- 部位まわりの純関数は `scripts/data/item/part-helpers.mjs`（フェーズ10-1）: `computePartOccupancy` / `computeHostOccupancy` / `formatPartDesignation` / `joinPartDesignations`（コンバイン併記は「部位1+部位2」）等
 
 ## 参照
 

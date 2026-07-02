@@ -62,6 +62,7 @@
 | B-0〜B-9 | DataModel 移行全サブフェーズ |
 | フェーズ1-0/1/2 | v13 UI 対応 |
 | 2-0〜2-2 | User 移行 |
+| フェーズ3〜10 | 各フェーズの実装エントリ（本ファイル後半とDesign_Review_Entries に対で追記。最新はフェーズ10-1〜10-6） |
 
 詳細: [Design_Review_Entries.md](Design_Review_Entries.md)
 
@@ -1254,9 +1255,9 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 #### 課題・申し送り
 
-- 派生データ（武器＋タップ等のマルチ種別）・変異器官フラグは 10-2（取得時自動取得）へ合流。
+- 派生データ（武器＋タップ等のマルチ種別）・変異器官フラグは 10-2（取得時自動取得）へ合流。→ **10-2 で実装済**
 - 任意の部位名/消費数の記録の細部・両手持ち等の体部位表記マッピングは部位表示 UI 完成時に確定。
-- 戦闘タブ表示内容は 10-6（ユーザー言語化待ち）。
+- 戦闘タブ表示内容は 10-6（ユーザー言語化待ち）。→ **10-6 で実装済**
 
 ---
 
@@ -1264,7 +1265,7 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 **日付**: 2026-06-29
 **関連実装**: `scripts/module/skill-dictionary.mjs`（辞典ローダ・カスケード・カテゴリ全体トークン・comboSkill 名逆引き）、`scripts/module/skill-chain-resolution.mjs`（技能チェーン解決・必須/候補/ロック判定の純関数）、`scripts/module/style-skill-acquisition.mjs`（インポート時自動取得）、`scripts/data/item/style-skill.mjs`（comboSkill/confrontation のカスケード化・usesBounty/noCombo・自動取得・代用フィールド）、`scripts/item/tnx-style-skill-sheet.mjs`＋`templates/item/style-skill-sheet.hbs`（技能/対決の別セクション・カスケードUI）、`scripts/module/tnx-usage-sheet.mjs`＋`templates/app/usage-sheet-combo.hbs`（用途設定時の解決・個数制限・トリムダイアログ）、`scripts/actor/tnx-cast-sheet.mjs`＋`scripts/item/item.mjs`（ロール挙動・用途不備検知）。正本 [Usage_System.md](../01_Wiki/Game_Mechanics/Usage_System.md)・[Judgment_Rules.md](../01_Wiki/Game_Rules/Judgment_Rules.md)
-**ステータス**: ✅ 実装完了（純関数層はテスト済み・全テスト green）。実機確認はユーザーが逐次実施中
+**ステータス**: ✅ 実装完了・実機レビュー済（2026-07-02・問題なし。具体データ依存の項目は未検証のまま持ち越し）
 
 #### ルール解釈（ユーザー裁定 2026-06-28〜29）
 
@@ -1285,15 +1286,15 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 #### 課題・申し送り
 
-- 用途エディタの enforcement はレンダリング後に冪等で走り収束する設計。実機での収束（無限レンダリング無し）は要確認。
-- トリムダイアログのインタラクティブなロック再計算（DialogV2 actions）は engine 未検証。
-- 10-3（経験点消費なし取得・取得数表示・レベル自動参照）は未着手。
+- 用途エディタの enforcement はレンダリング後に冪等で走り収束する設計。実機での収束（無限レンダリング無し）は要確認。→ **実機レビューで問題なし（2026-07-02）**
+- トリムダイアログのインタラクティブなロック再計算（DialogV2 actions）は engine 未検証。→ 実機レビュー対象に含む（具体データ依存の細部は持ち越し）
+- 10-3（経験点消費なし取得・取得数表示・レベル自動参照）は未着手。→ **10-3 で実装済**
 
 ### 派生データ・変異器官・式神装備フラグ／専用の辞典参照化／部位プリセット並び見直し（フェーズ10-2 後追い）
 
 **日付**: 2026-06-29
 **関連実装**: `scripts/data/item/common/outfit-base.mjs`（`isMutantOrgan`/`isShiki`/`shikiType`/`isDerivedData`/`hasDerivedData`/`derivedDataRefs`＋`SHIKI_TYPES`）、`scripts/data/item/part-helpers.mjs`（`PART_HOST_FEATURE_LABELS` に `isMutantOrgan`）、`scripts/item/tnx-outfit-sheet.mjs`＋`templates/item/outfit-sheet.hbs`（特性セクション・式神タイプ・派生データ参照UI・説明タブのタイプ表示）、`scripts/module/style-skill-acquisition.mjs`（`autoImportDerivedData`）、`scripts/tnx.mjs`（`createItem` フック）、`scripts/actor/tnx-cast-sheet.mjs`（経験点集計の `isDerivedData` 除外）、`scripts/module/part-slot-preset-app.mjs`（`DEFAULT_PART_SLOT_PRESET` 並び）。正本 [Outfits.md](../01_Wiki/Game_Rules/Outfits.md)
-**ステータス**: ✅ 実装完了（全テスト green）。新規 UI は engine 未検証
+**ステータス**: ✅ 実装完了・実機レビュー済（2026-07-02・問題なし。派生データ等の具体データ依存項目は未検証のまま持ち越し）
 
 #### ルール解釈（ユーザー裁定 2026-06-29）
 
@@ -1317,7 +1318,7 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 **日付**: 2026-06-30
 **関連実装**: `scripts/data/item/style-skill.mjs`（`expFree`/`excludeFromCount`/`levelRef{enabled,key}`＋`prepareDerivedData` でレベル参照を派生上書き）、`scripts/module/style-skill-acquisition.mjs`（純関数 `resolveLevelRef`/`groupStyleSkillsByStyle`）、`scripts/item/tnx-style-skill-sheet.mjs`＋`templates/item/style-skill-sheet.hbs`（取得・経験点 UI・アクター上は参照先ドロップダウン・レベル入力欄の無効化）、`scripts/actor/tnx-cast-sheet.mjs`（EXP 集計・レベル変更コストの 0 化・suit↔level 連動ガード・スタイル別グループ化）＋`templates/actor/cast-sheet.hbs`（スタイル技能をスタイル別グループ化し各群見出しに取得数・インラインレベル入力の無効化）＋`css/tnx2.css`（`.style-skill-group-header`）。正本 [Character_Creation.md](../01_Wiki/Game_Rules/Character_Creation.md)
-**ステータス**: ✅ 実装完了（純関数層テスト済み・全テスト green 967）。新規 UI は engine 未検証
+**ステータス**: ✅ 実装完了（純関数層テスト済み・全テスト green 967）・実機レビュー済（2026-07-02・問題なし）
 
 #### ルール解釈（ユーザー裁定 2026-06-25／補正 2026-06-30）
 
@@ -1335,13 +1336,13 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 #### 課題・申し送り
 
 - レベル参照の**連鎖（A→B→A 等）**は想定外。`resolveLevelRef` は参照先の base レベルを読むため循環でも無限ループはしないが、確定値は準備順依存になりうる。実運用では連鎖しない規約。
-- 新規 UI（取得・経験点の各チェック・参照先ドロップダウン/識別キー入力・レベル入力欄の無効化・取得数バッジ）は engine 未検証＝実機確認待ち。
+- 新規 UI（取得・経験点の各チェック・参照先ドロップダウン/識別キー入力・レベル入力欄の無効化・取得数バッジ）は engine 未検証＝実機確認待ち。→ **実機レビュー済（2026-07-02・問題なし）**
 
 ### 住宅アウトフィットのエリア表示（フェーズ10-4）
 
 **日付**: 2026-07-01
 **関連実装**: `scripts/actor/tnx-cast-sheet.mjs`（`_resolveHousingAreaMods` の戻り値に `area` を追加・`_prepareOutfitRow` で `housingAreaRank{key,label}` を付与）＋`templates/actor/cast-sheet.hbs`（アウトフィットタブの住宅施設名の横にランクバッジ）＋`css/tnx2.css`（`.outfit-area-badge`）。正本 [Outfits.md](../01_Wiki/Game_Rules/Outfits.md)「住宅施設（residence）・住宅エリア（housingArea）」
-**ステータス**: ✅ 実装完了（全テスト green 968・lint clean）。実機未検証
+**ステータス**: ✅ 実装完了（全テスト green 968・lint clean）・実機レビュー済（2026-07-02・問題なし。追補修正5点を含む）
 
 #### ルール解釈（既確定 2026-06-13）
 
@@ -1356,18 +1357,24 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 #### 課題・申し送り
 
-- バッジ表示・色分け（レッド/イエロー/グリーン/ホワイト/サンクチュアリ/なし）は engine 未検証。
+- バッジ表示・色分け（レッド/イエロー/グリーン/ホワイト/サンクチュアリ/なし）は engine 未検証。→ **実機レビュー済（2026-07-02・問題なし）**
 - 実効値（住宅施設＋エリア供給値）の算出表示は既存（フェーズ6-6）。
 
 #### 追補修正（2026-07-01・実機フィードバック5点）
 
 1. **イエローとサンクチュアリのバッジ色が同色**→ イエロー `#ffe24d`（明レモン）／サンクチュアリ `#d4af37`（メタリックゴールド）に差別化。
+2. **住宅エリア辞典ドロップダウンの順がバラバラ**→ `_housingAreaChoices` を**エリア（セキュリティ・ランク）順**に並べる（`getIndex({fields:["system.area"]})` でランク取得）。順番＝**レッド→イエロー→グリーン→ホワイト→サンクチュアリ→なし**。**「なし」は治安が悪いのでなくセキュリティの概念の外（たどり着けない/認識されない）エリアのため別枠で最下部**（ユーザー確定 2026-07-01）。**同ランク内は辞典内の元順を保持**（安定ソート＝名前順にはしない）。当初の名前ソートは撤回。
+3. **住宅を装着する部位が無い**→ `DEFAULT_PART_SLOT_PRESET` の外付け系（護符/結界/操縦）に **`住宅`** を追加。※既存ワールドはプリセット編集 UI で再適用が必要。
+4. **住宅施設アイテムシートのヘッダーに携帯トグルが残っていた**→ ヘッダー注入トグルを `type === "residence"` で `isCarrying` のみ除外（キャストシートと一致）。
+5. **住宅エリアの常備化経験点修正が実 EXP 消費に未反映**（メカニクス監査）→ `updateCastExp` の item コスト集計で、住宅施設の計上時に**住宅エリアの `preserveExpMod` を実効常備化経験点へ加味**（実効値=基本+エリア修正・0clamp。購入判定/派生/preserveExp≠value は非加味）。これに伴い `_resolveHousingAreaMods` を **static 化**し、`_prepareOutfitRow`（実効値・バッジ）と `updateCastExp`（EXP）で共有。住宅エリアが供給する修正値（購入値/常備化経験点/…）のうち常備化経験点が EXP 計算へ流れるのは正本 [Outfits.md](../01_Wiki/Game_Rules/Outfits.md) の「住宅エリアの持つ修正値」どおり。全テスト green(968)・lint clean。
+
+> ※上記 2〜5 と 10-5 の課題・申し送りは記録挿入ミスでファイル末尾（10-6 の後ろ）に紛れていたのを 10-8 通読時に本来の位置へ復元（2026-07-02）。
 
 ### コンバットスピード 3層パイプラインと入力 UI（フェーズ10-5・KI-010 解消）
 
 **日付**: 2026-07-02
 **関連実装**: `scripts/data/helpers.mjs`（`combatSpeedField` 3層化＝mod 削除・`computeOutfitAggregates` フラグ駆動）、`scripts/data/item/tap.mjs`（`combatSpeedModGhostIgnore`）、`scripts/data/item/helpers.mjs`（`parseEffectTargetKey` に cs 名前空間）、`scripts/data/actor/cast.mjs`（`_prepareCombatSpeedTotals`・cs 着地・cs.base 準備ゲート）、`scripts/data/actor/common/attributes.mjs`（素の実効値フォールバック）、`scripts/actor/tnx-cast-sheet.mjs`＋`templates/actor/cast-sheet.hbs`（戦闘タブ CS ブロック・プレアクト初期化）、`scripts/item/tnx-outfit-sheet.mjs`＋`templates/item/outfit-sheet.hbs`（タップのフラグ UI・（）表記）、`system.json`（initiative）。正本 [Combat_Flow.md](../01_Wiki/Game_Rules/Combat_Flow.md)・[Outfits.md](../01_Wiki/Game_Rules/Outfits.md)「タップの CS 修正」・[Active_Effects.md](../01_Wiki/Game_Mechanics/Active_Effects.md) 大原則5/6
-**ステータス**: ✅ 実装完了（全テスト green 973・lint clean）。新規 UI・AE 配線は engine 未検証
+**ステータス**: ✅ 実装完了（全テスト green 973・lint clean）・実機レビュー済（2026-07-02・問題なし。**AE 配線は具体データ未整備で未検証のまま持ち越し**）
 
 #### ルール解釈（2026-07-02 の言語化セッションで確定）
 
@@ -1383,11 +1390,18 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 ✅ 3層の決定タイミング・非再計算・読み飛ばしの各裁定に逐条準拠。プレアクト初期化は base（能力値項）と value（CS）を同時セットし、ライブ修正項は保って写す。`computeOutfitAggregates`（純関数・テスト済）がフラグ別に通常分/読み飛ばし可能分を分離。パラメータは直接読み取り（大原則5）・AE は cs.\* の3層着地（大原則6）で表現系統を分離。
 
+#### 課題・申し送り
+
+- CSカレントのカット中自動管理（セットアップ末決定・メジャー後0・待機1）＝フェーズ13。initiative のカレント切替も13。
+- extra は combatSpeed を持たず initiative 不可（従前どおり）。guest/troop はフォールバックで式解決可（本格対応は11）。
+- 『CS：0（+1）』の例外タップは機械化せず手動/AE（既裁定）。
+- cs.base の準備ゲートは **AE 着地の中で唯一の特例**。他の着地先への一般化は解説効果全体の扱いに波及するため見送り（必要になったら別途設計）。
+
 ### 戦闘タブ本体（武器・防具・状態・タイミング別一覧）（フェーズ10-6）
 
 **日付**: 2026-07-02
 **関連実装**: `scripts/data/actor/cast.mjs`（`weaponRefs`）、`scripts/actor/tnx-cast-sheet.mjs`（`_prepareCombatData`・`declareWeaponRef`）、`templates/actor/cast-sheet.hbs`（戦闘タブ）、`css/tnx2.css`。正本 [Outfits.md](../01_Wiki/Game_Rules/Outfits.md)「生身・パラメータの適用宣言・携帯/準備の適用範囲」・[Combat_Flow.md](../01_Wiki/Game_Rules/Combat_Flow.md)・[Damage_Rules.md](../01_Wiki/Game_Rules/Damage_Rules.md)
-**ステータス**: ✅ 実装完了（全テスト green 977・lint clean）。レイアウトはユーザーレビュー待ち・engine 未検証
+**ステータス**: ✅ 実装完了（全テスト green 977・lint clean）・実機レビュー済（2026-07-02・問題なし。生身変更装備・義体の実データ検証はフェーズ12 へ持ち越し）
 
 #### ルール解釈（2026-07-02 の言語化・同日の数回の是正を経た確定仕様）
 
@@ -1405,16 +1419,5 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 - **未実装（裁定待ち/後続）**: 生身変更装備の識別と「同時準備でも適用は一種類のみ」の表現／全身義体の置き換え（生身の完全置換）によるキャラ実効攻/受/防の派生——12 のダメージ算出と併せて設計。防御合計は複数義体を単純合算しており「一種のみ」の厳密化も12で。
 - 宣言の妥当性チェック（未準備武器の宣言残り等）は非強制のまま（無効な宣言は解決時に読み飛ばし、候補1つなら自動参照にフォールバック）。
-- レイアウトの最終確定はユーザーの実機レビューで行う。
+- レイアウトの最終確定はユーザーの実機レビューで行う。→ **実機レビュー済・確定（2026-07-02）**
 - **監査上の反省**: 初版は「武器/防具の一覧」「カットの流れの可視化」を実装した——前者は誤記録（KI 相当の承認偽装記録）由来の安易な読み、後者は要望（分類再表示）の取り違え。表示要素はルールとユーザーの言葉から導出し、ジャンル慣習から持ち込まない。
-
-#### 課題・申し送り（10-5）
-
-- CSカレントのカット中自動管理（セットアップ末決定・メジャー後0・待機1）＝フェーズ13。initiative のカレント切替も13。
-- extra は combatSpeed を持たず initiative 不可（従前どおり）。guest/troop はフォールバックで式解決可（本格対応は11）。
-- 『CS：0（+1）』の例外タップは機械化せず手動/AE（既裁定）。
-- cs.base の準備ゲートは **AE 着地の中で唯一の特例**。他の着地先への一般化は解説効果全体の扱いに波及するため見送り（必要になったら別途設計）。
-2. **住宅エリア辞典ドロップダウンの順がバラバラ**→ `_housingAreaChoices` を**エリア（セキュリティ・ランク）順**に並べる（`getIndex({fields:["system.area"]})` でランク取得）。順番＝**レッド→イエロー→グリーン→ホワイト→サンクチュアリ→なし**。**「なし」は治安が悪いのでなくセキュリティの概念の外（たどり着けない/認識されない）エリアのため別枠で最下部**（ユーザー確定 2026-07-01）。**同ランク内は辞典内の元順を保持**（安定ソート＝名前順にはしない）。当初の名前ソートは撤回。
-3. **住宅を装着する部位が無い**→ `DEFAULT_PART_SLOT_PRESET` の外付け系（護符/結界/操縦）に **`住宅`** を追加。※既存ワールドはプリセット編集 UI で再適用が必要。
-4. **住宅施設アイテムシートのヘッダーに携帯トグルが残っていた**→ ヘッダー注入トグルを `type === "residence"` で `isCarrying` のみ除外（キャストシートと一致）。
-5. **住宅エリアの常備化経験点修正が実 EXP 消費に未反映**（メカニクス監査）→ `updateCastExp` の item コスト集計で、住宅施設の計上時に**住宅エリアの `preserveExpMod` を実効常備化経験点へ加味**（実効値=基本+エリア修正・0clamp。購入判定/派生/preserveExp≠value は非加味）。これに伴い `_resolveHousingAreaMods` を **static 化**し、`_prepareOutfitRow`（実効値・バッジ）と `updateCastExp`（EXP）で共有。住宅エリアが供給する修正値（購入値/常備化経験点/…）のうち常備化経験点が EXP 計算へ流れるのは正本 [Outfits.md](../01_Wiki/Game_Rules/Outfits.md) の「住宅エリアの持つ修正値」どおり。全テスト green(968)・lint clean。実機未検証。

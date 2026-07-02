@@ -204,6 +204,7 @@ PLが目標値を手入力するフローは採用しない（Foundry VTT のデ
 
 組み合わせ判定のボーナス集計は ActiveEffect Phase 完了後に実装。
 Phase 8 では基本判定メカニクス（カード選択・達成値計算・チャット投稿）を先に整備する。
+→ **フェーズ9-3 v2 の判定バフ（`check.*`/`controlCheck.*` 着地）で実装済み**（[Active_Effects.md](Active_Effects.md)）。なお組み合わせの**解決**（ベース/コンボの確定・個数制限）はフェーズ10-2 で用途設定時に確定する方式になった（判定起動時は保存済みの `baseSkillRef`/`skillRefs` を読むのみ・[Usage_System.md](Usage_System.md)）。
 
 ## usage `actions[]` DataModel（フェーズ8 実装確定 2026-06-17）
 

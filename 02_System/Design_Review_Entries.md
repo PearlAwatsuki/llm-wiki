@@ -2800,7 +2800,7 @@ armor / cyborg / tap / vehicle / ianus / weapon / housing-area / residence)、
 ### 技能の組み合わせ解決・用途エディタの自動構成（フェーズ10-2＋判定）
 
 **レビュー対象**: `skill-chain-resolution.mjs`（純関数）、`skill-dictionary.mjs`（辞典ローダ）、`tnx-usage-sheet.mjs`（用途設定時の解決 enforcement・個数制限・トリムダイアログ）、`tnx-skill-utils.mjs`（comboSkill 表示逆引き）、`tnx-style-skill-sheet.mjs`/`style-skill-sheet.hbs`（カスケードUI・対決分離）、`tnx-cast-sheet.mjs`/`item.mjs`（ロール挙動・用途不備検知）、`style-skill-acquisition.mjs`（自動取得）
-**ステータス**: ✅ 実装完了（純関数層テスト済み）。用途エディタの一部 UI（render時 enforcement・DialogV2 トリム）は実機未検証
+**ステータス**: ✅ 実装完了（純関数層テスト済み）・実機レビュー済（2026-07-02・問題なし＝enforcement 収束も確認。具体データ依存の細部は未検証のまま持ち越し）
 
 #### 良かった点
 
@@ -2824,7 +2824,7 @@ armor / cyborg / tap / vehicle / ianus / weapon / housing-area / residence)、
 ### 派生データ・変異器官・式神装備フラグ／専用の辞典参照化／部位プリセット並び見直し（フェーズ10-2 後追い）
 
 **レビュー対象**: `outfit-base.mjs`（フラグ群＋`SHIKI_TYPES`）、`part-helpers.mjs`（`PART_HOST_FEATURE_LABELS`）、`tnx-outfit-sheet.mjs`/`outfit-sheet.hbs`（特性セクション・派生データ参照UI）、`style-skill-acquisition.mjs`（`autoImportDerivedData`）、`tnx.mjs`（`createItem` フック）、`tnx-cast-sheet.mjs`（経験点除外）、`part-slot-preset-app.mjs`（並び）
-**ステータス**: ✅ 実装完了（全テスト green・eslint 0 error）。新規 UI は実機未検証
+**ステータス**: ✅ 実装完了（全テスト green・eslint 0 error）・実機レビュー済（2026-07-02・問題なし。派生データ等の具体データ依存項目は未検証のまま持ち越し）
 
 #### 良かった点
 
@@ -2848,7 +2848,7 @@ armor / cyborg / tap / vehicle / ianus / weapon / housing-area / residence)、
 ### スタイル技能の取得・経験点（経験点消費なし／取得数表示／レベル自動参照）（フェーズ10-3）
 
 **レビュー対象**: `style-skill.mjs`（`expFree`/`excludeFromCount`/`levelRef`＋`prepareDerivedData`）、`style-skill-acquisition.mjs`（純関数 `resolveLevelRef`/`groupStyleSkillsByStyle`）、`tnx-style-skill-sheet.mjs`/`style-skill-sheet.hbs`（取得・経験点UI）、`tnx-cast-sheet.mjs`/`cast-sheet.hbs`（EXP・連動ガード・スタイル別グループ化＋取得数見出し）、`tnx2.css`（`.style-skill-group-header`）
-**ステータス**: ✅ 実装完了（全テスト green 967・eslint 0 error・stylelint clean）。新規 UI は実機未検証
+**ステータス**: ✅ 実装完了（全テスト green 967・eslint 0 error・stylelint clean）・実機レビュー済（2026-07-02・問題なし）
 
 #### 良かった点
 
@@ -2865,15 +2865,15 @@ armor / cyborg / tap / vehicle / ianus / weapon / housing-area / residence)、
 
 #### 推奨アクション
 
-- 実機で「経験点消費なし」「取得数に含まない（種別別ラベル）」「他スタイル技能のレベルを参照（辞典＝識別キー／アクター＝ドロップダウン）」と、レベル上書き・EXP/取得数の二重計上回避・suit 手動選択を確認。
-- 残: 10-4 住宅エリア表示 → 10-5 combatSpeed UI（KI-010）→ 10-6 戦闘タブ（要 layout 言語化）→ 10-7 棚卸し → 10-8 仕上げ（v0.10.0）。
+- ~~実機で「経験点消費なし」「取得数に含まない（種別別ラベル）」「他スタイル技能のレベルを参照（辞典＝識別キー／アクター＝ドロップダウン）」と、レベル上書き・EXP/取得数の二重計上回避・suit 手動選択を確認~~ → **実機レビュー済（2026-07-02・問題なし）**。
+- ~~残: 10-4 住宅エリア表示 → 10-5 combatSpeed UI（KI-010）→ 10-6 戦闘タブ（要 layout 言語化）→ 10-7 棚卸し → 10-8 仕上げ（v0.10.0）~~ → **フェーズ10 完了（v0.10.0・2026-07-02）**。
 
-**追記（2026-07-01・設定タブの再分類）**: ユーザー指摘「詳細設定にチェックが集中しすぎ／ヘルプ(ⓘ)有無で行が不揃い」を受け、`style-skill-sheet.hbs` の `setting` タブを**関心別フィールドセットへ再分類**: 分類（種別/スタイル/特別な/上限）・発動（タイミング/対象/射程/目標値/使用回数）・特技専用（`{{#if special}}` で gate＝ワークス/代用/書き換え）・取得・経験点（取得と同時に/経験点消費なし/取得数に含まない/レベル参照）。上3トグル（アクション/報酬点/組み合わせ不可）は1行で崩れていないため上部に据置。**ブロックの深い移動はせず**、既存の連続境界にフィールドセット境界を挿入＋特技 special 群を自前 fieldset で包む（`name`/`data-*`/ハンドラ不変＝挙動リスク無し）。**不揃いの根因**は、`tnx-form-field > .form-group` の grid（`130px 1fr`）が `:has(checkbox)` の flex 規則より display を勝ち取り**ラベル列 130px 固定→長い和文ラベルが折返し**だった点。`.tokyo-nova.sheet.item.skill` スコープで toggle 行のみ `grid-template-columns: 1fr auto` に上書きし、ラベル可変・チェック右端で折返し解消（[[feedback-css-scoped-changes]]）。stylelint clean・全テスト green(968)。実機未検証。
+**追記（2026-07-01・設定タブの再分類）**: ユーザー指摘「詳細設定にチェックが集中しすぎ／ヘルプ(ⓘ)有無で行が不揃い」を受け、`style-skill-sheet.hbs` の `setting` タブを**関心別フィールドセットへ再分類**: 分類（種別/スタイル/特別な/上限）・発動（タイミング/対象/射程/目標値/使用回数）・特技専用（`{{#if special}}` で gate＝ワークス/代用/書き換え）・取得・経験点（取得と同時に/経験点消費なし/取得数に含まない/レベル参照）。上3トグル（アクション/報酬点/組み合わせ不可）は1行で崩れていないため上部に据置。**ブロックの深い移動はせず**、既存の連続境界にフィールドセット境界を挿入＋特技 special 群を自前 fieldset で包む（`name`/`data-*`/ハンドラ不変＝挙動リスク無し）。**不揃いの根因**は、`tnx-form-field > .form-group` の grid（`130px 1fr`）が `:has(checkbox)` の flex 規則より display を勝ち取り**ラベル列 130px 固定→長い和文ラベルが折返し**だった点。`.tokyo-nova.sheet.item.skill` スコープで toggle 行のみ `grid-template-columns: 1fr auto` に上書きし、ラベル可変・チェック右端で折返し解消（[[feedback-css-scoped-changes]]）。stylelint clean・全テスト green(968)。実機レビュー済（2026-07-02・問題なし）。
 
 ### コンバットスピード 3層パイプラインと入力 UI（フェーズ10-5・KI-010）
 
 **レビュー対象**: `helpers.mjs`（`combatSpeedField`/`computeOutfitAggregates`）、`tap.mjs`、`item/helpers.mjs`（cs 名前空間）、`cast.mjs`（CS 派生・AE 着地・準備ゲート）、`attributes.mjs`（フォールバック）、`tnx-cast-sheet.mjs`/`cast-sheet.hbs`（戦闘タブ）、`tnx-outfit-sheet.mjs`/`outfit-sheet.hbs`、`system.json`、`tnx2.css`
-**ステータス**: ✅ 実装完了（全テスト green 973・eslint 0 error・stylelint clean）。実機未検証
+**ステータス**: ✅ 実装完了（全テスト green 973・eslint 0 error・stylelint clean）・実機レビュー済（2026-07-02・問題なし。AE 配線は具体データ未整備で未検証のまま持ち越し）
 
 #### 良かった点
 
@@ -2892,13 +2892,13 @@ armor / cyborg / tap / vehicle / ianus / weapon / housing-area / residence)、
 
 #### 推奨アクション
 
-- 実機確認: 戦闘タブの3層表示・プレアクト初期化（ボタン表示名「CSを決定」）・タップのフラグ（携帯起点/準備起点の切替とゴースト時の括弧表示・読み飛ばし）・AE `system.cs.base|value|current` の着地・initiative（コンバットトラッカー）。
-- 残: 10-7 棚卸し → 10-8 仕上げ（v0.10.0）。
+- ~~実機確認: 戦闘タブの3層表示・プレアクト初期化（ボタン表示名「CSを決定」）・タップのフラグ（携帯起点/準備起点の切替とゴースト時の括弧表示・読み飛ばし）・AE `system.cs.base|value|current` の着地・initiative（コンバットトラッカー）~~ → **実機レビュー済（2026-07-02・問題なし。AE 着地のみ具体データ未整備で持ち越し）**。
+- ~~残: 10-7 棚卸し → 10-8 仕上げ（v0.10.0）~~ → **フェーズ10 完了（v0.10.0・2026-07-02）**。
 
 ### 戦闘タブ本体（CS・参照中の武器・防御力・タイミング別再表示）（フェーズ10-6）
 
 **レビュー対象**: `cast.mjs`（`weaponRefs`）、`tnx-cast-sheet.mjs`（`_prepareCombatData`）、`cast-sheet.hbs`（戦闘タブ・全幅縦積み）、`tnx2.css`
-**ステータス**: ✅ 実装完了（全テスト green 977・eslint 0 error・stylelint clean）。**レイアウトはユーザーレビューで最終確定**・engine 未検証
+**ステータス**: ✅ 実装完了（全テスト green 977・eslint 0 error・stylelint clean）・**レイアウト実機レビュー済＝確定（2026-07-02・問題なし）**。生身変更装備・義体の実データ検証はフェーズ12 へ持ち越し
 
 #### 良かった点
 
@@ -2920,13 +2920,12 @@ armor / cyborg / tap / vehicle / ianus / weapon / housing-area / residence)、
 
 #### 推奨アクション
 
-- **ユーザーの実機レビューでレイアウトを確定**（2カラム構成・表の列幅・セクションの並びはすべて調整可能な暫定）。
-- 実機確認: 参照宣言トグルの切替/解除・防具合算・タイミング分類の振り分け・BS 表示と除去。
+- ~~ユーザーの実機レビューでレイアウトを確定~~ → **実機レビュー済・確定（2026-07-02）**。最終形は全幅縦積み（CS ボックス → 武器2行 → 防御力 → タイミング別）。初版記載の「2カラム」「BS 表示」は再設計で撤去済み（上記追記参照）。
 
 ### 住宅アウトフィットのエリア表示（フェーズ10-4）
 
 **レビュー対象**: `tnx-cast-sheet.mjs`（`_resolveHousingAreaMods` に `area` 追加・`_prepareOutfitRow` で `housingAreaRank` 付与）、`cast-sheet.hbs`（バッジ）、`tnx2.css`（`.outfit-area-badge`）
-**ステータス**: ✅ 実装完了（全テスト green 968・eslint 0 error・stylelint clean）。実機未検証
+**ステータス**: ✅ 実装完了（全テスト green 968・eslint 0 error・stylelint clean）・実機レビュー済（2026-07-02・問題なし。追補修正5点を含む）
 
 #### 良かった点
 
@@ -2941,5 +2940,5 @@ armor / cyborg / tap / vehicle / ianus / weapon / housing-area / residence)、
 
 #### 推奨アクション
 
-- 実機でランク別バッジ色・名前横配置・未設定時の非表示、および**辞典で紐づけた住宅施設の供給値（登/セ）が出ること**を確認。
-- 残: 10-5 combatSpeed UI（KI-010）→ 10-6 戦闘タブ（要 layout 言語化）→ 10-7 棚卸し → 10-8 仕上げ（v0.10.0）。
+- ~~実機でランク別バッジ色・名前横配置・未設定時の非表示、および辞典で紐づけた住宅施設の供給値（登/セ）が出ることを確認~~ → **実機レビュー済（2026-07-02・問題なし）**。
+- ~~残: 10-5 combatSpeed UI（KI-010）→ 10-6 戦闘タブ（要 layout 言語化）→ 10-7 棚卸し → 10-8 仕上げ（v0.10.0）~~ → **フェーズ10 完了（v0.10.0・2026-07-02）**。
