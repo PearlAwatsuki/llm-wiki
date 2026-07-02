@@ -160,7 +160,7 @@
 - HUD 両カラムの flex 統一と折りたたみ、アクセスカード提示システム、プレイヤー手札開示
 - ドロー表（コア RollTable 保持のフック注入方式。documentTypes に RollTable を追加してはならない教訓を記録）
 
-**移管**: シーンプレイヤー明示 → フェーズ11 / KI-010（combatSpeed UI）配置先未定で継続
+**移管**: シーンプレイヤー明示 → ~~フェーズ11~~ フェーズ14 以降（シーン/登場概念の実装後・2026-07-03 訂正） / KI-010（combatSpeed UI）配置先未定で継続
 
 詳細: [Phase_5_Tasks_Detail.md](Phase_5_Tasks_Detail.md)
 
