@@ -34,6 +34,7 @@
 
 - [Actor_Types.md](../Documents/Actor_Types.md) — 各 type の DataModel 現況（guest=固有フィールドなし / troop=memo+heads / extra=biography のみ）
 - [Terminology.md](../Game_Rules/Terminology.md) — トループ定義（スタイル1つ・神業不可・人数がHP・個性なし）
+- [Troops.md](../Game_Rules/Troops.md) — **トループ・トループ級キャラクターの正本**（2026-07-03 言語化: heads・エニグマポイント・分身・共通制約）
 - [Damage_Rules.md](../Game_Rules/Damage_Rules.md) — トループ級・エキストラのダメージ例外
 - [Character_Creation.md](../Game_Rules/Character_Creation.md) — トループ取得技能（〈分心〉→エニグマ、〈分身〉→分身。フェーズ10 で ID 関連付けまで実装済み）
 - [Check_System.md](../Game_Mechanics/Check_System.md) / [Check_Rules.md](../Game_Rules/Check_Rules.md) — 判定（判定フローはアクター型非依存であることをコードで確認済み）
@@ -52,12 +53,14 @@
 CLAUDE.md §2.2 に従い、ルールの言語化とデータ構造（追加フィールド）をここで確定し、まとめて承認を得る。
 
 - [ ] **guest の DataModel 追加フィールドの取捨**: cast 固有フィールドのうち guest にも要るもの（戦闘タブ・アウトフィットタブを持つ場合: `partSlots` / `baseAttack`・`baseDefence`・`baseGuard` / `weaponRefs` / `isGhost` / `appearanceModifier`・`outfitMod` 等）。ownerUserId・exp・history・bounty・lifePath は持たない（確定方針）。
-- [ ] **troop の本体・作成ルールの言語化**（ユーザー）: heads の決め方、スタイル1つ・神業不可、技能・アウトフィットの持ち方、能力値の扱い。wiki 正本は現状 Terminology の1行のみ → 言語化結果は Game_Rules に記録する。
-- [ ] **トループ級キャラクター（エニグマ・分身）の類型**と必要フィールド（エニグマ=エニグマポイント参照、分身=被ダメージ1点で消滅、等）。
+- [x] **troop の本体・作成ルールの言語化**（ユーザー・2026-07-03 受領）: [Troops.md](../Game_Rules/Troops.md) に記録。heads＝純粋な人数（敵対トループは RL 任意・取得技能由来は判定達成値）・**トループ側で自動化すべき点はない**。技能・アウトフィット・能力値の持ち方は残確認。
+- [x] **トループ級キャラクター（エニグマ・分身）の類型の言語化**（同上・Troops.md）: エニグマ＝エニグマポイントが HP 相当（達成値適用）、分身＝1点で消滅（ダメージ管理不要）・本体とほぼ同一データ・スタイル複数・AR=1 固定・CS/CSカレント=0 固定。全類型で神業不可・トループ取得技能使用不可。
+- [ ] **heads／エニグマポイント／分身固定値のデータ構造**への落とし込み（フィールド設計・一括承認対象）。
 - [ ] **extra のシート表現**: スタイル・神業・技能・アウトフィットを持てる（表示）。ダメージ概念なし。initiative 不可（combatSpeed 非保持）の扱い。
 - [ ] **ダメージ例外の 11/12 境界確定**（案: 11 は heads リソース＋手動増減 UI＋例外の器まで。攻撃フローからの自動適用はフェーズ12 で配線）。
 - [ ] **キャスト共通部品化の設計**: cast-sheet.hbs（848行）の partial 分割と、共有基底クラスの範囲（tnx-cast-sheet.mjs は約2,500行）。
-- [ ] **トループ取得技能の本体生成フロー**（フェーズ10 の ID 関連付けの続き）。
+- [ ] **トループ取得技能の本体生成フロー**（フェーズ10 の ID 関連付けの続き。※トループ側の自動化は不要とユーザー明言＝人数/ポイントの自動転記は必須でない）。
+- [ ] **戦闘タブの AR 表示**（追加タスク・ユーザー指示 2026-07-03。フェーズ10 戦闘タブの積み残し追補）: AR の DataModel フィールドは現状未存在。**AR 基準値の決め方**（一律か・導出か・修正の有無）と**クリンナップ回復の戻り先**の言語化待ち → データ構造（現在値/基準値）を確定して実装。分身 AR=1 固定とも整合させる。
 
 ### 11-2: キャスト共通部品化（挙動不変リファクタ）
 

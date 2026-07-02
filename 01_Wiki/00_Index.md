@@ -53,6 +53,7 @@
 | [Check_Rules.md](Game_Rules/Check_Rules.md) | 判定ルール（能力・技能・カード値・スート対応） |
 | [Damage_Rules.md](Game_Rules/Damage_Rules.md) | ダメージ算出・適用（物理/精神/社会・チャート・戦闘不能・治療） |
 | [Combat_Flow.md](Game_Rules/Combat_Flow.md) | カット進行（プロセス・アクション・AR・コンバットスピード） |
+| [Troops.md](Game_Rules/Troops.md) | トループ・トループ級キャラクター（heads・エニグマポイント・分身・共通制約） |
 | [Scenario_Progress.md](Game_Rules/Scenario_Progress.md) | アクト進行（アンダー/プレ/メイン/ポスト・シーン進行・舞台裏・経験点） |
 | [Time_Management.md](Game_Rules/Time_Management.md) | 時間単位（メインプロセス/カット/シーン/アクト）・使用回数リセット・持続失効 |
 | [Miracle_Rules.md](Game_Rules/Miracle_Rules.md) | 神業（構造・機能タイプ・神業一覧・派生参照・自動化方針） |
