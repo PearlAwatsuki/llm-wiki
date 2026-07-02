@@ -8,7 +8,7 @@
 | Template | ファイル | 主なフィールド |
 |---|---|---|
 | biography | `common/biography.mjs` | charaname_ruby, handle, post, citizenRank, age, gender, 身体情報, **description** (HTMLField) |
-| attributes | `common/attributes.mjs` | reason/passion/life/mundane (value, control, styleA〜C, growth, mod 等), combatSpeed（3層: value/base/current/freeMod — 下記）, 各ダメージ |
+| attributes | `common/attributes.mjs` | reason/passion/life/mundane (value, control, styleA〜C, growth, mod 等), combatSpeed（3層: value/base/current/freeMod — 下記）, actionRank（付与型: value/freeMod のみ保存。実効付与値 maxTotal=定数1+freeMod+AE は派生・フェーズ11 追補。正本 [Combat_Flow.md](../Game_Rules/Combat_Flow.md)「アクションランク」）, 各ダメージ |
 | actorBase | `common/actor-base.mjs` | （フィールドなし）手札・切り札の所有（handPileId / trumpCardPileId）・手札上限（handMaxSize）は **User flag の権威へ一本化済み**（フェーズ2 積み残し解消） |
 
 ## 各 Type

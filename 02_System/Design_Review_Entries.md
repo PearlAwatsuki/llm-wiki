@@ -2971,3 +2971,24 @@ armor / cyborg / tap / vehicle / ianus / weapon / housing-area / residence)、
 #### 推奨アクション
 
 - 実機で判定フロー一巡（シート起動・RL 要求・山札判定・チャットカード表示・CSS 崩れなし）を確認。
+
+### 戦闘タブ AR ボックス＋actionRank データモデル（フェーズ11 追補）
+
+**日付**: 2026-07-03
+**レビュー対象**: `scripts/data/helpers.mjs`、`scripts/data/actor/common/attributes.mjs`、`scripts/data/actor/cast.mjs`、`scripts/data/item/helpers.mjs`、`scripts/tnx.mjs`、`templates/actor/cast-sheet.hbs`、`css/tnx2.css`、テスト3ファイル
+**ステータス**: レビュー済（実機確認待ち）
+
+#### 設計
+
+- **CS パイプラインの相似形で最小追加**: 定数／フィールド／表示解決関数を `helpers.mjs` に CS の対で配置し、attributes テンプレートの素の派生 → cast の AE 適用後確定、という CS と同じ2段構え。AE の仮想名前空間 `system.ar.max`（実スキーマパスと分離＝ネイティブ適用との二重適用防止）も cs.\* と同型。
+- **カット開始時の付与は既存フックに統合**: `seedCombatSpeedCurrent` を `seedCombatStartValues` に拡張し、CS カレントと現在AR を1回の `actor.update` にまとめ書き（フック増設なし）。
+- **UI は cs-box ブロックを共有**（[[feedback-reuse-existing-ui-precedent]]）: 修飾 `.cs-box--ar`（幅・間隔）と `.cs-box` への `vertical-align: top` 追加のみで、新規コンポーネント・重複セレクタなし（[[feedback-css-scoped-changes]]）。編集モードは「付与＋修正＝付与値 → 現在AR」の決定の連鎖（CS の cascade 構造を踏襲）。定数 1 は派生 `grantBase` としてテンプレートへ単一ソースで供給。
+- テスト 15 件追加（フィールド構造・定数・表示解決・AE キー解析）。980 → 995 green。
+
+#### 課題
+
+- ⚠️ 現在AR の閲覧モードに増減操作を設けていない（CS の「閲覧モードに手動操作なし」裁定を踏襲）。フェーズ13 の自動化までカット中の消費管理は編集モード経由——実運用で煩雑なら再検討。
+
+#### 推奨アクション
+
+- 実機確認: 戦闘タブの AR ボックス（閲覧/編集の両モード・カット進行中のグローと現在AR への表示切替・カット開始時の自動セット）。
