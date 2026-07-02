@@ -125,6 +125,17 @@
 - **原因**: ApplicationV2（`DocumentSheetV2`/`ItemSheetV2`）は V1 の `options.dragDrop` を自動処理しない。両シートは V1 流の `dragDrop:[{…}]` オプション＋`_onDrop` オーバーライドに依存し、`foundry.applications.ux.DragDrop` を手動で束ねていなかったため `_onDrop` が一度も呼ばれなかった（死んだ設定＋死んだハンドラ）。アウトフィット/キャストシートは `_onRender` で手動束ねしていて動作＝乖離。フェーズ3 の V2 移行時の取りこぼし。
 - **解消内容**: 両シートの `_onRender` で `new foundry.applications.ux.DragDrop.implementation({ dropSelector:".tnx-import-box--dropzone", permissions:{drop:()=>this.isEditable}, callbacks:{drop:this._onDrop.bind(this)} }).bind(this.element)` を追加（アウトフィットシートと同方式）。死んだ `dragDrop` オプションを撤去。`_onDrop` は既存のまま。**教訓: V2 シートのドロップは `_onRender` で DragDrop を手動束ねする（options.dragDrop は不活性）。**
 
+## KI-010: combatSpeed (CS) がシートに表示・入力できない
+
+- **解消**: フェーズ10-5 (2026-07-02)
+- **症状**: `attributes.combatSpeed` はフィールド定義のみで派生計算・シート表示・入力 UI が存在せず、initiative 式（P0-04 で修正済み）が常に 0 を返しコンバットトラッカーが機能しなかった。
+- **解消内容**: CS を3層モデル（正本 [Combat_Flow.md](../Game_Rules/Combat_Flow.md)「コンバットスピード」＋「実装表現の原則」）で実装。
+  - **決定値（保存・再計算不可）**: `base`（CSベースの能力値項＝プレアクト初期化で `floor((理性+感情+生命)÷2)` を実効値から焼き込み）／`value`（CS＝プレアクトに決定）／`current`（CSカレント）。旧 `mod` フィールドは役割がなく削除（§4.3 承認済み）。
+  - **修正値（ライブ）**: `freeMod`（手動）＋タップ CS 修正（フラグ駆動＝OFF:準備起点/ON:携帯起点・ゴースト登場中読み飛ばし）＋AE（`system.cs.base|value|current`・cs.base のみ保持アイテムの準備ゲート）。実効値 `baseTotal`/`valueTotal`/`currentTotal` を派生算出（0clamp なし＝CS は負になりうる）。
+  - **UI**: シート上は常に**単一の「CS」表示**（3層は内部データ・ユーザー裁定 2026-07-02）。表示層は**自動制御**＝カット（開始済み戦闘）進行中はカレント・それ以外は CS（派生 `displayTotal`）。カット開始/参加時に**カレントへ CS 実効値を自動セット**（戦闘フック・GM 書込）し、開始/終了/参加/離脱で該当アクターを再準備・再描画。戦闘タブ先頭の**リードアウトパネル**（左アクセントバー＋大型モノスペース数字・カット進行中は状態チップ・読み飛ばし分「X（Y）」併記・編集モードで内部データ行＋プレアクト初期化）。詳細タブには置かない（5-6 確定）どおり戦闘タブ軸。
+  - **initiative**: `@system.combatSpeed.displayTotal`（表示中の CS を読む。カット開始時はカレント＝CS なのでセットアップ順も正しく、以後のカレント修正がメイン順に反映される）。guest/troop でも式が解決できるよう `AttributesTemplate.prepareDerivedData` に素の実効値フォールバックを設置。
+- **残**: CSカレントのカット中自動管理（セットアップ末決定・メジャー後0・待機1）＝フェーズ13。extra は combatSpeed 自体を持たないため initiative 不可（従前どおり・フェーズ11/13 で扱う）。
+
 ---
 
 ## フェーズ2 で部分的解消
