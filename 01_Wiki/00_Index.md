@@ -95,7 +95,8 @@
 | [Phase_7_Tasks_Detail.md](Phases/Phase_7_Tasks_Detail.md) | フェーズ7 完了記録（判定システム 設計） |
 | [Phase_8_Tasks_Detail.md](Phases/Phase_8_Tasks_Detail.md) | フェーズ8 完了記録（判定システム 実装） |
 | [Phase_9_Tasks_Detail.md](Phases/Phase_9_Tasks_Detail.md) | フェーズ9 完了記録（ActiveEffect / 派生値計算） |
-| [Phase_10_Tasks_Detail.md](Phases/Phase_10_Tasks_Detail.md) | フェーズ10 — 既存シート関連のやり残し総仕上げ（進行中。現在フェーズの正本は Roadmap） |
+| [Phase_10_Tasks_Detail.md](Phases/Phase_10_Tasks_Detail.md) | フェーズ10 完了記録（既存シート関連のやり残し総仕上げ） |
+| [Phase_11_Tasks_Detail.md](Phases/Phase_11_Tasks_Detail.md) | フェーズ11 — guest / troop / extra シート（進行中。現在フェーズの正本は Roadmap） |
 
 ## 関連
 

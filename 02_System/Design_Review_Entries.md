@@ -2647,8 +2647,11 @@ armor / cyborg / tap / vehicle / ianus / weapon / housing-area / residence)、
 
 - ~~フェーズ6-7（guest シート）へ進む。~~ → **フェーズ11 に移管（2026-06-14）**
   guest / troop / extra シートと戦闘タブは判定・神業システム完成後に実施する。
-- `OUTFIT_TYPES` 重複（`tnx-cast-sheet.mjs` の `OUTFIT_TYPES` と `tnx.mjs` の `OUTFIT_ITEM_TYPES`）は
-  6-10 仕上げ時またはフェーズ11 着手前にリファクタする。現在の動作には影響なし。
+- ~~`OUTFIT_TYPES` 重複（`tnx-cast-sheet.mjs` の `OUTFIT_TYPES` と `tnx.mjs` の `OUTFIT_ITEM_TYPES`）は
+  6-10 仕上げ時またはフェーズ11 着手前にリファクタする。現在の動作には影響なし。~~
+  → **解消（2026-07-03・フェーズ11-0、本体コミット `5b07a9f`）**: `scripts/data/helpers.mjs` の
+  `OUTFIT_ITEM_TYPES`（9-2 で tnx.mjs から helpers に移設済み）に一本化し、cast シートの
+  static `OUTFIT_TYPES` を削除。挙動不変・テスト980件 green。
 
 ---
 
