@@ -52,7 +52,7 @@
 
 CLAUDE.md §2.2 に従い、ルールの言語化とデータ構造（追加フィールド）をここで確定し、まとめて承認を得る。
 
-- [x] **guest の DataModel 方針確定（2026-07-03）**: 除外は**セッション履歴クラスタのみ**（`ownerUserId` / `syncWithOwner` / `history` / `exp`）。報酬点（`bounty`/`bountyBase`）・`lifePath`・`partSlots`・`isGhost`・生身データ（`baseAttack`/`baseDefence`/`baseGuard`/`weaponRefs`）・`appearanceModifier`・`outfitMod`・**`handMaxSizeMod`** は**キャストと同一に持つ**。handMaxSizeMod の保持は 2026-07-03 ユーザー裁定——**RL の手札上限はゲストの使用するスタイル技能で修正されうる**（Code の除外提案は実装機構からの逆算＝誤りとして撤回）。**残設計論点: RL（GM ユーザー）への合算経路**＝どのゲストの修正を数えるか（登場概念はフェーズ14/16/18 のため当面の形が要る）。具体のフィールド一覧・prepareDerivedData 共有の起草は Code → 一括承認。
+- [x] **guest の DataModel 方針確定（2026-07-03）**: 除外は**セッション履歴クラスタのみ**（`ownerUserId` / `syncWithOwner` / `history` / `exp`）。報酬点（`bounty`/`bountyBase`）・`lifePath`・`partSlots`・`isGhost`・生身データ（`baseAttack`/`baseDefence`/`baseGuard`/`weaponRefs`）・`appearanceModifier`・`outfitMod`・**`handMaxSizeMod`** は**キャストと同一に持つ**。handMaxSizeMod の保持は 2026-07-03 ユーザー裁定——**RL の手札上限はゲストの使用するスタイル技能で修正されうる**（Code の除外提案は実装機構からの逆算＝誤りとして撤回）。**RL への合算経路も確定（2026-07-03）**: GM ユーザーの実効上限にワールド内全ゲストの修正（有効 AE 由来）を合算（手札上限修正は基本「メインプロセス中」効果のため重複懸念なし＝ユーザー確認。正本 [Card_Operations.md](../Game_Mechanics/Card_Operations.md)「手札上限」）。**これで 11-1 のゲーム側設計は全て承認済み**。残は共通部品化の技術設計（11-2 冒頭で提示）。
 - [x] **troop の本体・作成ルールの言語化**（ユーザー・2026-07-03 受領）: [Troops.md](../Game_Rules/Troops.md) に記録。heads＝純粋な人数（敵対トループは RL 任意・取得技能由来は判定達成値）・**トループ側で自動化すべき点はない**。技能・アウトフィット・能力値の持ち方は残確認。
 - [x] **トループ級キャラクター（エニグマ・分身）の類型の言語化**（同上・Troops.md）: エニグマ＝エニグマポイントが HP 相当（達成値適用）、分身＝1点で消滅（ダメージ管理不要）・本体とほぼ同一データ・スタイル複数・AR=1 固定・CS/CSカレント=0 固定。全類型で神業不可・トループ取得技能使用不可。
 - [ ] **heads／エニグマポイント／分身固定値のデータ構造**への落とし込み（フィールド設計・一括承認対象）。

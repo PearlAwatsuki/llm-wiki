@@ -43,6 +43,8 @@ TNX の判定はすべて **Foundry Cards API** 経由。ダイスロール (`Ro
 
 `handMaxSizeMod` は cast の AE 着地点として新設済み（KI-005 → KI-020 解消・フェーズ9-3）。User は DataModel/AE を持てないため所有 cast の AE から合流する。
 
+**ゲスト → RL（GM ユーザー）への合算（2026-07-03 確定・実装はフェーズ11）**: RL の手札上限はゲストの使用するスタイル技能でも修正されうる。guest も `handMaxSizeMod` を持ち、**GM ユーザーの実効上限にはワールド内全ゲストの修正（有効な AE 由来）を合算**する。ゲストは全員 RL の持ち物のため ownerUserId 相当の絞り込みは行わない——**手札上限修正は基本的に効果時間「メインプロセス中」なので重複の懸念は実質ない**（ユーザー確認）。登場概念の導入（フェーズ14/16/18）後に「登場中のゲストのみ」へ絞り込みを差し替え可能。
+
 ## 所有モデル
 
 手札・切り札の所有は **User flag**（`handPileId` / `trumpCardPileId`）に一本化済み（フェーズ2 完了・player Actor 廃止）。HUD は `game.user` の flag から手札置き場を取得する。配布・受け渡しは User 単位（`TnxCardSetupApp` / `dealTrumpFromNeuroDeck` / `selectAndPassToUser` 等）。
