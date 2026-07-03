@@ -13,6 +13,7 @@
 |---|---|---|---|
 | TnxCharacterSheetBase | ActorSheetV2 | 基底（直接登録なし・フェーズ11-2 新設） | `scripts/actor/tnx-character-sheet-base.mjs` |
 | TokyoNovaCastSheet | TnxCharacterSheetBase | cast | `scripts/actor/tnx-cast-sheet.mjs`（EXP 系＋セッション履歴のみ） |
+| TokyoNovaGuestSheet | TnxCharacterSheetBase | guest | `scripts/actor/tnx-guest-sheet.mjs`（宣言のみの薄い派生・フェーズ11-3） |
 | TokyoNovaItemSheet | ItemSheetV2 | 基底（直接登録なし） | `scripts/item/tnx-item-sheet.mjs` |
 | TokyoNovaStyleSheet | TokyoNovaItemSheet | style | `scripts/item/tnx-style-sheet.mjs` |
 | TokyoNovaMiracleSheet | TokyoNovaItemSheet | miracle | `scripts/item/tnx-miracle-sheet.mjs` |
@@ -27,7 +28,7 @@
 
 ## コアデフォルト（カスタム未実装）
 
-**Actor**: guest, troop, extra — **フェーズ11** でカスタムシートを追加予定（判定システムは完成済み。キャスト共通部品化を伴う。神業＝フェーズ20 への依存はない）
+**Actor**: troop, extra — **フェーズ11-4 / 11-5** でカスタムシートを追加予定（guest はフェーズ11-3 で実装済み）
 
 ## 共通 UI パターン
 

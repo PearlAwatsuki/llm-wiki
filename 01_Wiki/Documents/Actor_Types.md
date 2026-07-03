@@ -38,9 +38,11 @@
 
 ### guest — NPC ゲスト
 
-**mixin**: biography + attributes + actorBase。固有フィールドなし。
+**継承**: `CharacterBaseDataModel`（フェーズ11-3 新設・`common/character-base.mjs`。biography + attributes + actorBase の mixin に、cast と共有するフィールド＝lifePath・partSlots・isGhost・報酬点・生身・weaponRefs・appearanceModifier・handMaxSizeMod・outfitMod と派生値パイプラインを持つ）。**guest は固有フィールドなし**（cast との差分＝セッション履歴クラスタ4フィールドのみ。テストで不変条件化）。cast も同基底を継承し4フィールドを追加する構成。
 
-**シート**: コアデフォルト（**フェーズ11** でカスタムシート追加予定）
+**シート**: `TokyoNovaGuestSheet`（フェーズ11-3。TnxCharacterSheetBase の薄い派生・SHEET_FEATURES exp/history=false・guest-sheet.hbs は履歴タブなしのシェル）
+
+**新規作成時**: 部位プリセット・基本13技能・リンクトークンをキャスト同様に流し込む（所有権自動設定・disposition 変更はキャストのみ）。handMaxSizeMod は GM ユーザーの実効手札上限へ全ゲスト合算（[Card_Operations.md](../Game_Mechanics/Card_Operations.md)「手札上限」）。
 
 > ゲスト = キャストから**セッション履歴（EXP・User 同期）のみ**を除いたもの（2026-07-03 訂正）。~~ライフパス・報酬点も除く~~は勘違い（ルールに記載なし）＝**報酬点・ライフパスも通常どおり持つ**（外界値の報酬点＋報酬点を取得するスタイル技能の効果等）。「セッション履歴以外のデータ的な面では何も違いがない」（ユーザー明言）。
 

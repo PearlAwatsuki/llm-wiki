@@ -96,6 +96,8 @@ CLAUDE.md §2.2 に従い、ルールの言語化とデータ構造（追加フ�
 
 DataModel 追加フィールド＋`prepareDerivedData`（`computeAttributeFinal` 等、実効値を cast と同経路に）＋シート実装。判定起動の実機確認。
 
+**実装完了（2026-07-03・本体 `a76e01e`・実機確認待ち）**: `CharacterBaseDataModel` 新設（cast の共有フィールド＋派生パイプラインを移設。cast=＋セッション履歴クラスタ4フィールド／guest=素の継承。**差分4フィールドをテストで不変条件化**・既存 cast テスト無変更で通過）。`TokyoNovaGuestSheet`（薄い派生・履歴タブなしシェル）を makeDefault 登録。RL（GM）手札上限への全ゲスト `handMaxSizeMod` 合算、新規 guest のシード（部位プリセット・基本13技能・リンクトークン）を実装。テスト 1012 green。記録: Audit_and_Review / Design_Review_Entries（2026-07-03）。
+
 ### 11-4: troop シート
 
 実効値派生、シート（memo・heads・能力値・CS）、heads のトークンリソースバー連携、heads 手動増減（ダメージ例外の器）。エニグマ/分身の類型対応。

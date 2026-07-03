@@ -1445,3 +1445,25 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 - ~~**ar.max の AE 着地に cs.base と同じ準備状態ゲートを適用した（Code 判断・要ユーザー確認）**~~ → **裁定確定（2026-07-03）**: 「アウトフィットのデータの効果は必ず準備しないと適用されない（危険値と CS 修正が例外）」とユーザーが明言＝[Outfits.md](../01_Wiki/Game_Rules/Outfits.md)「携帯・準備の適用範囲（一般原則）」どおりで、ゲート適用は正しい。常時系の AE 着地（cs.base / ar.max）への準備ゲートは以後この一般原則の適用として扱う（10-5 の「cs.base は唯一の特例」の記述は本裁定で更新）。
 - AE 配線（`system.ar.max`）は具体データ未整備で**実機未検証**（cs.\* と同様の持ち越し）。
 - 消費・回復・イニシアチブプロセスの −1 の自動化＝フェーズ13。ダメージチャートの AR 系効果（驚愕/士気喪失）の発火＝12/13/15。
+
+### ゲストシートと DataModel 共通基底（フェーズ11-3）
+
+**日付**: 2026-07-03
+**関連実装**: `scripts/data/actor/common/character-base.mjs`（新設）、`scripts/data/actor/cast.mjs`・`guest.mjs`（継承化）、`scripts/actor/tnx-guest-sheet.mjs`＋`templates/actor/guest-sheet.hbs`（新設）、`scripts/module/user-flag-schema.mjs`（GM ゲスト合算）、`scripts/tnx.mjs`（シート登録・シード処理）。正本 [Actor_Types.md](../01_Wiki/Documents/Actor_Types.md)・[Card_Operations.md](../01_Wiki/Game_Mechanics/Card_Operations.md)「手札上限」
+**ステータス**: ✅ 実装完了（本体 `a76e01e`・全テスト green 1012・eslint 0 error）・実機確認待ち
+
+#### ルール解釈（2026-07-03 確定分の実装）
+
+- **ゲスト＝キャストからセッション履歴（EXP・User 同期）のみを除いたもの**: DataModel はセッション履歴クラスタ（ownerUserId / syncWithOwner / history / exp）の4フィールドだけを cast 固有に残し、他は全て共通基底 `CharacterBaseDataModel` へ（報酬点・ライフパス・部位・生身・isGhost・handMaxSizeMod 含む）。**差分が正確にこの4フィールドであることをテストで不変条件化**。
+- **RL の手札上限はゲストの技能で修正されうる**: GM ユーザーの実効上限にワールド内全ゲストの `handMaxSizeMod`（有効 AE 由来）を合算（上限修正は基本「メインプロセス中」効果＝重複懸念なし・ユーザー確認済み。登場概念導入後に「登場中のみ」へ差し替え可能）。
+- **判定・EXP**: ゲストの判定はキャストと同経路（派生パイプライン共通化により実効値も同式）。技能レベル変更の EXP 連動は基底フックの既定（素通し）が効き、ゲストでは消費が発生しない。
+- **新規ゲストのシード**: 部位プリセット＋基本13技能＋リンクトークンをキャスト同様に流し込み（データ同一の帰結）。所有権の自動設定（プレイヤー作成時のオーナー付与）と disposition=FRIENDLY は**キャストのみ**（ゲストは RL の持ち物・敵味方は場合による＝Code 判断）。
+
+#### 監査結果
+
+✅ 「セッション履歴以外データ的に何も違いがない」（2026-07-03 ユーザー明言）をスキーマ差分テストで逐条担保。GM 合算は Card_Operations.md の確定記述どおり。guest の EXP 非消費は基底フック設計（11-2）の帰結で追加分岐なし。
+
+#### 課題・申し送り
+
+- ゲストのゴースト登場・部位管理・戦闘タブ・判定起動は cast と同一コードパスのため、実機確認は guest シートの一巡で足りる（AE 配線の実データ検証は従来どおり持ち越し）。
+- シード時の disposition・所有権の扱い（Code 判断）は実機確認時に要すれば調整。

@@ -6,6 +6,7 @@
 templates/
   actor/
     cast-sheet.hbs          # cast シートのシェル（タブ nav＋partial 差し込み。フェーズ11-2 で部品化）
+    guest-sheet.hbs         # guest シートのシェル（履歴タブなし。フェーズ11-3）
     parts/                  # アクターシート共通部品（フェーズ11-2。cast/guest 等で共有・features でゲート）
                             #   sidebar / header / tab-abilities / tab-combat / tab-outfits /
                             #   tab-status / tab-history(cast 専用) / tab-profile

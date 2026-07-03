@@ -3016,3 +3016,25 @@ armor / cyborg / tap / vehicle / ianus / weapon / housing-area / residence)、
 #### 推奨アクション
 
 - 実機回帰（cast シート）: 全タブ表示・編集モード切替・技能レベル/スート変更の EXP 連動・アウトフィット D&D 並び替え・部位占有・戦闘タブ（CS/AR）・セッション履歴・判定起動。
+
+### GuestDataModel／TokyoNovaGuestSheet と共通基底（フェーズ11-3）
+
+**日付**: 2026-07-03
+**レビュー対象**: `scripts/data/actor/common/character-base.mjs`、`scripts/data/actor/cast.mjs`・`guest.mjs`、`scripts/actor/tnx-guest-sheet.mjs`、`templates/actor/guest-sheet.hbs`、`scripts/module/user-flag-schema.mjs`、`scripts/tnx.mjs`、テスト2ファイル
+**ステータス**: レビュー済（実機確認待ち）
+
+#### 設計
+
+- **DataModel はクラス継承で共通化**（シート側 11-2 の TnxCharacterSheetBase と対の構図）: `CharacterBaseDataModel extends SystemDataModel.mixin(Biography, Attributes, ActorBase)` に共有スキーマ＋派生パイプライン一式。mixin のプロトタイプコピー（後勝ち・super 連鎖なし）に依存しない単純な継承のため、prepareDerivedData の実行順が明確（attributes フォールバック → 基底パイプライン）。
+- **作成は 11-2 と同じ機械変換**（cast.mjs のコピーに一意性アサーション付き置換: クラス名・import パス・セッション履歴クラスタ除去）。cast.mjs / guest.mjs は薄い派生に書き換え。**cast のスキーマは不変**（既存 cast テストが無変更で通過＝裏付け）。
+- **guest シート**: `TokyoNovaGuestSheet` は classes / PARTS / SHEET_FEATURES の宣言のみ（約30行）。シェル guest-sheet.hbs はセッション履歴タブを除いた partial 差し込み。11-2 の部品化がそのまま効いた形。
+- **スキーマ差分テスト**: 「cast との差分＝セッション履歴クラスタ4フィールドに限る」を不変条件としてテスト化。今後 cast にフィールドを足すと guest 側の判断を強制する仕掛け（基底に足せば自動で両方に入る）。
+
+#### 課題
+
+- ⚠️ guest-sheet.hbs の構造クラス名（`cast-sheet` 等）は CSS 再利用のため cast 名のまま（11-2 記録どおり。型はアプリルート `.guest` で区別）。
+- ⚠️ troop（11-4）は biography 追加・エニグマモードなど固有差分が大きく、CharacterBaseDataModel でなく attributes 直 mixin ＋必要部分の選択共有になる見込み（11-4 冒頭で設計）。
+
+#### 推奨アクション
+
+- 実機確認: guest の新規作成（部位プリセット・基本13技能・リンクトークンが入る）→ シート一巡（履歴タブ・EXP 表示が無いこと、報酬点・ライフパス・部位管理・戦闘タブ CS/AR・判定起動・ゴーストトグルが cast 同様に動くこと）→ 技能レベル変更で EXP 消費が発生しないこと → ゲストに手札上限 AE を付けたとき RL の HUD 上限が変わること。
