@@ -53,6 +53,7 @@
 | 固有フィールド | 型 | 備考 |
 |---|---|---|
 | troopMode | StringField | 種別ドロップダウン `troop/enigma/bunshin`（正本 [Troops.md](../Game_Rules/Troops.md)「種別と名前の規則」。旧 isEnigmaMode は誤設計として migrateData で移行・廃止） |
+| hasWorks | BooleanField | 「ワークスを設定」。ON＋組織アイテムありで名前が「(組織名)（(スタイル名)(トループレベル)レベル）」に。所属ブロックは ON のときだけ表示 |
 | sourceName | StringField | 分身元キャラクター名（bunshin の固定名「(分身元)の分身」に使用。11-6 で自動設定へ拡張予定） |
 | troopLevel | NumberField | トループレベル。**能力値＝スタイルの基本値＋トループレベル**の決定項（成長なし・`_prepareAbilityTotals` オーバーライド） |
 | heads | SchemaField | `{value, max}` — 人数（enigma ではエニグマポイント・フィールド共用）。HP のように機能しダメージ分減少（チャート不参照）。トークンリソースバー割当（trackableAttributes・新規作成時 bar1 既定）。bunshin はリソース管理なし（シート非表示） |
