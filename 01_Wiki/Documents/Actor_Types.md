@@ -48,14 +48,16 @@
 
 ### troop — 部隊
 
-**mixin**: attributes + actorBase
+**継承**: `CharacterBaseDataModel`（フェーズ11-4 で再構成。biography も持つ＝2026-07-03 ユーザー意向。判定・派生値パイプラインはキャストと同じ＝[Troops.md](../Game_Rules/Troops.md)）。基底由来の報酬点・partSlots・生身・isGhost・handMaxSizeMod はトループのルール上未使用（スキーマに残るが死蔵・シート非表示）。
 
 | 固有フィールド | 型 | 備考 |
 |---|---|---|
-| memo | StringField | 自由記述 |
-| heads | SchemaField | `{value, max}` — HP のように機能。トークンリソースバー連携は**フェーズ11** |
+| heads | SchemaField | `{value, max}` — 人数。HP のように機能しダメージ分減少（チャート不参照）。トークンリソースバー割当（trackableAttributes・新規作成時 bar1 既定） |
+| isEnigmaMode | BooleanField | エニグマモード（フェーズ11-4）。ON で heads の意味・ラベルが「エニグマポイント」に切替（フィールド共用＝バー連携不変） |
 
-**シート**: コアデフォルト（**フェーズ11** でカスタムシート追加予定）
+> 旧 `memo` はフェーズ11-4 で廃止（`migrateData` で biography.description へ移行）。分身（トループ級）も troop として作成し、AR=1・CS/CSカレント=0 はデータ入力で表現。
+
+**シート**: `TokyoNovaTroopSheet`（フェーズ11-4。TnxCharacterSheetBase の薄い派生・神業/報酬点/部位管理なし・heads パネル付き）
 
 ### extra — エキストラ
 

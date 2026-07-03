@@ -1467,3 +1467,28 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 - ゲストのゴースト登場・部位管理・戦闘タブ・判定起動は cast と同一コードパスのため、実機確認は guest シートの一巡で足りる（AE 配線の実データ検証は従来どおり持ち越し）。
 - シード時の disposition・所有権の扱い（Code 判断）は実機確認時に要すれば調整。
+
+### トループシートとエニグマモード（フェーズ11-4）
+
+**日付**: 2026-07-03
+**関連実装**: `scripts/data/actor/troop.mjs`（CharacterBaseDataModel 継承化・isEnigmaMode・memo 廃止/移行）、`scripts/actor/tnx-troop-sheet.mjs`＋`templates/actor/troop-sheet.hbs`（新設）、`scripts/actor/tnx-character-sheet-base.mjs`（SHEET_FEATURES 拡張・神業ガード）、`templates/actor/parts/sidebar.hbs`・`header.hbs`（features ゲート・heads パネル）、`scripts/tnx.mjs`（登録・シード・trackableAttributes）。正本 [Troops.md](../01_Wiki/Game_Rules/Troops.md)
+**ステータス**: ✅ 実装完了（本体 `5c8151f`・全テスト green 1018・eslint/stylelint 新規警告なし）・実機確認待ち
+
+#### ルール解釈（Troops.md・2026-07-03 言語化の実装）
+
+- **トループの構成**（スタイル1・能力値・技能・アウトフィット・状態・神業なし）と**判定はキャストと同じ**: CharacterBaseDataModel 継承で判定・実効値・AE・アウトフィット集計・CS/AR をキャストと同経路にした。基本13技能もキャスト同様に流し込む（判定同一の帰結）。
+- **heads＝純粋な人数**: 入力は手動（敵対トループ=RL 任意・取得技能由来=判定達成値の転記。「トループ側で自動化すべき点はない」＝ユーザー明言どおり自動化なし）。閲覧モードに±ボタン（ダメージ分の減少を RL が手で行う＝ダメージ例外の器。攻撃フローからの自動適用はフェーズ12）。
+- **エニグマモード**: `isEnigmaMode` ON で heads の意味・ラベルが「人数」→「エニグマポイント」に切替（フィールドは heads を共用＝トークンバー連携がモードに依らず機能。挙動は同じ＝達成値付与・ダメージ分減少）。
+- **神業不可**: 神業のドロップとスタイルインポート時の自動取得の両方をガード（features.miracles=false）。シートにも神業 UI を出さない。
+- **分身**: troop として作成し、AR=1・CS/CSカレント=0 はデータ入力で表現（専用機構なし・Troops.md どおり）。スタイル複数は運用（データ制約なし）。
+- **報酬点・部位管理・ゴースト等は троープのルール上未使用**: 基底由来のフィールドはスキーマ上残るが死蔵（シート非表示・GM 手札上限合算は guest のみ）。DataModel コメントと本記録に明記。
+
+#### 監査結果
+
+✅ Troops.md の言語化に逐条準拠（構成・判定同一・heads 手動・エニグマモード・神業不可・分身=troop）。memo→description の migrateData で既存データを保全。guest とのスキーマ差分が heads/isEnigmaMode の2フィールドに限られることをテストで不変条件化。
+
+#### 課題・申し送り
+
+- **基底継承の設計変更**: 11-3 レビューで「troop は attributes 直 mixin＋選択共有の見込み」としたが、派生値パイプライン（AE・集計・CS/AR）への依存が本体であるため CharacterBaseDataModel 継承に変更（死蔵フィールドの明記とトレードオフ）。
+- トループの biography（パーソナルデータ欄）は集団に不要な項目も含むが、ユーザー意向「biography はあった方が良い」に従い全表示。実機確認で過剰なら絞る。
+- 攻撃フローからの heads 自動減算＝フェーズ12、NPC取得用途（達成値→heads/ポイント）＝11-6。

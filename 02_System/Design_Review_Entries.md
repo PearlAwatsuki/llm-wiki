@@ -3038,3 +3038,26 @@ armor / cyborg / tap / vehicle / ianus / weapon / housing-area / residence)、
 #### 推奨アクション
 
 - 実機確認: guest の新規作成（部位プリセット・基本13技能・リンクトークンが入る）→ シート一巡（履歴タブ・EXP 表示が無いこと、報酬点・ライフパス・部位管理・戦闘タブ CS/AR・判定起動・ゴーストトグルが cast 同様に動くこと）→ 技能レベル変更で EXP 消費が発生しないこと → ゲストに手札上限 AE を付けたとき RL の HUD 上限が変わること。
+
+### TokyoNovaTroopSheet と features 拡張（フェーズ11-4）
+
+**日付**: 2026-07-03
+**レビュー対象**: `scripts/actor/tnx-troop-sheet.mjs`、`scripts/data/actor/troop.mjs`、`scripts/actor/tnx-character-sheet-base.mjs`、`templates/actor/parts/sidebar.hbs`・`header.hbs`、`templates/actor/troop-sheet.hbs`、`css/tnx2.css`、`scripts/tnx.mjs`、テスト
+**ステータス**: レビュー済（実機確認待ち）
+
+#### 設計
+
+- **SHEET_FEATURES を 7 フラグに拡張**（exp/history/lifePath/parts/miracles/bounty/heads）し、**基底既定とのマージ解決 `sheetFeatures`** を導入（派生クラスの宣言漏れで既定が欠ける事故を防止。cast/guest は宣言追加不要で従来挙動維持）。
+- **troop シートも宣言のみの薄い派生**（guest と同型・約30行）。シェルは履歴タブなし5タブ。神業・報酬点は partial 内 features ゲート、部位占有は既存の features.parts ゲートが効く。
+- **heads パネルは報酬点ボックスの意匠（bounty-\* クラス）を共有**（[[feedback-reuse-existing-ui-precedent]]）。追加 CSS は heads-max / heads-mode-toggle の2ルールのみ（[[feedback-css-scoped-changes]]）。±は汎用 incrementField/decrementField アクション（data-min=0）を再利用し、専用リスナーなし。編集モードは number-input-spinner（[[feedback-number-input-spinner]]）。
+- **神業ガードはデータ入口で二重化**（ドロップ拒否＋スタイル由来自動取得のスキップ）——シート非表示だけでは辞典ドラッグで混入しうるため。
+- **トークンバー**: `CONFIG.Actor.trackableAttributes = { troop: { bar: ["heads"] } }` ＋新規作成時に bar1=heads・OWNER_HOVER を既定化。エニグマモードでもフィールドが同一のため割当は不変。
+
+#### 課題
+
+- ⚠️ 11-3 レビューの見込み（attributes 直 mixin）を撤回し CharacterBaseDataModel 継承へ（理由は監査エントリ）。死蔵フィールド（bounty/partSlots/生身/isGhost/handMaxSizeMod）はスキーマに残る——判定フローの bountyAvailable は 0 になり実害なし。
+- ⚠️ 戦闘タブの武器/防御は troop でも表示される（分身に有用）。生身表記「生身 I+0／受0」が集団としては違和感の可能性——実機確認で判断。
+
+#### 推奨アクション
+
+- 実機確認: トループ新規作成（bar1=heads・13技能）→ サイドバーの人数±/エニグマモード切替（ラベルとトークンバーの追従）→ スタイルをドロップして神業が自動取得されないこと・神業ドロップが拒否されること → 判定起動・戦闘タブ表示。

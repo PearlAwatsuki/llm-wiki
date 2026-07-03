@@ -102,6 +102,8 @@ DataModel 追加フィールド＋`prepareDerivedData`（`computeAttributeFinal`
 
 実効値派生、シート（memo・heads・能力値・CS）、heads のトークンリソースバー連携、heads 手動増減（ダメージ例外の器）。エニグマ/分身の類型対応。
 
+**実装完了（2026-07-03・本体 `5c8151f`・実機確認待ち）**: TroopDataModel を CharacterBaseDataModel 継承に再構成（判定・派生値をキャスト同経路に。memo は biography.description へ migrateData 移行・廃止）。isEnigmaMode（heads の意味・ラベル切替）、サイドバー heads パネル（閲覧±＝ダメージ例外の器・手動）、トークンバー割当（trackableAttributes＋新規作成時 bar1=heads）、神業ガード（ドロップ＋スタイル由来自動取得の二重）、SHEET_FEATURES 7 フラグ化＋基底マージ。guest との差分=heads/isEnigmaMode をテストで不変条件化。1018 green。記録: Audit_and_Review / Design_Review_Entries（2026-07-03）。
+
 ### 11-5: extra シート
 
 biography＋所持アイテム表示（スタイル・神業・技能・アウトフィット）。
