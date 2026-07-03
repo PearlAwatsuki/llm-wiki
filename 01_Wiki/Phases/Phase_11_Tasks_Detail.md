@@ -38,7 +38,7 @@
 - [Damage_Rules.md](../Game_Rules/Damage_Rules.md) — トループ級・エキストラのダメージ例外
 - [Character_Creation.md](../Game_Rules/Character_Creation.md) — トループ取得技能（〈分心〉→エニグマ、〈分身〉→分身。フェーズ10 で ID 関連付けまで実装済み）
 - [Check_System.md](../Game_Mechanics/Check_System.md) / [Check_Rules.md](../Game_Rules/Check_Rules.md) — 判定（判定フローはアクター型非依存であることをコードで確認済み）
-- **guest 確定方針（2026-07-03 訂正）**: キャストから**セッション履歴（EXP・User 同期）のみ**を除いたもの。報酬点・ライフパスは通常どおり持つ（「報酬点を持たない」は勘違い＝ルールに記載なし・ユーザー訂正。[Actor_Types.md](../Documents/Actor_Types.md)）
+- **guest 確定方針（2026-07-03 確定・同日再訂正）**: キャストから**セッション履歴（EXP・User 同期）とライフパス**を除いたもの。報酬点は通常どおり持つ（勘違いだったのは報酬点のみ。ライフパス除外はフェーズ6 記録どおり。[Actor_Types.md](../Documents/Actor_Types.md)）
 
 ---
 
@@ -52,7 +52,7 @@
 
 CLAUDE.md §2.2 に従い、ルールの言語化とデータ構造（追加フィールド）をここで確定し、まとめて承認を得る。
 
-- [x] **guest の DataModel 方針確定（2026-07-03）**: 除外は**セッション履歴クラスタのみ**（`ownerUserId` / `syncWithOwner` / `history` / `exp`）。報酬点（`bounty`/`bountyBase`）・`lifePath`・`partSlots`・`isGhost`・生身データ（`baseAttack`/`baseDefence`/`baseGuard`/`weaponRefs`）・`appearanceModifier`・`outfitMod`・**`handMaxSizeMod`** は**キャストと同一に持つ**。handMaxSizeMod の保持は 2026-07-03 ユーザー裁定——**RL の手札上限はゲストの使用するスタイル技能で修正されうる**（Code の除外提案は実装機構からの逆算＝誤りとして撤回）。**RL への合算経路も確定（2026-07-03）**: GM ユーザーの実効上限にワールド内全ゲストの修正（有効 AE 由来）を合算（手札上限修正は基本「メインプロセス中」効果のため重複懸念なし＝ユーザー確認。正本 [Card_Operations.md](../Game_Mechanics/Card_Operations.md)「手札上限」）。**これで 11-1 のゲーム側設計は全て承認済み**。残は共通部品化の技術設計（11-2 冒頭で提示）。
+- [x] **guest の DataModel 方針確定（2026-07-03・同日再訂正）**: 除外は**セッション履歴クラスタ（`ownerUserId` / `syncWithOwner` / `history` / `exp`）＋ `lifePath`**（ライフパスなしは同日再訂正＝フェーズ6 記録どおり）。報酬点（`bounty`/`bountyBase`）・`partSlots`・`isGhost`・生身データ（`baseAttack`/`baseDefence`/`baseGuard`/`weaponRefs`）・`appearanceModifier`・`outfitMod`・**`handMaxSizeMod`** は**キャストと同一に持つ**。handMaxSizeMod の保持は 2026-07-03 ユーザー裁定——**RL の手札上限はゲストの使用するスタイル技能で修正されうる**（Code の除外提案は実装機構からの逆算＝誤りとして撤回）。**RL への合算経路も確定（2026-07-03）**: GM ユーザーの実効上限にワールド内全ゲストの修正（有効 AE 由来）を合算（手札上限修正は基本「メインプロセス中」効果のため重複懸念なし＝ユーザー確認。正本 [Card_Operations.md](../Game_Mechanics/Card_Operations.md)「手札上限」）。**これで 11-1 のゲーム側設計は全て承認済み**。残は共通部品化の技術設計（11-2 冒頭で提示）。
 - [x] **troop の本体・作成ルールの言語化**（ユーザー・2026-07-03 受領）: [Troops.md](../Game_Rules/Troops.md) に記録。heads＝純粋な人数（敵対トループは RL 任意・取得技能由来は判定達成値）・**トループ側で自動化すべき点はない**。技能・アウトフィット・能力値の持ち方は残確認。
 - [x] **トループ級キャラクター（エニグマ・分身）の類型の言語化**（同上・Troops.md）: エニグマ＝エニグマポイントが HP 相当（達成値適用）、分身＝1点で消滅（ダメージ管理不要）・本体とほぼ同一データ・スタイル複数・AR=1 固定・CS/CSカレント=0 固定。全類型で神業不可・トループ取得技能使用不可。
 - [ ] **heads／エニグマポイント／分身固定値のデータ構造**への落とし込み（フィールド設計・一括承認対象）。
@@ -68,7 +68,7 @@ CLAUDE.md §2.2 に従い、ルールの言語化とデータ構造（追加フ�
 
 **全項目解決（2026-07-03 ユーザー回答）**:
 
-- ~~**guest**: ①②③~~ → ①報酬点は通常どおり持つ（「持たない」は勘違い＝ルール記載なし。外界値の報酬点＋報酬点取得のスタイル技能等） ②③「セッション履歴以外のデータ的な面では何も違いがない」＝ゴースト登場・部位管理・戦闘タブ含めキャストと同機能
+- ~~**guest**: ①②③~~ → ①報酬点は通常どおり持つ（「持たない」は勘違い＝ルール記載なし。外界値の報酬点＋報酬点取得のスタイル技能等） ②③ゴースト登場・部位管理・戦闘タブ含めキャストと同機能（※「セッション履歴以外差異なし」は同日再訂正: **ライフパスも持たない**＝失念・フェーズ6 記録どおり）
 - ~~**troop**: ④⑤~~ → ④構成はフェーズ6 記録（スタイル・能力値・技能・アウトフィット・状態・神業なし→ Troops.md 転記）＋**判定はキャスト・ゲストと同じ** ⑤**biography はトループにもあった方が良い**（ユーザー意向）→ BiographyTemplate 追加を一括承認案に（memo との統合は設計提案）
 - ~~**エニグマ・分身**: ⑥~~ → エニグマ＝troop の**エニグマモード**（人数の代わりにエニグマポイントを HP に。リソースの意味・ラベル切替）。分身＝**トループ級なので troop として作成**
 - ~~**トループ取得技能（11-6）**: ⑦~~ → 手動転記でなく、**usage に「NPC取得」用途を新設**（D&D「召喚」相当。起動のみ＝小分類エキストラのアウトフィット入手／起動後判定＝達成値分の人数 or エニグマポイントを持つアクター取得／分身＝目標値10 の成否）。usage 基盤への用途タイプ追加＝§4.3 の設計合意対象として一括承認案に
@@ -96,7 +96,7 @@ CLAUDE.md §2.2 に従い、ルールの言語化とデータ構造（追加フ�
 
 DataModel 追加フィールド＋`prepareDerivedData`（`computeAttributeFinal` 等、実効値を cast と同経路に）＋シート実装。判定起動の実機確認。
 
-**実装完了（2026-07-03・本体 `a76e01e`・実機確認待ち）**: `CharacterBaseDataModel` 新設（cast の共有フィールド＋派生パイプラインを移設。cast=＋セッション履歴クラスタ4フィールド／guest=素の継承。**差分4フィールドをテストで不変条件化**・既存 cast テスト無変更で通過）。`TokyoNovaGuestSheet`（薄い派生・履歴タブなしシェル）を makeDefault 登録。RL（GM）手札上限への全ゲスト `handMaxSizeMod` 合算、新規 guest のシード（部位プリセット・基本13技能・リンクトークン）を実装。テスト 1012 green。記録: Audit_and_Review / Design_Review_Entries（2026-07-03）。
+**実装完了（2026-07-03・本体 `a76e01e` ＋ ライフパス除去 `9dc0928`・実機確認待ち）**: `CharacterBaseDataModel` 新設（cast の共有フィールド＋派生パイプラインを移設。cast=＋セッション履歴クラスタ4フィールド＋lifePath／guest=素の継承。**差分5フィールドをテストで不変条件化**・既存 cast テスト無変更で通過。tab-profile のライフパス節は features.lifePath でゲート）。`TokyoNovaGuestSheet`（薄い派生・履歴タブなしシェル）を makeDefault 登録。RL（GM）手札上限への全ゲスト `handMaxSizeMod` 合算、新規 guest のシード（部位プリセット・基本13技能・リンクトークン）を実装。テスト 1012 green。記録: Audit_and_Review / Design_Review_Entries（2026-07-03）。
 
 ### 11-4: troop シート
 

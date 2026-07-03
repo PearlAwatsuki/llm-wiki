@@ -3028,7 +3028,7 @@ armor / cyborg / tap / vehicle / ianus / weapon / housing-area / residence)、
 - **DataModel はクラス継承で共通化**（シート側 11-2 の TnxCharacterSheetBase と対の構図）: `CharacterBaseDataModel extends SystemDataModel.mixin(Biography, Attributes, ActorBase)` に共有スキーマ＋派生パイプライン一式。mixin のプロトタイプコピー（後勝ち・super 連鎖なし）に依存しない単純な継承のため、prepareDerivedData の実行順が明確（attributes フォールバック → 基底パイプライン）。
 - **作成は 11-2 と同じ機械変換**（cast.mjs のコピーに一意性アサーション付き置換: クラス名・import パス・セッション履歴クラスタ除去）。cast.mjs / guest.mjs は薄い派生に書き換え。**cast のスキーマは不変**（既存 cast テストが無変更で通過＝裏付け）。
 - **guest シート**: `TokyoNovaGuestSheet` は classes / PARTS / SHEET_FEATURES の宣言のみ（約30行）。シェル guest-sheet.hbs はセッション履歴タブを除いた partial 差し込み。11-2 の部品化がそのまま効いた形。
-- **スキーマ差分テスト**: 「cast との差分＝セッション履歴クラスタ4フィールドに限る」を不変条件としてテスト化。今後 cast にフィールドを足すと guest 側の判断を強制する仕掛け（基底に足せば自動で両方に入る）。
+- **スキーマ差分テスト**: 「cast との差分＝セッション履歴クラスタ＋lifePath の5フィールドに限る」を不変条件としてテスト化（lifePath はユーザー再訂正 `9dc0928` で cast 固有へ移動し features.lifePath ゲートを追加）。今後 cast にフィールドを足すと guest 側の判断を強制する仕掛け（基底に足せば自動で両方に入る）。
 
 #### 課題
 
