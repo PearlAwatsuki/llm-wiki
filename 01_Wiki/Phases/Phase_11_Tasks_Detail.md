@@ -108,6 +108,8 @@ DataModel 追加フィールド＋`prepareDerivedData`（`computeAttributeFinal`
 
 biography＋所持アイテム表示（スタイル・神業・技能・アウトフィット）。
 
+**実装完了（2026-07-03・本体 `b37abeb`＋`7e68c96`・実機確認待ち）**: features.abilities/combat を新設し「能力値を持たないシート」を表現。TokyoNovaExtraSheet（薄い派生・タブ=技能/アウトフィット/詳細。戦闘・状態・履歴なし＝ダメージ概念なし。神業使用可・技能シードなし）。**固定値判定**を実装——usage check 用途の「固定達成値」（`fixedResult`・空欄=通常判定）でカード・能力値を使わず達成値を直接チャット出力（checkResult フラグ互換）。エキストラは固定達成値の用途のみ実行可（通常判定はガード）。テスト 1035 green。記録: Audit_and_Review / Design_Review_Entries / [Check_Rules.md](../Game_Rules/Check_Rules.md)「固定値判定」（2026-07-03）。
+
 ### 11-6: トループ取得技能の本体連携
 
 〈分心〉→エニグマ、〈分身〉→分身の本体生成・作成ルール実装。

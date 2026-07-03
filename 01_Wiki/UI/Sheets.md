@@ -15,6 +15,7 @@
 | TokyoNovaCastSheet | TnxCharacterSheetBase | cast | `scripts/actor/tnx-cast-sheet.mjs`（EXP 系＋セッション履歴のみ） |
 | TokyoNovaGuestSheet | TnxCharacterSheetBase | guest | `scripts/actor/tnx-guest-sheet.mjs`（宣言のみの薄い派生・フェーズ11-3） |
 | TokyoNovaTroopSheet | TnxCharacterSheetBase | troop | `scripts/actor/tnx-troop-sheet.mjs`（宣言のみの薄い派生・フェーズ11-4） |
+| TokyoNovaExtraSheet | TnxCharacterSheetBase | extra | `scripts/actor/tnx-extra-sheet.mjs`（宣言のみの薄い派生・フェーズ11-5） |
 | TokyoNovaItemSheet | ItemSheetV2 | 基底（直接登録なし） | `scripts/item/tnx-item-sheet.mjs` |
 | TokyoNovaStyleSheet | TokyoNovaItemSheet | style | `scripts/item/tnx-style-sheet.mjs` |
 | TokyoNovaMiracleSheet | TokyoNovaItemSheet | miracle | `scripts/item/tnx-miracle-sheet.mjs` |
@@ -29,7 +30,7 @@
 
 ## コアデフォルト（カスタム未実装）
 
-**Actor**: extra — **フェーズ11-5** でカスタムシートを追加予定（guest / troop はフェーズ11-3 / 11-4 で実装済み）
+**なし** — 全 Actor / Item type がカスタムシートを持つ（フェーズ11-5 で完了）
 
 ## 共通 UI パターン
 

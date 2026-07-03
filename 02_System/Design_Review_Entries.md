@@ -3068,3 +3068,25 @@ armor / cyborg / tap / vehicle / ianus / weapon / housing-area / residence)、
 - 名前固定は `nameLocked` コンテキスト（header の identity 編集を disabled 化）＋ `tnx.mjs` の `syncTroopName`（updateActor / スタイルの create・update・delete で導出名へ同期。導出名一致で収束するため再帰安全）。
 - 能力値式は `_prepareAbilityTotals` フック抽出（基底=キャスト式、troop=growth 枠にトループレベルを入れて `computeAttributeFinal` を再利用＝式の単一ソース維持）。
 - 反省: 「エニグマモードにしたら」というユーザー発言を Boolean フラグに直訳した。3類型（トループ/エニグマ/分身）が正本 Troops.md に明記されていた以上、種別切替として設計すべきだった（記録された類型構造 > 発言の字面）。
+
+### TokyoNovaExtraSheet と features.abilities/combat・fixedResult（フェーズ11-5）
+
+**日付**: 2026-07-03
+**レビュー対象**: `scripts/actor/tnx-extra-sheet.mjs`、`scripts/actor/tnx-character-sheet-base.mjs`、`templates/actor/extra-sheet.hbs`・`parts/tab-abilities.hbs`、`scripts/data/item/common/usage.mjs`、`templates/app/usage-sheet.hbs`、`scripts/tnx.mjs`、テスト
+**ステータス**: レビュー済（実機確認待ち）
+
+#### 設計
+
+- **features を 14 フラグに拡張**（abilities / combat を追加）。「能力値を持たないシート」を基底の3ゲート（能力値コンテキスト・戦闘データ・部位占有の準備）＋テンプレート1ゲート（能力値グリッド）で表現し、extra も**宣言のみの薄い派生**（guest/troop と同型）に収まった。技能タブは tab-abilities partial の再利用（ナビラベルだけ「技能」）。
+- **fixedResult は usage 基盤への最小追加**（フィールド1本＋発動タブ入力1行＋起動フローの早期分岐。§4.3 の usage 基盤改変は 11-1 一括承認の「固定値判定」項どおり）。用途不備検知は固定達成値のとき対象外（技能・スートを使わないため）。
+- **チャットは専用の軽量カード**（check-result.hbs はカード画像等を前提とするため再利用せず）。flags は checkResult 互換で情報系統を揃えた。
+- エキストラの通常判定ガードは**用途選択後・固定値分岐の後**に配置（解説のチャット表示と固定値判定はエキストラでも通る）。
+
+#### 課題
+
+- ⚠️ エキストラのスタイルスロット・市民ランク・ハンドル等は表示のまま（基本は名前のみだが持てるデータのため。過剰なら troop 同様に実機指摘で絞る）。
+- ⚠️ 固定達成値入力はスピナー原則の例外（nullable「空欄=通常判定」のため）。
+
+#### 推奨アクション
+
+- 実機確認: エキストラ新規作成（リンクトークン・技能シードなし）→ 3タブ表示 → 技能/アウトフィットのドロップと一覧 → 神業使用 → 固定達成値を設定した用途の判定（チャットに「達成値 N（固定値）」）→ 固定値なし用途の判定が警告で止まること。
