@@ -15,9 +15,9 @@
 
 ### cast — プレイヤーキャラクター
 
-**mixin**: biography + attributes + actorBase
+**継承**: `CharacterBaseDataModel`（フェーズ11-3 で共通基底化。以下の固有フィールドのうち partSlots・bounty/bountyBase・baseAttack/baseDefence/baseGuard・weaponRefs・appearanceModifier・isGhost・handMaxSizeMod・outfitMod は基底由来＝guest と共有）
 
-**シート**: `TokyoNovaCastSheet`（ApplicationV2、フェーズ3 で移行完了）
+**シート**: `TokyoNovaCastSheet`（TnxCharacterSheetBase 派生・フェーズ11-2 で共通部品化。cast 固有＝EXP 系＋セッション履歴のみ）
 
 | 固有フィールド | 型 | 備考 |
 |---|---|---|
@@ -70,8 +70,6 @@
 > **例外＝固定値判定**: エキストラ（アウトフィットとして取得できるものを含む）は**固定値の判定が行える**ため、**一般技能のみ持てる**——スート・レベルの概念は持たず（読み取りもしない）、達成値は check 用途の「固定達成値」で表す（設定方法は用途＝2026-07-04 ユーザー確定 → [Check_Rules.md](../Game_Rules/Check_Rules.md)「固定値判定」）。
 
 **シート**: `TokyoNovaExtraSheet`（フェーズ11-5。ポートレート＋パーソナルデータ＋名前＋技能欄＋説明のタブなし1ページ。技能欄は「技能名＋達成値」のみ表示・ドロップは一般技能のみ許可。新規作成はリンクトークンのみ設定）
-
-**シート**: コアデフォルト（**フェーズ11** でカスタムシート追加予定）
 
 ## attributes.combatSpeed（CS 3層モデル・フェーズ10-5 で KI-010 解消）
 
