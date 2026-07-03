@@ -102,7 +102,7 @@ DataModel 追加フィールド＋`prepareDerivedData`（`computeAttributeFinal`
 
 実効値派生、シート（memo・heads・能力値・CS）、heads のトークンリソースバー連携、heads 手動増減（ダメージ例外の器）。エニグマ/分身の類型対応。
 
-**実装完了（2026-07-03・本体 `5c8151f`・実機確認待ち）**: TroopDataModel を CharacterBaseDataModel 継承に再構成（判定・派生値をキャスト同経路に。memo は biography.description へ migrateData 移行・廃止）。isEnigmaMode（heads の意味・ラベル切替）、サイドバー heads パネル（閲覧±＝ダメージ例外の器・手動）、トークンバー割当（trackableAttributes＋新規作成時 bar1=heads）、神業ガード（ドロップ＋スタイル由来自動取得の二重）、SHEET_FEATURES 7 フラグ化＋基底マージ。guest との差分=heads/isEnigmaMode をテストで不変条件化。1018 green。記録: Audit_and_Review / Design_Review_Entries（2026-07-03）。
+**実装完了（2026-07-03・本体 `5c8151f` → 是正 `46a8584`・実機確認待ち）**: TroopDataModel を CharacterBaseDataModel 継承に再構成（判定・派生値をキャスト同経路に。memo は biography.description へ migrateData 移行・廃止）。**初版のユーザー実機レビューで5件是正**——①種別 `troopMode` ドロップダウン（トループ/エニグマ/分身。isEnigmaMode フラグは誤設計で廃止・分身はリソース管理なし） ②人数編集は報酬点同様の平入力（スピナー見切れ対策） ③市民ランク・パーソナルデータ除去＋トループレベル追加 ④成長欄除去＋**能力値＝スタイル基本値＋トループレベル**（新ルール。制御値の対称加算は要確認） ⑤ハンドル除去＋名前固定（トループ=「(スタイル名)・トループ」/分身=「(分身元)の分身」・自由入力はエニグマのみ・syncTroopName 同期）。トークンバー割当・神業ガード二重・SHEET_FEATURES 12 フラグ。1023 green。記録: Audit_and_Review / Design_Review_Entries / [Troops.md](../Game_Rules/Troops.md)「種別と名前の規則」「能力値の決定」（2026-07-03）。
 
 ### 11-5: extra シート
 

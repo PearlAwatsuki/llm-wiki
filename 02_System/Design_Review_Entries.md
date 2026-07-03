@@ -3061,3 +3061,10 @@ armor / cyborg / tap / vehicle / ianus / weapon / housing-area / residence)、
 #### 推奨アクション
 
 - 実機確認: トループ新規作成（bar1=heads・13技能）→ サイドバーの人数±/エニグマモード切替（ラベルとトークンバーの追従）→ スタイルをドロップして神業が自動取得されないこと・神業ドロップが拒否されること → 判定起動・戦闘タブ表示。
+
+#### 是正記録（2026-07-03・同日・本体 `46a8584`）
+
+- SHEET_FEATURES を 12 フラグに拡張（growth / personalData / citizenRank / handle / troopLevel を追加）。features は基底既定とのマージ解決のため cast / guest は宣言変更不要。
+- 名前固定は `nameLocked` コンテキスト（header の identity 編集を disabled 化）＋ `tnx.mjs` の `syncTroopName`（updateActor / スタイルの create・update・delete で導出名へ同期。導出名一致で収束するため再帰安全）。
+- 能力値式は `_prepareAbilityTotals` フック抽出（基底=キャスト式、troop=growth 枠にトループレベルを入れて `computeAttributeFinal` を再利用＝式の単一ソース維持）。
+- 反省: 「エニグマモードにしたら」というユーザー発言を Boolean フラグに直訳した。3類型（トループ/エニグマ/分身）が正本 Troops.md に明記されていた以上、種別切替として設計すべきだった（記録された類型構造 > 発言の字面）。

@@ -52,12 +52,14 @@
 
 | 固有フィールド | 型 | 備考 |
 |---|---|---|
-| heads | SchemaField | `{value, max}` — 人数。HP のように機能しダメージ分減少（チャート不参照）。トークンリソースバー割当（trackableAttributes・新規作成時 bar1 既定） |
-| isEnigmaMode | BooleanField | エニグマモード（フェーズ11-4）。ON で heads の意味・ラベルが「エニグマポイント」に切替（フィールド共用＝バー連携不変） |
+| troopMode | StringField | 種別ドロップダウン `troop/enigma/bunshin`（正本 [Troops.md](../Game_Rules/Troops.md)「種別と名前の規則」。旧 isEnigmaMode は誤設計として migrateData で移行・廃止） |
+| sourceName | StringField | 分身元キャラクター名（bunshin の固定名「(分身元)の分身」に使用。11-6 で自動設定へ拡張予定） |
+| troopLevel | NumberField | トループレベル。**能力値＝スタイルの基本値＋トループレベル**の決定項（成長なし・`_prepareAbilityTotals` オーバーライド） |
+| heads | SchemaField | `{value, max}` — 人数（enigma ではエニグマポイント・フィールド共用）。HP のように機能しダメージ分減少（チャート不参照）。トークンリソースバー割当（trackableAttributes・新規作成時 bar1 既定）。bunshin はリソース管理なし（シート非表示） |
 
-> 旧 `memo` はフェーズ11-4 で廃止（`migrateData` で biography.description へ移行）。分身（トループ級）も troop として作成し、AR=1・CS/CSカレント=0 はデータ入力で表現。
+> 旧 `memo` はフェーズ11-4 で廃止（`migrateData` で biography.description へ移行）。分身も troop として作成し、AR=1・CS/CSカレント=0 はデータ入力で表現。名前はトループ=「(スタイル名)・トループ」／分身=「(分身元)の分身」で固定（tnx.mjs `syncTroopName`・自由入力はエニグマのみ）。
 
-**シート**: `TokyoNovaTroopSheet`（フェーズ11-4。TnxCharacterSheetBase の薄い派生・神業/報酬点/部位管理なし・heads パネル付き）
+**シート**: `TokyoNovaTroopSheet`（フェーズ11-4。TnxCharacterSheetBase の薄い派生・神業/報酬点/部位管理/成長欄/ハンドル/市民ランク/パーソナルデータなし・トループレベル＋種別/heads パネル付き）
 
 ### extra — エキストラ
 
