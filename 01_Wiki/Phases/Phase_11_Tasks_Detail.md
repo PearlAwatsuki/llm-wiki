@@ -77,7 +77,18 @@ CLAUDE.md §2.2 に従い、ルールの言語化とデータ構造（追加フ�
 
 ### 11-2: キャスト共通部品化（挙動不変リファクタ）
 
-11-1 で確定した設計に沿って cast シートを部品化し、cast 側の回帰確認をこの段で締める。詳細タスクは 11-1 確定後に記載。
+11-1 で確定した設計に沿って cast シートを部品化し、cast 側の回帰確認をこの段で締める。
+
+**技術設計（2026-07-03 起草・11-1 一括承認の一部）**:
+
+- **テンプレート**: Handlebars partial 方式（`{{> }}`）で分割。既存の `templates/parts/`（active-effects-list / bad-status-list / history-list）と同じ確立済みパターンに従う。**PARTS の複数分割はしない**（単一 part 描画を維持＝DOM 構造・スクロール保持・submitOnChange の挙動を変えない＝リスク最小）。
+  - 新設 `templates/actor/parts/`: `header-sidebar.hbs`（EXP ブロックのみ `{{#if features.exp}}` ゲート・報酬点は共通）／`tab-abilities.hbs`（能力値・スタイル・技能）／`tab-combat.hbs`（CS・AR・武器・防御力・タイミング別）／`tab-outfits.hbs`（部位占有パネルは `{{#if features.parts}}` ゲート）／`tab-status.hbs`／`tab-history.hbs`（cast 専用）／`tab-profile.hbs`（ライフパス＋説明。guest も使用）。
+  - `cast-sheet.hbs` はタブ nav＋partial 差し込みの薄いシェルになる。guest（11-3）は同構成からセッション履歴タブを除き `features.exp=false` で組む。
+- **クラス**: 新設 `TnxCharacterSheetBase`（`scripts/actor/tnx-character-sheet-base.mjs`）へ現 `TokyoNovaCastSheet` の共通機能を移す（コンテキスト準備・技能/アウトフィット/戦闘/部位・判定起動・D&D 並び替え/ドロップ・コンテキストメニュー・編集モード・スピナー・CS/AR・神業表示）。
+  - `TokyoNovaCastSheet extends TnxCharacterSheetBase` に残すのは **EXP 系**（`updateCastExp`・`_calcSingleAbilityCost`/`_calcSingleItemCost`・`_getSkillExpCost`）と**セッション履歴**（TnxHistoryMixin・`_performHistoryUpdate`・syncWithOwner）のみ。
+  - `DEFAULT_OPTIONS`/`actions` は ApplicationV2 の継承マージを利用（基底に共通 actions・cast に履歴/EXP 系のみ追加）。
+  - シートごとの差異は `static SHEET_FEATURES`（exp / history / parts 等）で宣言し、`_prepareContext` が `features` としてテンプレートへ供給する（後続の troop/extra も同機構で差異を表現）。
+- **検証（完了条件）**: 挙動不変。全テスト green＋cast シートの実機回帰（全タブ・編集モード・D&D・判定起動）。この段では guest シートは作らない（11-3）。
 
 ### 11-3: guest シート
 
