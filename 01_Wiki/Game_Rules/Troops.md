@@ -4,6 +4,8 @@
 
 基本定義（[Terminology.md](Terminology.md) より）: トループ＝集団を表す NPC。個性を持たない。
 
+**構成**（フェーズ6 設計記録 2026-06-14・[Phase_6_Tasks_Detail.md](../Phases/Phase_6_Tasks_Detail.md)）: スタイル（1つ）・能力値・技能・アウトフィット・状態（コンディション）を持ち、**神業は持たない**。
+
 ## heads（人数）
 
 - heads は**本当に人数を表すパラメータでしかない**。ダメージを受けると人数分減少する（HP 的に機能する。→ [Damage_Rules.md](Damage_Rules.md)「トループ級・エキストラのダメージ」）。
