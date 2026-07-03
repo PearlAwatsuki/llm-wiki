@@ -11,7 +11,8 @@
 
 | クラス | 継承 | 対象 type | ファイル |
 |---|---|---|---|
-| TokyoNovaCastSheet | ActorSheetV2 | cast | `scripts/actor/tnx-cast-sheet.mjs` |
+| TnxCharacterSheetBase | ActorSheetV2 | 基底（直接登録なし・フェーズ11-2 新設） | `scripts/actor/tnx-character-sheet-base.mjs` |
+| TokyoNovaCastSheet | TnxCharacterSheetBase | cast | `scripts/actor/tnx-cast-sheet.mjs`（EXP 系＋セッション履歴のみ） |
 | TokyoNovaItemSheet | ItemSheetV2 | 基底（直接登録なし） | `scripts/item/tnx-item-sheet.mjs` |
 | TokyoNovaStyleSheet | TokyoNovaItemSheet | style | `scripts/item/tnx-style-sheet.mjs` |
 | TokyoNovaMiracleSheet | TokyoNovaItemSheet | miracle | `scripts/item/tnx-miracle-sheet.mjs` |

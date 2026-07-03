@@ -2993,3 +2993,26 @@ armor / cyborg / tap / vehicle / ianus / weapon / housing-area / residence)、
 #### 推奨アクション
 
 - ~~実機確認: 戦闘タブの AR ボックス（閲覧/編集の両モード・カット進行中のグローと現在AR への表示切替・カット開始時の自動セット）~~ → **実機確認済み（2026-07-03）**。非戦闘時に付与値が数値表示されていた点をユーザー指摘で「なし」表示に修正（`b0132e8`）。
+
+### キャストシート共通部品化（フェーズ11-2）
+
+**日付**: 2026-07-03
+**レビュー対象**: `scripts/actor/tnx-character-sheet-base.mjs`（新設）、`scripts/actor/tnx-cast-sheet.mjs`（縮小）、`templates/actor/cast-sheet.hbs`（シェル化）、`templates/actor/parts/`（新設 8 partial）、`scripts/tnx.mjs`（loadTemplates）
+**ステータス**: ✅ 実装完了（本体 `7c35ccc`・全テスト green 992・eslint 0 error）・**実機回帰待ち（cast シート全タブ・挙動不変が完了条件）**
+
+#### 設計（11-2 設計どおり・2026-07-03 承認）
+
+- **テンプレート**: `templates/actor/parts/` に sidebar / header / tab-abilities / tab-combat / tab-outfits / tab-status / tab-history / tab-profile の 8 partial を新設。移設は sed の行範囲抽出で**バイト同一**（転記ミス排除）。cast-sheet.hbs はタブ nav＋`{{> }}` 差し込みの薄いシェル。PARTS の複数分割はせず単一 part 描画を維持（DOM・スクロール保持・submitOnChange 不変）。
+- **features ゲート**: header の EXP ブロック＝`{{#if features.exp}}`、tab-outfits の部位占有パネル＝`{{#if features.parts}}`。cast は `SHEET_FEATURES = { exp: true, history: true, parts: true }` のため出力不変。
+- **クラス**: `TnxCharacterSheetBase` は旧 cast シートのコピーから cast 固有部を機械的に除去して作成（Python スクリプト・全置換に一意性アサーション付き）。cast に残したのは設計どおり **EXP 系**（`updateCastExp`・`_calcSingleAbilityCost`/`_calcSingleItemCost`・`_getSkillExpCost`）と**セッション履歴**（TnxHistoryMixin ACTIONS・リスナー・`_performHistoryUpdate`・history コンテキスト）のみ。
+- **技能レベル変更の EXP 連動**は基底のフック `_applySkillLevelExp(item, oldLevel, newLevel, targetKind, input)` に分離（既定＝素通し。cast がオーバーライドして消費・不足時の入力巻き戻し＝従来と同一挙動）。EXP を持たない guest（11-3）はフック未定義のまま自然に非消費となる。
+- **DEFAULT_OPTIONS** は ApplicationV2 の継承チェーンマージを利用。classes 配列は上書きのため cast がフル指定。
+
+#### 課題
+
+- ⚠️ partial 内の構造クラス名（`cast-sheet` / `cast-sidebar`）は CSS 再利用のため cast 名のまま共有する（アプリルートの `.cast`/`.guest` クラスで型は区別可能）。改名は CSS 全域に波及するため見送り。
+- 未使用の `_prepareGenericSlots` は基底へそのまま移設（挙動不変の原則。整理は別途）。
+
+#### 推奨アクション
+
+- 実機回帰（cast シート）: 全タブ表示・編集モード切替・技能レベル/スート変更の EXP 連動・アウトフィット D&D 並び替え・部位占有・戦闘タブ（CS/AR）・セッション履歴・判定起動。

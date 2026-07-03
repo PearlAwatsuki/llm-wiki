@@ -90,6 +90,8 @@ CLAUDE.md §2.2 に従い、ルールの言語化とデータ構造（追加フ�
   - シートごとの差異は `static SHEET_FEATURES`（exp / history / parts 等）で宣言し、`_prepareContext` が `features` としてテンプレートへ供給する（後続の troop/extra も同機構で差異を表現）。
 - **検証（完了条件）**: 挙動不変。全テスト green＋cast シートの実機回帰（全タブ・編集モード・D&D・判定起動）。この段では guest シートは作らない（11-3）。
 
+**実装完了（2026-07-03・本体 `7c35ccc`・実機回帰待ち）**: partial 8 本（sidebar/header/タブ6種・行範囲抽出でバイト同一移設）＋シェル化、`TnxCharacterSheetBase` 新設（cast 残置=EXP 系＋セッション履歴のみ。技能レベル変更の EXP 連動は基底フック `_applySkillLevelExp` に分離し cast がオーバーライド）。テスト 992 green・lint 新規警告なし。記録: Design_Review_Entries（2026-07-03）。
+
 ### 11-3: guest シート
 
 DataModel 追加フィールド＋`prepareDerivedData`（`computeAttributeFinal` 等、実効値を cast と同経路に）＋シート実装。判定起動の実機確認。

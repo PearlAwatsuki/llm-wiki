@@ -5,7 +5,10 @@
 ```
 templates/
   actor/
-    cast-sheet.hbs          # cast シート本体（player-sheet は廃止）
+    cast-sheet.hbs          # cast シートのシェル（タブ nav＋partial 差し込み。フェーズ11-2 で部品化）
+    parts/                  # アクターシート共通部品（フェーズ11-2。cast/guest 等で共有・features でゲート）
+                            #   sidebar / header / tab-abilities / tab-combat / tab-outfits /
+                            #   tab-status / tab-history(cast 専用) / tab-profile
   item/
     style-sheet.hbs / miracle-sheet.hbs / general-skill-sheet.hbs /
     style-skill-sheet.hbs / organization-sheet.hbs /
