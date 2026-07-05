@@ -3090,3 +3090,29 @@ armor / cyborg / tap / vehicle / ianus / weapon / housing-area / residence)、
 #### 推奨アクション
 
 - 実機確認: エキストラ新規作成（リンクトークン・技能シードなし）→ 3タブ表示 → 技能/アウトフィットのドロップと一覧 → 神業使用 → 固定達成値を設定した用途の判定（チャットに「達成値 N（固定値）」）→ 固定値なし用途の判定が警告で止まること。
+
+
+## フェーズ11-6: NPC取得・消費先設定・分身共有・EXP算入（2026-07-05）
+
+#### 設計判断
+
+- **消費解決レイヤーの一元化**: usage-consumption.mjs に解決（resolveConsumeRows・純関数）／確認ダイアログ／適用（平プラン）を集約。分身→本体差し替え（resolveConsumeRowsForActor）は同じ解決関数の getItem 差し替えで実現し、ダイアログ残数表示と実消費が必ず同じ対象を見る。プランは平データ（actorId/itemId/kind/amount）で ctx を通す（deepClone 安全）。
+- **純ロジックの分離**: npc-acquisition-logic.mjs（所有者逆引き・取得帰結）を Foundry 非依存で分離。フロー本体（npc-acquisition.mjs）は check-flow を import するため、テスト可能性と import 連鎖の Foundry グローバル問題を分けて解決。
+- **循環回避**: check-flow → npc-acquisition の完了継続は動的 import（npc-acquisition が TnxCheckFlow.open を static import するため）。
+- **トークン配置**: dnd5e TokenPlacement の簡易版（プレビュー追従・クリック確定・右クリックスキップ・TOP_LEFT_VERTEX スナップ）。ホイール回転は見送り。actor.getTokenDocument → scene.createEmbeddedDocuments。
+- **EXP 再計算トリガ**: 所有者参照/種別の変更は preUpdateActor で旧所有者 uuid を options に捕捉し、新旧双方を再計算（付け替えで計上が移動するため）。per-item ループは _sumActorItemsCost に共通化（キャスト本体と所有トループ級で共用・挙動不変）。
+- **UI 踏襲**: 消費設定=D&D Consumption（行追加/削除・スピナー）。取得アイテム/所有者/エキストラアクター参照=フェーズ10 ドロップエリア方式＋fromUuid(Sync) ライブ解決（name は削除時フォールバックのみ）。
+
+#### 既知の留意点
+
+- ⚠️ 消費設定の保存は用途シート _onSubmit のホワイトリストに行入力の再構成として配線（新フィールドは必ず保存経路も配線・11-5 の教訓を適用済み）。
+- ⚠️ トークン配置は canvas API（PIXI プレビュー・getSnappedPoint）依存のため実機確認が最重要。gridless はスナップなし。
+- ⚠️ 分身共有の照合は identificationKey 規約前提。キー無しの自作アイテムは名前一致→それも無ければローカル消費（ダイアログの「（本体と共有）」表示の有無で判別可能）。
+
+#### 推奨アクション（実機確認）
+
+1. 消費先設定: 既存 check 用途が「親×1」で従来同一に動くこと／組み合わせ技能が自動消費**されない**こと／神業 usageCount の消費。
+2. NPC取得（トループ/エニグマ）: 所有者設定→用途使用→判定→heads=達成値転記・レベル転記・配置。
+3. NPC取得（分身）: 目標値10・成功時のみ配置・sourceName 自動設定・使用回数が本体から減ること。
+4. NPC取得（エキストラ）: 式神符型アウトフィット→派生取得＋共有アクターの配置が同時に起きること。
+5. EXP: トループ側の技能/アウトフィット追加で所有者キャストの消費経験点が増えること・「うち所有トループ級」小計・トループシートの所有者経験点表示（分身に出ないこと）。

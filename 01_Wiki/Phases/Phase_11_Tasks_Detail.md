@@ -151,6 +151,8 @@ biography＋所持アイテム表示（スタイル・神業・技能・アウ�
 
 **スコープ外（申し送り継続）**: 攻撃フローからの heads 自動減算（フェーズ12）
 
+**実装完了（2026-07-05・本体 8d1bd7a→5c5c91f→0df6cdf→0ea4938→6720973→e9bb74c→7b55db9・実機確認待ち）**: 計画の①〜⑧を完遂。DataModel（npcAcquire+acquireMode+acquireItemRefs／consumeTargets／troop.ownerActorRef／general.extraActorRef・スキーマ/migrateData テスト付き）→消費先設定（自動スキャン全廃・D&D Consumption UI・check 互換=親×1）→分身の使用回数共有（本体正本・識別キー照合・分身側アイテムシート無効化）→NPC取得用途（作成制限=トループ取得技能+アウトフィット系・モード別シート UI・取得アイテムドロップ欄）→使用フロー（所有者逆引き・レベル転記・判定連携・heads/sourceName 転記・結果チャット）→トークン配置（dnd5e 踏襲）→シート欄（所有者ドロップ・エニグマレベル呼称・エキストラアクター参照）→EXP 算入（取得元キャスト計上・新旧所有者再計算・小計/所有者経験点表示）。テスト 1065 green・lint/stylelint clean。記録: Audit_and_Review / Design_Review_Entries（2026-07-05）。
+
 ### 11-7: 仕上げ
 
 - [ ] テスト・記録（メカニクス監査／設計レビュー 各エントリ）・wiki 整合化
