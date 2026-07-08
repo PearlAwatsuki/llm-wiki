@@ -42,7 +42,7 @@
 - [x] **攻撃フロー**: 起動=アイテムロール+使用ボタン両対応。武器解決=weaponRef→生身フォールバック。対象=Foundry ターゲット→選択ダイアログ→対象なし許容。攻撃判定は**達成値まで算出し成否保留**の攻撃カードを出す。**リアクション導線は系統別**——物理=「ドッジ」「パリー」「リアクションしない」／精神・社会=「リアクション」「リアクションしない」（既定候補〈自我〉〈信用〉表示・技能は強制しない）。パリー=AR>0 検証+AR−1（カット進行外は検証・消費なし）・成立時は受け値を軽減に自動計上。対決解決=**相手の達成値を目標値として攻撃達成値≥で命中・未満はその時点で攻撃終了**（Combat_Flow 規約）。**カードのライブ書き換え**（midi-qol 風・ユーザー提案）: ボタン領域を丸ごと成否表示に置換（checkRequest の結果注入と同型のフラグ+renderChatMessageHTML）。
 - [x] **ダメージ算出ダイアログ**: ダメージカード（命中判定のカード数字）+攻撃力（物理のみ・武器/生身）+修正（damageBoost/damageReduce のチェック適用+消費連動・formula は式ヘルパー評価・手動欄）−軽減（対象の S/P/I 対応防御力自動・X は軽減なし・パリー受け値自動・社会はリアクション成立時に報酬点軽減欄）。プレビュー（最終値・参照段・負傷名）→ `applyDamageChartResult`（フェーズ9 既存）。スタン/説得トグル（10 以上→10）。系統は attack 用途の damageCategory を使用（physical/mental/social・既存 StringField の用途拡張）。
 - [x] **例外系**: troop=heads 減算（下限0・チャート不参照）／分身=消滅通知／extra=適用不可警告。
-- [x] **FS判定基幹**: **JournalEntryPage 型 `focusSystem`**（documentTypes 追加）+ FocusSystemDataModel（restriction／defeatCondition+defeatCutMax／supportNote／rows[]={skillName[強制しない]・targetValue・progressMod{value, itemRef{uuid,path}, note}・備考}／progress{value,goal}／cut{value}／memo）。12 は手動増減まで・実判定接続=13。
+- [x] ~~**FS判定基幹**: **JournalEntryPage 型 `focusSystem`**（documentTypes 追加）+ FocusSystemDataModel（…）。12 は手動増減まで・実判定接続=13。~~ **← 2026-07-09 取り消し**: JournalEntryPage 化は**ユーザー未承認の Code 案**が承認済みとして記録されていた（誤記録）。正: **FS判定は判定要求システムの延長**（設定=進行/支援の技能決定+イベント設定を行い、**FS判定を開始するトリガー**を発行する方式。実挙動は13以降）。12-5 の設計は判定要求延長方式で再確定する（正本 Focus_System.md 訂正済み）。
 
 ### 12-2: 攻撃判定（attack 用途の起動・命中）
 ### 12-3: ダメージ算出（算出+適用配線+damageBoost/damageReduce）
@@ -64,7 +64,7 @@
 
 - attack 用途から命中判定→ダメージ算出→チャート適用（既存機構）まで一連で動く
 - トループ級・エキストラのダメージ例外が配線されている
-- FS判定の基幹（管理シート・進行値/カット/判定行）が RL 運用可能（実判定は13）
+- FS判定の基幹（判定要求の延長=設定+開始トリガー。進行/支援の技能決定・イベント設定・進行値/カットの手動管理）が RL 運用可能（実挙動は13以降）
 - v0.12.0 タグ
 
 ## 関連
