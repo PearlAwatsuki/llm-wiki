@@ -1737,20 +1737,22 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 - 表示絞り込み（タイミング/単独/ドッジ・パリー）は今回**見送り**（ユーザー判断「表示のブロックも無くす」）。単独フラグも今回は含まない。
 
 
-### 能力値判定の報酬点消費不可（ルール訂正・フェーズ12 補）
+### 報酬点の使用可否のルール訂正（能力値判定は不可・組み合わせ技能でも可・フェーズ12 補）
 
 **日付**: 2026-07-10
-**関連実装**: `scripts/actor/tnx-character-sheet-base.mjs`（能力値判定ボタン）、`scripts/module/tnx-rl-request-app.mjs`（判定要求の abilityCheck 分岐）。正本 [Bounty_Points.md](../01_Wiki/Game_Rules/Bounty_Points.md)「判定フローとの連携」
-**ステータス**: ✅ 修正完了（全テスト green 1169・lint 0 error）・実機確認待ち
+**関連実装**: `scripts/module/tnx-check-engine.mjs`（純関数 `comboUsesBounty`）、`tnx-character-sheet-base`（能力値判定・通常判定）、`tnx-rl-request-app`・`attack-flow`（攻撃/リアクション）・`npc-acquisition`・`treatment-flow`・`vehicle-move`。正本 [Bounty_Points.md](../01_Wiki/Game_Rules/Bounty_Points.md)「判定フローとの連携」
+**ステータス**: ✅ 修正完了（本体 `47fe6ba`＋`592214f`・全テスト green 1171・lint 0 error）・実機確認待ち
 
-#### ルール解釈（2026-07-10 ユーザー確定）
+#### ルール解釈（2026-07-10 ユーザー確定・2点）
 
-- **能力値判定では報酬点を消費できない。** 報酬点を消費できるのは**技能判定のみ**（`usesBounty` 技能ベース）。従前の実装・記録は「能力判定への報酬点適用は現状許容」としていたが**誤り**として訂正。
+1. **能力値判定では報酬点を消費できない。** 従前の実装・記録は「能力判定への報酬点適用は現状許容」としていたが誤りとして訂正。
+2. **報酬点使用可能技能（`usesBounty`）を組み合わせていれば、ベース技能でなくても報酬点を使用できる。** 従前実装は全経路で `baseSkill.system.usesBounty` のみを見ており誤り。※Code はこの訂正の際、いったん「usesBounty 技能が**ベース**のとき」と wiki に書いた——**実装挙動をユーザー確認なしにルール文として転写した**§4.2 違反（ユーザー指摘で即訂正）。
 
 #### 監査結果
 
-✅ 能力値判定の起動2経路（シートの能力値判定・判定要求アプリ）の `bountyAvailable` を 0 に。制御判定=0・技能判定=`usesBounty` ゲートは従来どおり。
+✅ ①能力値判定の起動2経路（シート・判定要求アプリ）の `bountyAvailable`＝0。②技能判定は純関数 `comboUsesBounty(skillSystems)`（参加技能の some）に全経路（通常判定/攻撃/リアクション/NPC取得/治療/操縦移動/判定要求）を統一。制御判定＝0 は従来どおり。
 
 #### 課題・申し送り
 
-- シナリオシートの情報収集判定（`_onStartInfoSkillCheck`）は技能名テキストのみで技能アイテムを解決しないため、`usesBounty` を確認できず**無条件で報酬点を渡している**（技能判定なので今回の訂正の対象外だが、`usesBounty` ゲートが効かない残課題として記録）。
+- シナリオシートの情報収集判定（`_onStartInfoSkillCheck`）は技能名テキストのみで技能アイテムを解決しないため、`usesBounty` を確認できず**無条件で報酬点を渡している**（残課題として記録）。
+- 判定要求アプリの技能判定は単独技能（コンボなし）のため実質単技能判定（`comboUsesBounty([choice.item.system])` で統一のみ）。
