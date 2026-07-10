@@ -1668,3 +1668,24 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 #### 課題・申し送り
 
 - **要確認**: 「リアクションしない」＝②対象の制御値受け（`resolveNoReaction`・`≥`）も受動有利（`達成値 > 制御値`）にすべきか。現状は目標値モードとして `≥` のまま（ユーザー指摘は対決＝リアクション同値に限定）。
+
+
+### ヴィークル搭乗中のドッジ＝操縦上書き（回避ブロック・フェーズ12 補）
+
+**日付**: 2026-07-10
+**関連実装**: `scripts/module/attack-flow.mjs`（`startReaction` の dodge 分岐・`promptVehicleDodgeFallback`）。正本 [Usage_System.md](../01_Wiki/Game_Mechanics/Usage_System.md)「ヴィークルの操縦」・[Outfits.md](../01_Wiki/Game_Rules/Outfits.md)・[Damage_Rules.md](../01_Wiki/Game_Rules/Damage_Rules.md)「ドッジ」
+**ステータス**: ✅ 実装完了（本体 `340ac6e`・全テスト green 1161・lint 0 error）・実機確認待ち
+
+#### ルール解釈（2026-07-10 ユーザー確定）
+
+- 搭乗中（＝準備済みヴィークル。部位「操縦」は1枠のため常に1つ・複数考慮不要）はドッジ＝対応する〈操縦〉**のみ**、〈回避〉・他技能はブロック。
+- 対応する操縦技能を**持たなければドッジ不可**＝パリー／制御値受けをダイアログで選ばせフォールバック（**回避へは戻さない**）。パリー/精神・社会リアクションは対象外。
+- 従来はヒント文だけで**未実装**だった（wiki の「自由選択で対応済み・ハードブロックなし」は誤りで、本実装＋記録訂正で解消）。
+
+#### 監査結果
+
+✅ `startReaction` の dodge 分岐で準備済み＋`operateSkillKey` のヴィークルを検出→`resolveOperateSkill` で操縦技能に候補を差し替え（回避ブロック）。操縦技能なしは `promptVehicleDodgeFallback`（DialogV2）でパリー/制御値受けへルーティング。
+
+#### 課題・申し送り
+
+- 制御値受けフォールバックは `handleNoReaction` 経由のため、対象の操作者/GM でなければ弾かれる（既存の「リアクションしない」権限。操縦者＝対象本人なら通る）。

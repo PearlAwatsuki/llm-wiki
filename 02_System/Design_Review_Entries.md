@@ -3196,3 +3196,22 @@ armor / cyborg / tap / vehicle / ianus / weapon / housing-area / residence)、
 
 - ⚠️ 対象への効果付与本体はフェーズ13。現状の item-sheet 用途使用は供給元アイテム上で効果を enable（`byHost` でまとめて `updateEmbeddedDocuments`）。
 - ⚠️ 専用欄の帰属名は `bearer.name`（親アイテム名）。親が解決不能（`sourceItemId` なし）なら "用途"。
+
+
+### ヴィークル搭乗ドッジの操縦上書き（フェーズ12 補）
+
+**日付**: 2026-07-10
+**レビュー対象**: `scripts/module/attack-flow.mjs`（`startReaction` / `promptVehicleDodgeFallback`）
+**ステータス**: レビュー済(問題なし)
+
+#### 良かった点
+
+- **既存の技能候補パイプラインに1点差し込み**: dodge のとき `candidates` を `[操縦技能]` に差し替えるだけ（役割検出・全技能フォールバックは `candidates` 未設定時のみ実行）。既存の選択ダイアログ・判定フローをそのまま流用。
+- **`operateSkillKey`/`resolveOperateSkill` を再利用**（操縦移動と同じ解決経路）。準備ヴィークルは `find` 1件（部位1枠の前提＝ユーザー確定）。
+- **フォールバックは既存の反応導線へルーティング**（`startReaction("parry")` / `handleNoReaction`）＝新経路を作らない。DialogV2 は既存様式（form-footer ボタン・callback 返り値）。
+- **循環なし**: attack-flow→vehicle-move は静的・逆向きなし。check-flow→attack-flow/vehicle-move は動的 import。
+
+#### 留意点
+
+- ⚠️ `startReaction` は Foundry グローバル依存の UI フローでユニットテスト外（純関数 `resolveOperateSkill`/`resolveOpposed` はテスト済み）。
+- ⚠️ 制御値受けフォールバックの権限は `handleNoReaction` 側（対象操作者/GM 限定）に従う。
