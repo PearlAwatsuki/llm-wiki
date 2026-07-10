@@ -1628,3 +1628,24 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 - `@target.style/works` は 1/0（真偽相当）。対象の「アイテムの値」参照（`@target.item.<キー>`）は未供給（YAGNI・必要時に追加）。
 - 攻撃者を参照する `damageReduce` 側の対称拡張は未対応。
+
+
+### 用途自身の修正値欄・適用効果の供給元拡張（フェーズ12 補）
+
+**日付**: 2026-07-10
+**関連実装**: `usage.mjs`（`checkBonusSelf`/`damageBonusSelf`・`effects` に `itemId`）、`tnx-formula.mjs`（`evaluateSelfBonus`・`evaluateBonusRows` の bearer）、`tnx-check-flow`/`attack-flow`/`damage-flow`/`tnx-character-sheet-base`（`sourceItemId` 配線・`@item.self`）、`tnx-usage-sheet.mjs`＋`usage-sheet.hbs`（専用欄・グループ化した効果選択）、`tnx-item-sheet.mjs`（供給元アイテム上で有効化）。正本 [Usage_System.md](../01_Wiki/Game_Mechanics/Usage_System.md)・[Formula_Reference.md](../01_Wiki/Game_Mechanics/Formula_Reference.md)
+**ステータス**: ✅ 実装完了（本体 `705a6b4`・全テスト green 1160・lint 0 error）・実機確認待ち
+
+#### ルール解釈（2026-07-10 言語化）
+
+- 用途の修正値には「**その用途の親アイテムが持つ修正値**」を入れる**専用の欄**が要る（供給元プルダウン付きの追加行とは別に、最初から常設。ユーザー明言＝「供給元グループに足すのでなく別途配置」）。判定用とダメージ用は別軸なので分ける。
+- 用途が対象に与える効果は、従来の親アイテムだけでなく**組み合わせた技能・攻撃に使用した武器**からも追加できるべき（そうでないと再現できない能力がある）。
+
+#### 監査結果
+
+✅ `checkBonusSelf`/`damageBonusSelf`（専用欄・`@item.self`＝親アイテムを式で参照可）を新設し、判定/ダメージの実行時に評価して**親アイテム名で帰属**。適用効果は親＋参加技能＋使用武器から選べるよう供給元別にグループ化し、`{itemId, effectId}` で供給元を明示。
+
+#### 課題・申し送り
+
+- 適用効果の**対象への実付与はフェーズ13**（現状は選択・保持まで。アイテムシートの用途使用は各効果を供給元アイテム上で有効化）。
+- 専用欄・追加行とも用途の式では `@item.self`＝用途の親アイテム（AE 値の `@item.self`＝効果が乗るアイテムと同義だが、文脈で解決先が違う点に留意）。

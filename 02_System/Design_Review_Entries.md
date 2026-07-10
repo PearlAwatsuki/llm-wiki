@@ -3177,3 +3177,22 @@ armor / cyborg / tap / vehicle / ianus / weapon / housing-area / residence)、
 - ⚠️ `data.target` に Proxy を載せるため、この data を **JSON 直列化する経路では使わない**（ダメージ式の Roll は都度生成・評価のみで直列化しない＝問題なし）。
 - `damageReduce` は防御側視点（actor=対象）のため `@target` 非供給。攻撃者参照が要れば別途。
 - v0.11.0 同期（package.json/system.json・CHANGELOG）。タグ付け・push はユーザー。
+
+
+### 用途自身の修正値欄・効果供給元拡張（フェーズ12 補）
+
+**日付**: 2026-07-10
+**レビュー対象**: `usage.mjs` / `tnx-formula.mjs` / `tnx-check-flow` / `attack-flow` / `damage-flow` / `tnx-usage-sheet` / `usage-sheet.hbs` / `tnx-item-sheet`
+**ステータス**: レビュー済(問題なし)
+
+#### 良かった点
+
+- **専用欄は行配列と別スキーマ**（`checkBonusSelf`/`damageBonusSelf`＝単一 StringField）＝「常設・非増減」を素直に表現（行の source を seed して疑似再現しない＝ユーザー要望どおり別枠フィールド）。
+- **`@item.self` を bearer で通す**: 既存 `buildFormulaData` の bearer（AE 値用の `@item.self`/`@item.parent`）を用途にも流用。`evaluateBonusRows` に bearer 引数、`evaluateSelfBonus` を新設。`sourceItemId` を ctx／攻撃ペイロードに載せ実行時に親を解決（識別キーの無いアイテムでも参照可）。
+- **effects の `itemId` 明示**: `effectId` 単独では供給元アイテムを解決できないため `{itemId, effectId}` に。空=親で旧データ互換（migrate 不要＝新フィールドの initial ""）。選択値 `itemId|effectId`・解除は両者一致で1件。
+- **後方互換**: `evaluateBonusRows`/`buildFormulaData` の追加引数は末尾任意。既存呼び出し（AE 値・判定・damageReduce）は無変更。effects の grep 掃討で `tnx-item-sheet` の旧 `{effectId}` 前提も供給元アイテム解決に更新。
+
+#### 留意点
+
+- ⚠️ 対象への効果付与本体はフェーズ13。現状の item-sheet 用途使用は供給元アイテム上で効果を enable（`byHost` でまとめて `updateEmbeddedDocuments`）。
+- ⚠️ 専用欄の帰属名は `bearer.name`（親アイテム名）。親が解決不能（`sourceItemId` なし）なら "用途"。
