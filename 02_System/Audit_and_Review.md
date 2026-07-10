@@ -1605,5 +1605,26 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 #### 課題・申し送り
 
-- 値は式でなくフラット +N（判定バフと同じ・現状の能力表現には十分）。式・攻撃固有の対象依存が要れば用途側の `@target` 公開が将来課題。
+- AE `damage.vs*` はフラット +N（キャラ恒常）。**式ベース・用途固有の対象依存は用途のダメージ修正欄で `@target.*` を参照する形で実装済み**（下記「用途ダメージ修正の @target 参照」・`f66db00`）。「組み合わせた物理攻撃が〈スタイル名〉を対象とする場合～」等の用途固有効果はそちらで表現する。
 - 対象の「ワークス所属」は当面ワークス技能の組織で近似（キャラクター自身のワークス所属フラグは未整備＝[Active_Effects.md](../01_Wiki/Game_Mechanics/Active_Effects.md) §6）。
+
+
+### 用途ダメージ修正の @target 参照（式で攻撃対象を参照・フェーズ12 補）
+
+**日付**: 2026-07-10
+**関連実装**: `scripts/module/tnx-formula.mjs`（`buildFormulaData` の target 引数・`buildTargetData`・`evaluateBonusRows`）、`scripts/data/item/helpers.mjs`（`targetStyleWorksKeys`）、`scripts/module/damage-flow.mjs`（対象解決と配線）。正本 [Formula_Reference.md](../01_Wiki/Game_Mechanics/Formula_Reference.md)「@target.*」
+**ステータス**: ✅ 実装完了（本体 `f66db00`・全テスト green 1155・lint 0 error）・実機確認待ち
+
+#### ルール解釈（2026-07-10 言語化）
+
+- **「組み合わせた物理攻撃が〈スタイル名〉を対象とする場合、ダメージ +N」**のような効果は、AE のフラット対象バフでなく**用途（その攻撃）に紐づく式**で表すのが自然（ユーザー明言＝「むしろこちらでないと再現できない」）。
+- ダメージ算出時に攻撃対象を確定するので、ダメージ修正/`damageBoost` の式に攻撃対象を公開する。
+
+#### 監査結果
+
+✅ ダメージの式で `@target.system.*`（対象の実効値・AE 込み）・`@target.style.<識別キー>` / `@target.works.<組織キー>`（対象が持てば 1・欠損キーも 0）を参照可能に。`@target.style.<キー> * N` で対象スタイル条件のダメージを表せる。`damageReduce`（防御側）には非供給（対象＝防御側自身のため）。
+
+#### 課題・申し送り
+
+- `@target.style/works` は 1/0（真偽相当）。対象の「アイテムの値」参照（`@target.item.<キー>`）は未供給（YAGNI・必要時に追加）。
+- 攻撃者を参照する `damageReduce` 側の対称拡張は未対応。

@@ -3156,5 +3156,24 @@ armor / cyborg / tap / vehicle / ianus / weapon / housing-area / residence)、
 #### 留意点
 
 - ⚠️ 対象解決は `fromUuid(targetUuid)`＋`resolved?.actor ?? resolved`（トークン/アクター両対応）。命中確定済みの攻撃カードからのみ呼ばれる。
-- 値はリテラルのみ（式評価しない＝判定バフと同じ簡潔さ）。式・攻撃固有が要れば用途側 `@target` が将来拡張点。
+- 値はリテラルのみ（式評価しない＝判定バフと同じ簡潔さ）。式・攻撃固有の対象依存は次エントリ（`@target`）で実装。
+
+
+### 用途ダメージ修正の @target 参照（buildFormulaData の target 引数）（フェーズ12 補）
+
+**日付**: 2026-07-10
+**レビュー対象**: `scripts/module/tnx-formula.mjs`（`buildFormulaData`/`buildTargetData`/`evaluateBonusRows`）、`scripts/data/item/helpers.mjs`（`targetStyleWorksKeys`）、`scripts/module/damage-flow.mjs`（`resolveTargetActor`・配線）
+**ステータス**: レビュー済(問題なし)
+
+#### 良かった点
+
+- **欠損キーを 0 にする Proxy**: `@target.style.<未所持キー>` は式評価でエラーになりがち（未定義参照）だが、`new Proxy({}, {get})` で「所持=1・非所持=0」を返すため、どのスタイルキーを書いても安全に 0/1 に評価される。symbol アクセスも 0 で無害化。
+- **対象の style/works 抽出を AE 対象バフと共通化**: `targetStyleWorksKeys(target)` を helpers に置き、ダメージ式（`buildTargetData`）と AE 対象バフ（`collectDamageVsBonuses`）が同一定義を共有（「スタイル＝type:style／ワークス＝ワークス技能の組織」の判定が分岐しない）。
+- **対象を一度だけ解決**: `openDamageRollDialog` で `resolveTargetActor` を1回呼び、damageBoost の `buildFormulaData`・ダメージ修正の `evaluateBonusRows`・AE 対象バフの3者へ同じ actor を渡す（`collectDamageVsBonuses` は uuid 受けの async → actor 受けの sync に整理）。
+- **引数追加のみで後方互換**: `buildFormulaData(actor, result, bearer, target)` / `evaluateBonusRows(..., target)` とも末尾任意引数。既存呼び出し（AE 値・判定ボーナス・damageReduce）は無変更で `@target` 非供給。
+
+#### 留意点
+
+- ⚠️ `data.target` に Proxy を載せるため、この data を **JSON 直列化する経路では使わない**（ダメージ式の Roll は都度生成・評価のみで直列化しない＝問題なし）。
+- `damageReduce` は防御側視点（actor=対象）のため `@target` 非供給。攻撃者参照が要れば別途。
 - v0.11.0 同期（package.json/system.json・CHANGELOG）。タグ付け・push はユーザー。

@@ -12,13 +12,27 @@
 |---|---|---|
 | **`@system.*`** | **判定を行うアクター**の system（＝AE がアクターに乗せる `system.*` キーと対応） | `@system.life.total` |
 | **`@item.<識別キー>.system.*`** | アクターが持つ**任意のアイテム**を**識別キー**で引いた system（＝AE がそのアイテムに乗せる `system.*` と対応） | `@item.<武器の識別キー>.system.attack.total` |
+| **`@target.*`** | **攻撃対象（防御側）**。**ダメージの式でのみ**供給（判定・AE 値では無い）。`@target.system.*`＝対象の実効値、`@target.style.<識別キー>` / `@target.works.<組織キー>`＝対象が持てば 1・なければ 0 | `@target.style.<スタイル識別キー> * 5` |
 | **`@diff` / `@achievement`** | 判定結果（差分値 / 達成値）。**ダメージ算出時のみ**確定（判定ボーナスは判定前のため不可） | `floor(@diff / 10)` |
 
 - **`.total`（実効値・AE 込み）を使う**のが原則。`value` などの素フィールドは AE 適用前の入力値。**アクターの値もアイテムの値も同じ**——各 `prepareDerivedData` で `total=base` を置いた後、**アクターの単一適用パス（`_applyEffectBuffs`・`legacyTransferral=false`）が全 buff を集めて total を改変**する（AE モデル v2）。判定/ダメージは実行時に走るので、その時点で `.total` は AE 込みの最終値になっている。
   - アクター: 能力値 `reason.total`/`reason.totalControl`。 アイテム: `attack.total`・`defence.S_total`・`levelTotal`・`<param>.total`（`system.self.attack`／`system.category.weapon.attack` 等の AE がここへ着地）。
   - ※ **アイテムのパラメータが「キャラクターへ」与える修正**（制御値修正・CS 修正・危険値など）は AE でなく派生パイプラインが直接読む設計（[Active_Effects.md](Active_Effects.md) 大原則5）。ただしこれは「アイテム→キャラ」の話で、`@item.<識別キー>.system.<param>.total` が指す**アイテム自身の値**は上記どおり AE 込みで取れる。
 - `@item.<識別キー>` は**識別キーを持つアイテムだけ**引ける（辞典由来の技能・アウトフィットは持つ）。識別キーはアイテムの `system.identificationKey`。
-- どこで使えるか: 判定ボーナス（アクター）・ダメージ修正/`damageBoost`（攻撃者）・`damageReduce`（防御側）・**AE の「値」**（change.value にも式を書ける・2026-07-10）。`@diff`/`@achievement` はダメージ算出時のみ（AE 値・判定ボーナスでは不可）。
+- どこで使えるか: 判定ボーナス（アクター）・ダメージ修正/`damageBoost`（攻撃者）・`damageReduce`（防御側）・**AE の「値」**（change.value にも式を書ける・2026-07-10）。`@diff`/`@achievement` はダメージ算出時のみ（AE 値・判定ボーナスでは不可）。**`@target.*` はダメージ修正/`damageBoost`（攻撃者側）でのみ**供給（`damageReduce` は防御側自身が `@system.*`＝対象なので非供給）。
+
+### `@target.*`（攻撃対象・ダメージの式でのみ・2026-07-10）
+
+ダメージ修正欄・`damageBoost` の式で、**攻撃対象（防御側）**を参照する。「組み合わせた物理攻撃が〈スタイル名〉を対象とする場合～」のような**用途固有・式ベースの対象依存**を表現できる（キャラ恒常・フラットな対象依存は AE `damage.vs*` 側）。
+
+| キー | 意味 |
+|---|---|
+| `@target.system.*` | 対象の実効値（AE 込み。対象の `getRollData`。例 `@target.system.life.total`） |
+| `@target.style.<スタイル識別キー>` | 対象がそのスタイル（`type:"style"` アイテム）を持てば **1**・なければ **0**（**未所持＝欠損キーも 0** に評価される） |
+| `@target.works.<組織識別キー>` | 対象がそのワークス（ワークス技能の組織）を持てば 1・なければ 0 |
+
+- 例: 「組み合わせた物理攻撃が〈アヤカシ〉を対象とするなら +5」→ ダメージ修正の式 `@target.style.ayakashi * 5`。
+- `damageReduce`（防御側）には `@target` を供給しない（防御側自身は `@system.*`）。攻撃者を参照する軽減は現状未対応。
 
 ### AE の「値」の式（＋相対参照）
 
