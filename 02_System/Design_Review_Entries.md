@@ -3237,20 +3237,24 @@ armor / cyborg / tap / vehicle / ianus / weapon / housing-area / residence)、
 - ⚠️ 二重付与防止は `applied` フラグ＋ローカル再描画に依存（人手運用前提）。
 
 
-### 参加技能の「指定技能を無視して単体参加」（ignoreComboSkill）（フェーズ12 補）
+### 用途の「無視する指定技能」（ignoreComboSkills）（フェーズ12 補）
 
 **日付**: 2026-07-10
-**レビュー対象**: `skill-chain-resolution.mjs`（`resolveUsageSkills`）、`usage.mjs`（`skillRefs`）、`tnx-usage-sheet.mjs`、`usage-sheet-combo.hbs`
-**ステータス**: レビュー済(問題なし)
+**レビュー対象**: `skill-chain-resolution.mjs`（`resolveUsageSkills` 第4引数 `ignoreComboKeys`）、`usage.mjs`（`ignoreComboSkills`）、`tnx-usage-sheet.mjs`、`usage-sheet-combo.hbs`
+**ステータス**: レビュー済(問題なし)。**初版（per-row トグル `c79e55f`）は設計不良で `c4611e3` にて全面差し替え**
 
-#### 良かった点
+#### 初版の欠陥（記録・再発防止）
 
-- **既存の必須クロージャに1点差し込み**: `resolveUsageSkills` の seed ループに `ignoreSet.has(id)` の早期 continue を足すだけ。指定技能（comboSkill）の自動追加はこのクロージャ経由なので、除外＝自動追加スキップが自然に実現。第4引数 `ignoreSeedIds` は末尾任意で後方互換。
-- **per-seed のデータ位置**: フラグを `skillRefs` 各要素に持たせた（`{itemId, ignoreComboSkill}`）ため「どの参加技能を単体参加させるか」が1対1で表現でき、UI もその行のトグルで完結。
-- **auto-fill の破壊を回避**: `deriveUsageAutoFill` が `skillRefs` を再構築する際に**フラグを保持**し（`ignoreMap`）、かつ当該 seed の指定技能を必須補完から除外（`ignoreSeedIds` を渡す）。フラグ消失・〈射撃〉再混入の両バグを防いだ。
-- 実行時は解決済み `skillRefs` を使うだけなので、runtime 側の変更は不要（指定技能が入っていない状態が保存される）。純ロジック（resolver）にテスト追加。
+- per-row トグル＝「技能を追加した後に行のトグルを ON」という順序が前提だが、**親の指定技能がアクションだと `_addComboCheck` が追加時点で弾き、トグルに到達できない**（ユーザー指摘）。解決側（リゾルバ）だけ作り、**追加ゲート（手前の経路）を検証しなかった**。追加時ダイアログでの回避案も「毎回聞くのは誤り」で却下。
+
+#### 現設計の良い点
+
+- **設定は用途側の永続リスト**（`ignoreComboSkills`＝辞典識別キーの `ArrayField(StringField)`・modifiableParams と同型）。一度設定すれば、追加判定（`_addComboCheck`）・チェーン解決（`_resolveComboChain`）・auto-fill（`deriveUsageAutoFill`）の**全経路が同じ設定を参照**し、該当技能は黙って単体参加になる（ダイアログ・トグル無し）。
+- **リゾルバは識別キー集合で除外**: seed 連鎖の必須集約で `ignoreSet.has(k)` をスキップ（seed 自身は常に参加・起点連鎖には不適用＝ベース決定を壊さない）。第4引数は末尾任意で後方互換。
+- **UI は既存の即時追加セレクト＋行削除の踏襲**（skill-ref-select / effect-select と同型）。保存＝識別キー・表示＝辞典逆引き名（生キー非表示、未収載キーのみそのまま＝confrontation 表示と同じ規約）。
+- **解除の安全弁**: 設定削除で指定技能（アクション）が引き込まれてアクション重複になる場合は `_comboActionConflict` で拒否。
 
 #### 留意点
 
-- ⚠️ `comboLockAnalysis`（削除ロック）には ignore を渡していないが、無視した seed の指定技能はそもそも combo に居ないためロック対象にならず、実害なし。
-- ⚠️ 「アクション同士ブロック」の免除ではない（それは既存の別ルール）。本機能は指定技能の自動追加スキップのみ。
+- ⚠️ 候補セレクトは辞典全技能のフラット一覧（general/style/works）。長いが機能上は十分。絞り込み UI は必要になれば別途。
+- ⚠️ `comboLockAnalysis`（削除ロック）には ignore を渡していないが、無視した指定技能はそもそも combo に居ないためロック対象にならず、実害なし。
