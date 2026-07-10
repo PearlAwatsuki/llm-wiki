@@ -1584,5 +1584,26 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 #### 課題・申し送り
 
-- **「特定スタイルを持つキャラクターへのダメージ増加」**能力は、ダメージ式に **`@target`（防御側）を公開**して用途のダメージ修正（`@target.style.<キー>` 等）で表現する案を提示・**ユーザー確認待ち**（AE は対象文脈を持てず不適）。
+- **「特定スタイルを持つキャラクターへのダメージ増加」**能力 → 下記「ダメージ対象バフ」で実装（AE `damage.vsStyle.*`）。当初 `@target` 式案を出し「AE は対象文脈を持てず不適」と述べたが、**これは値バフ（`system.*`）に限った話で誤り**——判定バフ `check.*` と同じ「実行時評価の別系統」にすれば AE で表せる（ユーザー指摘で修正）。
 - 値バフ（`system.*`）側の同グループ化は未着手（当面 category/識別キーで賄う＝[Active_Effects.md](../01_Wiki/Game_Mechanics/Active_Effects.md) §6）。styleKey/orgKey の入力補助（辞典ドロップダウン）も未提供。
+
+
+### ダメージ対象バフ（対象のスタイル/ワークス依存ダメージ・フェーズ12 補）
+
+**日付**: 2026-07-10
+**関連実装**: `scripts/data/item/helpers.mjs`（`parseEffectTargetKey` の damageVs・`damageVsChangeMatches`/`gatherDamageVsSources`/`collectActorEffectBuffs`）、`scripts/data/actor/common/character-base.mjs`（`_applyEffectBuffs` の除外）、`scripts/module/damage-flow.mjs`（`collectDamageVsBonuses` と台帳合算）。正本 [Active_Effects.md](../01_Wiki/Game_Mechanics/Active_Effects.md) §1-2・[Formula_Reference.md](../01_Wiki/Game_Mechanics/Formula_Reference.md)
+**ステータス**: ✅ 実装完了（本体 `a76c7fe`・全テスト green 1152・lint 0 error）・実機確認待ち
+
+#### ルール解釈（2026-07-10 言語化）
+
+- **攻撃対象が特定のスタイルを持つ場合にダメージが増加する能力が複数存在する**（例: 〈アヤカシ〉持ちに +N）。これを**データ（AE 一行）で再現したい**というのがユーザーの主目的。
+- 対象依存の値は**値バフ（prepareDerivedData 焼き込み）では表せない**（対象未定）。判定バフ `check.*` が既に「実行時にアクション文脈を見る」パターンを持つので、その**ダメージ・対象参照版**として実装するのが正しい設計（ユーザー確定＝AE で表現）。
+
+#### 監査結果
+
+✅ `damage.vsStyle.<スタイル識別キー>` / `damage.vsWorks.<組織識別キー>` を追加。恒常適用パスから除外し、ダメージフローが攻撃対象を解決→対象の style（`type:"style"` アイテム）/works（ワークス技能の組織）で照合→合致分を用途のダメージ修正と同じ台帳行としてダメージへ合算。値はリテラル・重複規約は判定バフと同一（`_gatherBonusSources` を共用）。
+
+#### 課題・申し送り
+
+- 値は式でなくフラット +N（判定バフと同じ・現状の能力表現には十分）。式・攻撃固有の対象依存が要れば用途側の `@target` 公開が将来課題。
+- 対象の「ワークス所属」は当面ワークス技能の組織で近似（キャラクター自身のワークス所属フラグは未整備＝[Active_Effects.md](../01_Wiki/Game_Mechanics/Active_Effects.md) §6）。

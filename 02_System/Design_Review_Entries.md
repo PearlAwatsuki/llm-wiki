@@ -3137,5 +3137,24 @@ armor / cyborg / tap / vehicle / ianus / weapon / housing-area / residence)、
 #### 留意点
 
 - ⚠️ styleKey/orgKey は技能側フィールドの生値直書き（入力補助の辞典ドロップダウンは未提供）。
-- 値バフ（`system.*`）側は未対応＝**判定キーのみ**。ダメージの対象依存（`@target`）は別途ユーザー確認待ち。
+- 値バフ（`system.*`）側は未対応＝**判定キーのみ**。ダメージの対象依存は下記の別エントリで実装。
+
+
+### ダメージ対象バフ（damage.vsStyle / damage.vsWorks）（フェーズ12 補）
+
+**日付**: 2026-07-10
+**レビュー対象**: `scripts/data/item/helpers.mjs`（`_gatherBonusSources`/`damageVsChangeMatches`/`gatherDamageVsSources`/`collectActorEffectBuffs`）、`scripts/module/damage-flow.mjs`（`collectDamageVsBonuses`）、`scripts/data/actor/common/character-base.mjs`（除外）、`scripts/module/tnx-check-flow.mjs`（effects 収集の共通化）
+**ステータス**: レビュー済(問題なし)
+
+#### 良かった点
+
+- **判定バフと同型の「実行時評価の別系統」に載せた**: `check.*` が確立したパターン（適用パスから除外し、アクション時にエフェクトを集めて照合）をダメージへ横展開。恒常適用パスの `CHECK_SCOPES` に `damageVs` を足すだけで焼き込みを防げる。
+- **重複排除ロジックを共通化**: `gatherCheckBonusSources` の中身を `_gatherBonusSources(effects, predicate)` に抽出し、判定バフ／ダメージ対象バフが同じ重複規約（identity 最大1回・stackable スタック）を共有。`gatherCheckBonusSources` の外部挙動は不変（既存テスト green）。
+- **effects 収集も共通化**: `collectActorEffectBuffs(actor)` を新設し、`_computeCheckBonus` の inline push を置換＋ダメージフローでも再利用（DRY・正規形の一元化）。
+- **台帳への合流が自然**: ダメージ対象バフを既存の `damageBonusRows`（用途のダメージ修正）に合流させ、`f.damageBonuses` の描画・`damageRollTotals` の集計にそのまま乗せた（新しい表示経路を作らない）。
+
+#### 留意点
+
+- ⚠️ 対象解決は `fromUuid(targetUuid)`＋`resolved?.actor ?? resolved`（トークン/アクター両対応）。命中確定済みの攻撃カードからのみ呼ばれる。
+- 値はリテラルのみ（式評価しない＝判定バフと同じ簡潔さ）。式・攻撃固有が要れば用途側 `@target` が将来拡張点。
 - v0.11.0 同期（package.json/system.json・CHANGELOG）。タグ付け・push はユーザー。
