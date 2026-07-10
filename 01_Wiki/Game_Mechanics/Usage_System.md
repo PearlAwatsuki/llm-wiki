@@ -56,9 +56,8 @@ actions: ArrayField(SchemaField({
     weaponRef: SchemaField({ itemId: StringField }),
     damageType: StringField,            // "S" | "P" | "I"
 
-    // damageBoost / damageReduce タイプのみ
-    formula: StringField,               // 効果量（計算式または固定値文字列）
-    damageCategory: StringField,        // "physical" | "mental"
+    // check(攻撃)のみ
+    damageCategory: StringField,        // 攻撃系統 "physical" | "mental" | "social"
 
     // modification タイプのみ
     modifiableParams: ArrayField(StringField),
@@ -72,8 +71,6 @@ actions: ArrayField(SchemaField({
 | `check` | 技能判定（情報収集・登場など） | baseSkillRef, skillRefs |
 | `attack` | 攻撃判定（物理・精神・社会戦） | baseSkillRef, skillRefs, weaponRef, damageType |
 | `declaration` | 宣言・神業を含む | — |
-| `damageBoost` | ダメージ増加 | formula, damageCategory |
-| `damageReduce` | ダメージ軽減 | formula, damageCategory |
 | `modification` | 改造 | modifiableParams |
 
 - `controlCheck` は独立した判定種別であり、usage タイプには含まない（timing で区別）
@@ -105,13 +102,13 @@ actions: ArrayField(SchemaField({
 - **タブ（3構成、2026-06-20 改編）**: 基本 / 発動 / 効果
   - **基本**: 説明
   - **発動**（旧「起動」）: タイミング / 対象（＋変更不可※）/ 射程（＋変更不可※）/ 目標値 / 対決不可。技能ベース用途（check・attack）では参加技能の対決を読み取り「対決可能技能」を読み取り専用表示し、「参加技能から自動入力」ボタンを置く
-  - **効果**: 種別固有設定（check=コンボ / attack=武器・ダメージ種別・コンボ / damageBoost・Reduce=計算式・カテゴリ / modification=改造パラメータ）＋「適用される効果」（ActiveEffect）。旧「種別固有」タブと「エフェクト」タブを統合
+  - **効果**: 種別固有設定（check=コンボ / attack=武器・ダメージ種別・コンボ / modification=改造パラメータ）＋「適用される効果」（ActiveEffect）。旧「種別固有」タブと「エフェクト」タブを統合。※damageBoost/damageReduce の効果量欄は廃止（2026-07-11）
   - ベース技能＋組み合わせ技能の UI は `usage-sheet-combo.hbs` パートに切り出し（check / attack で共用。`tnx.mjs` の `loadTemplates` に登録）
 - **レイアウト（fieldset グルーピング＋式表示・2026-07-10 ユーザー指摘→改修）**: 各タブ内の項目を **`<fieldset>`＋`<legend>`（既存 `.tnx-fieldset`）でグループ化**（グリッド/縦積みの平坦配置をやめる。D&D アクティビティの意匠の要点＝legend グルーピングを参考）。発動＝〈取得〉〈タイミング〉〈対象・射程〉〈目標値・対決〉〈対決（参加技能より）〉〈使用回数の消費〉／効果＝〈参加技能〉〈判定〉〈攻撃〉〈効果量〉〈改造可能パラメータ〉〈適用される効果〉。
   - **式の表示＋干渉できる入力**: 「判定やダメージの式が全く無い」というユーザー指摘に対応。〈判定〉に **判定ボーナス（式）欄＋達成値の構成**（達成値＝カード＋能力値＋報酬点＋判定バフ＋判定ボーナス）、〈攻撃〉に **ダメージ修正（式）欄＋ダメージの構成**（ダメージ＝ダメージカード＋攻撃力＋修正−軽減）を `.usage-formula-line` で表示（式には**それに干渉する入力を必ず添える**＝判定ボーナス／ダメージ修正）。〈攻撃〉の内側は 2 カラムグリッドでなく**単一カラムの縦積み**（`usage-form-section`。武器の複数選択リストや式が全幅で並ぶべきため）。
   - **判定ボーナス/ダメージ修正（行＋供給元・2026-07-10 ユーザー確定）**: `usage.checkBonuses`/`usage.damageBonuses` ＝ **`{formula, source}` の行の配列**。UI はコンボ/消費と同型の複数行（`usage-sheet-bonus-rows.hbs` パート・`checkBonusFormula-N`/`checkBonusSource-N` を submit で再構成＝consumeTargets 同型・`checkBonusAdd`/`Delete` 等で行操作）。評価は `evaluateBonusRows`（各行を評価し合計＋供給元名つき内訳）。
   - **用途自身の修正値（専用欄・2026-07-10 ユーザー確定）**: 供給元つきの追加行とは**別枠の専用フィールド** `usage.checkBonusSelf`/`usage.damageBonusSelf`（単一の式）＝「その用途の親アイテムが持つ修正値」の入力欄。判定 fieldset／攻撃 fieldset の**先頭に常設**（増減・供給元選択のない固定欄）。式で **`@item.self`＝用途の親アイテム**を参照でき（識別キー不要）、実行時に親アイテムを式コンテキストへ渡す（`sourceItemId` を ctx／攻撃ペイロードに載せ、`bearer` として `buildFormulaData` へ）。評価は `evaluateSelfBonus`（値＋**親アイテム名で帰属**）。台帳/内訳は「判定ボーナス（親名）」「ダメージ修正（親名）」。
-  - **式で参照できる値**: 「AE で参照できる値は式でも参照できるべき」＝`buildFormulaData(actor, result, bearer, target)`（`tnx-formula.mjs`）＝`getRollData()` の **`@system.*`（AE の `system.*` と対応）** ＋ **`@item.<識別キー>.system.*`（アクターの任意アイテムを識別キーで参照）** ＋ **`@item.self`（用途の親アイテム・bearer）** ＋ **`@target.*`（攻撃対象・ダメージ側のみ）** ＋ 判定結果 `@diff`/`@achievement`。判定ボーナスは判定前のため `@diff`/`@target` 不可。damageReduce=防御側・他=攻撃者。
+  - **式で参照できる値**: 「AE で参照できる値は式でも参照できるべき」＝`buildFormulaData(actor, result, bearer, target)`（`tnx-formula.mjs`）＝`getRollData()` の **`@system.*`（AE の `system.*` と対応）** ＋ **`@item.<識別キー>.system.*`（アクターの任意アイテムを識別キーで参照）** ＋ **`@item.self`（用途の親アイテム・bearer）** ＋ **`@target.*`（攻撃対象・ダメージ側のみ）** ＋ 判定結果 `@diff`/`@achievement`。判定ボーナスは判定前のため `@diff`/`@target` 不可（`@card` は可）。
   - **供給元（source）＝チャットの帰属表示専用**（式の参照とは独立。**識別キーを保存し表示は逆引きした現在名**・`identification.mjs` の `resolveItemNameByKey`/`findItemByIdentificationKey`）。供給元プルダウン＝組み合わせスタイル技能（一般技能除外）＋使用武器をグループ表示・値＝識別キー。
 - **発動パラメータの自動入力**（`_onAutoFill`）: 参加技能（ベース＋コンボ）の**固有値**（スタイル技能の skill レベル `target`/`range`/`targetValue`/`timing`/`confrontation`。一般技能は固有値を持たず制約なし＝寄与しない）を読み、優先度で合成して用途へ書き込む。対象は対象優先度、射程は射程優先度（※複数は最短）、目標値は数値最大、タイミングはベース技能の先頭、対決不可は参加技能に「対決不可」があれば true。常時上書きせずボタン式（誤更新防止）。手編集で上書き可能
 - **対決（情報表示）**: 参加技能の `confrontation`（値=技能名/技能名※）を読み取り専用で表示。相手側リアクションの自動解決・対決値統合はフェーズ13。書き込み用の対決フィールドは usage に持たせない（`isUnopposable` フラグのみ保持）

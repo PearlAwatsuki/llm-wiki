@@ -238,6 +238,8 @@ PLが目標値を手入力するフローは採用しない（Foundry VTT のデ
 
 ## 用途タイプ（確定 2026-06-17）
 
+> **廃止（2026-07-11 ユーザー確定）**: `damageBoost`（ダメージ増加）/`damageReduce`（ダメージ軽減）タイプは削除。「タイミング：ダメージ算出」の技能はダメージ増加のみで、**組み合わせ＋攻撃用途のダメージ修正行**（供給元＝その技能）で表す。軽減は軽減ダイアログの**手動欄**に入力する。既存データは migrateData で宣言（declaration）へ変換。
+
 フェーズ8 実装で確定した usage `type` の値域:
 
 | type | 説明 | 主な固有フィールド |
@@ -245,8 +247,6 @@ PLが目標値を手入力するフローは採用しない（Foundry VTT のデ
 | `check` | 技能判定（情報収集・登場など） | baseSkillRef, skillRefs |
 | `attack` | 攻撃判定（物理・精神・社会戦） | baseSkillRef, skillRefs, weaponRef, damageType |
 | `declaration` | 宣言・神業を含む | — |
-| `damageBoost` | ダメージ増加 | formula, damageCategory |
-| `damageReduce` | ダメージ軽減 | formula, damageCategory |
 | `modification` | 改造 | modifiableParams |
 
 ### タイプ設計の確定事項
