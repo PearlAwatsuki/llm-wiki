@@ -3258,3 +3258,20 @@ armor / cyborg / tap / vehicle / ianus / weapon / housing-area / residence)、
 
 - ⚠️ 候補セレクトは辞典全技能のフラット一覧（general/style/works）。長いが機能上は十分。絞り込み UI は必要になれば別途。
 - ⚠️ `comboLockAnalysis`（削除ロック）には ignore を渡していないが、無視した指定技能はそもそも combo に居ないためロック対象にならず、実害なし。
+
+
+### 一般技能の外部ドロップで正規ソート順が効かない不具合の修正（フェーズ12 補）
+
+**日付**: 2026-07-10
+**レビュー対象**: `scripts/actor/tnx-character-sheet-base.mjs`（`_onDropItem` / `_calcInsertSortValue`）
+**ステータス**: レビュー済(問題なし)・本体 `71b3481`
+
+#### 仕組みの整理（正本）
+
+- 一般技能の**正規順の正本**は `TnxSkillUtils.GENERAL_SKILL_SORT_PREFIXES`（医療→射撃→知覚→電脳→製作→心理→意志→交渉→芸術→運動→回避→操縦→白兵→謀略→貫禄→隠密→社会→コネ）。
+- **シート表示は `item.sort` 昇順のみ**＝正規順は「作成時に正しい sort 値を振る」ことでのみ実現される。振る経路は ①基本13技能シード（`setupDefaultSkills`・正規順×1000刻み） ②シート＋ボタン（`_calcInsertSortValue`＝同グループ末尾と次グループ先頭の中間値） ③今回追加の**外部ドロップ**。手動ドラッグ並び替えは仕様どおり自由（並びは永続化）。
+
+#### 不具合と修正
+
+- **不具合**: `_onDropItem` は一般技能の sort を調整せず、`item.toObject()` が**辞典側ドキュメントの sort 値を持ち込む**ため、辞典からのドロップだけ並びが崩れていた（シード・＋ボタンは正常）。
+- **修正**: `_onDropItem` に一般技能分岐を追加し、`_calcInsertSortValue` で正規位置の sort を振ってから作成（＋ボタンと同じ挿入挙動）。`_calcInsertSortValue` は prefix 渡しから**識別キー直渡し**に一般化（"other"の Infinity 番兵は「空キー→`getSkillSortPosition`＝Infinity＝末尾」に自然吸収・＋ボタン側の挙動は不変）。識別キーなしの自作技能は従来どおり末尾。
