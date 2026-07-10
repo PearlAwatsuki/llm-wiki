@@ -3215,3 +3215,23 @@ armor / cyborg / tap / vehicle / ianus / weapon / housing-area / residence)、
 
 - ⚠️ `startReaction` は Foundry グローバル依存の UI フローでユニットテスト外（純関数 `resolveOperateSkill`/`resolveOpposed` はテスト済み）。
 - ⚠️ 制御値受けフォールバックの権限は `handleNoReaction` 側（対象操作者/GM 限定）に従う。
+
+
+### 用途効果のターゲット付与（usage-effects.mjs）（フェーズ12 補）
+
+**日付**: 2026-07-10
+**レビュー対象**: `scripts/module/usage-effects.mjs` / `tnx-socket-handler`（`usageEffectApplied`）/ `tnx.mjs` 描画フック / `tnx-check-flow`・`attack-flow`・`tnx-character-sheet-base`・`tnx-item-sheet` の配線
+**ステータス**: レビュー済(問題なし)
+
+#### 良かった点
+
+- **単一の共通フラグ `usageEffects` ＋ 単一の `renderChatMessageHTML` フック**でカード種別（判定結果/攻撃/用途使用）を横断。ボタン描画・適用・適用済み表示を1モジュールに集約（カードごとに実装しない）。
+- **付与＝AE 複製**（`toObject`・`_id` 除去・`disabled=false`・`transfer=false`）。純ロジック `resolveUsageEffectData` はテスト済み。
+- **権限は既存パターン踏襲**: 対象所有者/GM が適用（ダメージ適用と同じ）。適用済みフラグ更新は author/GM は直接・非作者はソケット委譲（`emitDamageUpdate` と同型の `usageEffectApplied` を追加）。循環なし（`usage-effects`→`socket-handler` のみ）。
+- **各フローは末尾で捕捉**: `prepareUsageEffectPayload` を check（sheet-base）・attack（useAttack）・declaration（item-sheet）で呼び、`"cancel"` を見て用途中止。カードのフラグに載せるだけで描画はフックに委譲。
+
+#### 留意点
+
+- ⚠️ 結果カードのボタン描画・適用は Foundry フック/グローバル依存でユニットテスト外（純ロジックのみテスト）。
+- ⚠️ item-sheet の旧「供給元アイテム上で効果を有効化」は本モデル（対象へ付与＝使用カード投稿）に置換。
+- ⚠️ 二重付与防止は `applied` フラグ＋ローカル再描画に依存（人手運用前提）。
