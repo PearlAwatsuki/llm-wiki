@@ -3235,3 +3235,22 @@ armor / cyborg / tap / vehicle / ianus / weapon / housing-area / residence)、
 - ⚠️ 結果カードのボタン描画・適用は Foundry フック/グローバル依存でユニットテスト外（純ロジックのみテスト）。
 - ⚠️ item-sheet の旧「供給元アイテム上で効果を有効化」は本モデル（対象へ付与＝使用カード投稿）に置換。
 - ⚠️ 二重付与防止は `applied` フラグ＋ローカル再描画に依存（人手運用前提）。
+
+
+### 参加技能の「指定技能を無視して単体参加」（ignoreComboSkill）（フェーズ12 補）
+
+**日付**: 2026-07-10
+**レビュー対象**: `skill-chain-resolution.mjs`（`resolveUsageSkills`）、`usage.mjs`（`skillRefs`）、`tnx-usage-sheet.mjs`、`usage-sheet-combo.hbs`
+**ステータス**: レビュー済(問題なし)
+
+#### 良かった点
+
+- **既存の必須クロージャに1点差し込み**: `resolveUsageSkills` の seed ループに `ignoreSet.has(id)` の早期 continue を足すだけ。指定技能（comboSkill）の自動追加はこのクロージャ経由なので、除外＝自動追加スキップが自然に実現。第4引数 `ignoreSeedIds` は末尾任意で後方互換。
+- **per-seed のデータ位置**: フラグを `skillRefs` 各要素に持たせた（`{itemId, ignoreComboSkill}`）ため「どの参加技能を単体参加させるか」が1対1で表現でき、UI もその行のトグルで完結。
+- **auto-fill の破壊を回避**: `deriveUsageAutoFill` が `skillRefs` を再構築する際に**フラグを保持**し（`ignoreMap`）、かつ当該 seed の指定技能を必須補完から除外（`ignoreSeedIds` を渡す）。フラグ消失・〈射撃〉再混入の両バグを防いだ。
+- 実行時は解決済み `skillRefs` を使うだけなので、runtime 側の変更は不要（指定技能が入っていない状態が保存される）。純ロジック（resolver）にテスト追加。
+
+#### 留意点
+
+- ⚠️ `comboLockAnalysis`（削除ロック）には ignore を渡していないが、無視した seed の指定技能はそもそも combo に居ないためロック対象にならず、実害なし。
+- ⚠️ 「アクション同士ブロック」の免除ではない（それは既存の別ルール）。本機能は指定技能の自動追加スキップのみ。
