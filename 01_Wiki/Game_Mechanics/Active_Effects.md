@@ -78,12 +78,15 @@
    a. アクター自身＋全所有アイテムの effects から有効な変更を集める（transfer 非依存）
    b. parseEffectTargetKey でセレクタ/条件/パス解析。check 系（abilityCheck/controlCheck/skillCheck）は除外
    c. _resolveBuffApplications で対象（ability/control/self/parent/category/skill）と total パスへ展開、条件評価
-   d. 同一効果の重複排除（§4）→ priority 順に effect.apply で total へモード適用
+   d. **値を2フェーズで適用（2026-07-10）**: フェーズ1=リテラル値の change を priority 順に適用（base→total 確定）、フェーズ2=**式値**の change を評価してから適用。各フェーズ内で同一効果の重複排除（§4）。
 3. 能力値・制御値は最後に 0clamp
 ```
 
-- `effect.apply(targetDoc, {...change, key: "system.<path>"})` でモード処理をネイティブ再利用。
+- `effect.apply(targetDoc, {...change, key: "system.<path>", value: String(評価値)})` でモード処理をネイティブ再利用。
 - self/parent はそのエフェクトの親アイテム（と parentItemId）で解決。所持時のみ反映。
+- **AE の「値」の式参照（2026-07-10 ユーザー確定・実装済み）**: change.value がリテラル数値でなく式なら `evaluateFormulaSync`（同期・prepareDerivedData 内のため）で評価する。参照は判定/ダメージの式と同系統＝`@system.*`・`@item.<識別キー>.system.*`、加えて **AE 値専用の相対参照 `@item.self.system.*`（効果が乗るアイテム自身）/`@item.parent.system.*`（その親＝装備先ホスト・`parentItemId`）**（`buildFormulaData(actor, null, bearer)`）。例: オプションの AE 値 `@item.parent.system.attack.total` で装備先の攻撃力を参照。
+  - **順序**: 式値はリテラル値適用後の total を参照するため**リテラル先→式後**の2フェーズ。**式値どうしは相互参照しない**（ユーザー確定）のでフェーズ2 内は順不同で確定する。`@diff`/`@achievement` は判定文脈でないため不可。`.total` は AE 込み（リテラル AE の結果を含む）。
+  - ※**用途（判定ボーナス/ダメージ修正等）の式**は実行時（prepareData 完了後）評価なので、参照する item の `.total` は最初から AE 完全適用済み（順序問題なし）。
 
 ## 4. 同一効果の重複適用不可（値・判定 共通の一般原則）
 

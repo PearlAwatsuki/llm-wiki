@@ -18,7 +18,19 @@
   - アクター: 能力値 `reason.total`/`reason.totalControl`。 アイテム: `attack.total`・`defence.S_total`・`levelTotal`・`<param>.total`（`system.self.attack`／`system.category.weapon.attack` 等の AE がここへ着地）。
   - ※ **アイテムのパラメータが「キャラクターへ」与える修正**（制御値修正・CS 修正・危険値など）は AE でなく派生パイプラインが直接読む設計（[Active_Effects.md](Active_Effects.md) 大原則5）。ただしこれは「アイテム→キャラ」の話で、`@item.<識別キー>.system.<param>.total` が指す**アイテム自身の値**は上記どおり AE 込みで取れる。
 - `@item.<識別キー>` は**識別キーを持つアイテムだけ**引ける（辞典由来の技能・アウトフィットは持つ）。識別キーはアイテムの `system.identificationKey`。
-- どこで使えるか: 判定ボーナス（アクター）・ダメージ修正/`damageBoost`（攻撃者）・`damageReduce`（防御側）。`@diff`/`@achievement` はダメージ算出時のみ。
+- どこで使えるか: 判定ボーナス（アクター）・ダメージ修正/`damageBoost`（攻撃者）・`damageReduce`（防御側）・**AE の「値」**（change.value にも式を書ける・2026-07-10）。`@diff`/`@achievement` はダメージ算出時のみ（AE 値・判定ボーナスでは不可）。
+
+### AE の「値」の式（＋相対参照）
+
+AE の change の**値**にも式を書ける（`@system.*`・`@item.<識別キー>.system.*`）。加えて **AE 値だけの相対参照**が使える:
+
+| キー | 意味 |
+|---|---|
+| `@item.self.system.*` | その効果が**乗っているアイテム自身** |
+| `@item.parent.system.*` | その親＝**装備先ホスト**（`parentItemId`。例: オプション→装備先の武器） |
+
+- 例: オプションの AE 値を `@item.parent.system.attack.total` にすると、装備先アイテムの攻撃力を参照できる。
+- **AE 値は `prepareDerivedData` 内で評価**されるため、`.total` は「リテラル値の AE を先に適用した後」の値を参照する（リテラル先→式後の2フェーズ。式値どうしは相互参照しない前提）。判定/ダメージの用途式は実行時評価なので、参照先 `.total` は AE 完全適用済み（[Active_Effects.md](Active_Effects.md) §3）。
 
 ---
 
@@ -86,13 +98,13 @@
 
 ### 武器（weapon）
 
-| キー | 意味 |
-|---|---|
-| `@item.<key>.system.attack.total` | **攻撃力の実効値**（`.value` は素値・`.damageType` は種別 S/P/I/X） |
-| `@item.<key>.system.guardValue.total` | 受け値 |
-| `@item.<key>.system.FAValue` | フルオート値（`.isFullAuto` が真のとき有効） |
-| `@item.<key>.system.ammo.mode` / `.value` / `.current` | 残弾（mode=-/value/arbitrary・current=現在残弾） |
-| `@item.<key>.system.range.min` / `.max` | 射程 |
+| キー                                                     | 意味                                                  |
+| ------------------------------------------------------ | --------------------------------------------------- |
+| `@item.<key>.system.attack.total`                      | **攻撃力の実効値**（`.value` は素値・`.damageType` は種別 S/P/I/X） |
+| `@item.<key>.system.guardValue.total`                  | 受け値                                                 |
+| `@item.<key>.system.FAValue`                           | フルオート値（`.isFullAuto` が真のとき有効）                       |
+| `@item.<key>.system.ammo.mode` / `.value` / `.current` | 残弾（mode=-/value/arbitrary・current=現在残弾）             |
+| `@item.<key>.system.range.min` / `.max`                | 射程                                                  |
 
 ### 防具（armor）・義体（cyborg）・ヴィークル（vehicle）
 
