@@ -70,6 +70,7 @@
 | [Usage_System.md](Game_Mechanics/Usage_System.md) | usage テンプレート (判定基盤) |
 | [Check_System.md](Game_Mechanics/Check_System.md) | 判定システム実装設計（UIフロー・データ構造） |
 | [Active_Effects.md](Game_Mechanics/Active_Effects.md) | AE 適用モデル（派生値・モードA/B・棚卸し。フェーズ9 中核設計） |
+| [Formula_Reference.md](Game_Mechanics/Formula_Reference.md) | 式で使えるキー一覧（`@system.*`／`@item.<識別キー>.system.*`／`@diff`/`@achievement`） |
 
 ### Migration — 移行・互換
 
