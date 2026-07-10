@@ -3275,3 +3275,23 @@ armor / cyborg / tap / vehicle / ianus / weapon / housing-area / residence)、
 
 - **不具合**: `_onDropItem` は一般技能の sort を調整せず、`item.toObject()` が**辞典側ドキュメントの sort 値を持ち込む**ため、辞典からのドロップだけ並びが崩れていた（シード・＋ボタンは正常）。
 - **修正**: `_onDropItem` に一般技能分岐を追加し、`_calcInsertSortValue` で正規位置の sort を振ってから作成（＋ボタンと同じ挿入挙動）。`_calcInsertSortValue` は prefix 渡しから**識別キー直渡し**に一般化（"other"の Infinity 番兵は「空キー→`getSkillSortPosition`＝Infinity＝末尾」に自然吸収・＋ボタン側の挙動は不変）。識別キーなしの自作技能は従来どおり末尾。
+
+
+### 再判定システム（checkRecheck）（フェーズ12 補）
+
+**日付**: 2026-07-11
+**レビュー対象**: `tnx-check-flow.mjs`（`_buildRecheckContext`/`startRecheck`/`renderRecheckButton`）、`attack-flow.mjs`（`postAttackCard`）、`tnx.mjs`、テンプレート/CSS
+**ステータス**: レビュー済(問題なし)。※初回コミット `d409992` は `_postResultChat` の引数受け漏れ（no-undef 2 errors）を含んだままコミットしてしまい `fbfbb75` で即修正——**lint を最後まで確認してからコミットする**こと（反省）。
+
+#### 良かった点
+
+- **既存フローの再入で実現**: 再実行は `TnxCheckFlow.open(保存済みctx)` を呼ぶだけ（専用の再判定フローを作らない）。判定ダイアログ・HUD 手札プレイ・山札・報酬点プロンプト・チャットカードの全既存装置がそのまま効く。
+- **スナップショットは serializable な最小構成**: `_buildRecheckContext` が ctx から必要フィールドだけを写す。`consumeUses` は含めない（再消費防止）。報酬点は `bountyAllowed`（真偽）だけ保存し、量は `startRecheck` が現在の所持から再計算（元判定の消費を自然に反映）。
+- **継続処理つき判定は null で自衛**: reaction/npcAcquire/treatment/movement/controlNegate はスナップショット自体を作らない＝ボタンが出ない（状態機械の巻き戻し問題を UI 段階で回避）。
+- **usageEffects/checkRecheck/usageEffectButton は同型のフラグ＋単一フックのパターン**で統一（カード種別を横断する装飾は全部この形）。
+- 再判定カードには `cr-badge--recheck`（既存バッジ体系に1色追加）。
+
+#### 留意点
+
+- ⚠️ 攻撃の再判定は新しい攻撃カードを出す＝旧カードは pending のまま残る（卓運用）。
+- ⚠️ `startRecheck` はワールドアクター前提（`game.actors.get`）。合成アクターの再判定はフェーズ13 のトラッカー文脈（リアクションと同じ制限）。
