@@ -1565,3 +1565,24 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 **ステータス**: 実装完了→反復実機レビューを経て**確認済み（2026-07-08 ユーザー明言・フェーズ11 完了 v0.11.0）**。
 **レビュー中の設計変更（すべてユーザー裁定・Troops.md に正本）**: ①取得対象は用途側の「取得するアクター」参照（所有者逆引き廃止・2026-07-07）→さらに**分身は対象設定なしの直接召喚**（永続1体自動確保・召喚数指定・2026-07-08） ②分身=差分反映方式（本体から全アイテム複製・成長の修正値焼き込みで数値完全一致・神業除外・レベル概念なし） ③sourceName（分身元テキスト入力）廃止=所有者参照から導出 ④技能側 autoAcquireActors 廃止（用途側一本化） ⑤消費行の自動入力導出（作成時+ボタン・親×1+isLimit参加技能×1） ⑥スタイル等のドロップを種別ルーティングに（閲覧モードでも神業同時インポート）。
+
+
+### 判定バフのスタイル/ワークス・グループ参照（フェーズ12 補・式/AE参照拡張）
+
+**日付**: 2026-07-10
+**関連実装**: `scripts/data/item/helpers.mjs`（`parseEffectTargetKey` に group 解析・`checkChangeMatches` の照合）、`scripts/module/tnx-check-flow.mjs`（`_computeCheckBonus` の criteria）。正本 [Active_Effects.md](../01_Wiki/Game_Mechanics/Active_Effects.md)「判定バフ」・[Formula_Reference.md](../01_Wiki/Game_Mechanics/Formula_Reference.md)
+**ステータス**: ✅ 実装完了（本体 `68b0d3f`・全テスト green 1147・lint 0 error）・実機確認待ち
+
+#### ルール解釈（2026-07-10 言語化）
+
+- **特定スタイルのスタイル技能・特定ワークスのワークス技能の判定に恒常ボーナスを与える能力が複数存在する**。固有名詞技能の大分類（操縦/社会）は識別キー前方一致（`check.operate*`）で既に束ねられるが、スタイル/ワークスは識別キーでなく技能の `system.style` / `system.special.works.organization` で束ねる必要がある。
+- 判定バフの「値」は**リテラルのみ**（式で判定に足す用途は「判定ボーナス」欄が担う＝役割分担・2026-07-10 ユーザー確定）。
+
+#### 監査結果
+
+✅ `check.style.<スタイル識別キー>` / `check.works.<組織識別キー>` を追加。判定に使った技能のうち該当 style/organization を持つものがあれば適用（重複排除は既存の identity 規約に乗る）。既存の完全一致/前方一致・能力値/制御判定は不変。
+
+#### 課題・申し送り
+
+- **「特定スタイルを持つキャラクターへのダメージ増加」**能力は、ダメージ式に **`@target`（防御側）を公開**して用途のダメージ修正（`@target.style.<キー>` 等）で表現する案を提示・**ユーザー確認待ち**（AE は対象文脈を持てず不適）。
+- 値バフ（`system.*`）側の同グループ化は未着手（当面 category/識別キーで賄う＝[Active_Effects.md](../01_Wiki/Game_Mechanics/Active_Effects.md) §6）。styleKey/orgKey の入力補助（辞典ドロップダウン）も未提供。

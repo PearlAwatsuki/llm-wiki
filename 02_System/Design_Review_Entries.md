@@ -3120,4 +3120,22 @@ armor / cyborg / tap / vehicle / ianus / weapon / housing-area / residence)、
 #### ステータス更新（2026-07-08・フェーズ11 完了）
 
 - 推奨アクション（実機確認 1〜5）は反復実機レビューで全消化（ユーザー明言「残作業なし」）。レビュー起因の主な是正: 使用ボタンの無条件描画・アイテムロールからの NPC取得起動・分身の直接召喚化（ensureBunshinActor・13技能シードのスキップで二重取得解消）・取得対象の用途側一本化（autoAcquireActors/sourceName 廃止）・チャットカード文字色の一般防御（[class*="tnx-"]）・ドロップの種別ルーティング。
+
+
+### 判定バフのグループ参照（check.style / check.works）（フェーズ12 補）
+
+**日付**: 2026-07-10
+**レビュー対象**: `scripts/data/item/helpers.mjs`（`parseEffectTargetKey` / `checkChangeMatches`）、`scripts/module/tnx-check-flow.mjs`（`_computeCheckBonus`）
+**ステータス**: レビュー済(問題なし)
+
+#### 良かった点
+
+- **後方互換で criteria を拡張**: `_computeCheckBonus` の criteria を `skillKeys`（キー配列）→ `skills`（`{key,style,organization}`）に拡張しつつ、`checkChangeMatches` は `criteria.skills` を優先し**旧 `skillKeys` も `{key}` として受理**。既存テスト・呼び出し（`computeCheckBonus`/`gatherCheckBonusSources`）を壊さない。
+- **既存文法への最小追加**: `parseEffectTargetKey` の check 分岐に `group:"style"|"works"` を足すだけ（前方一致 `*` の解釈は据え置き）。ドット区切りで値バフの `category.<cat>` と表記を揃えた（`check.style.<キー>`）。`controlCheck` はグループ不可（能力値のみ）で早期 null。
+- **辞典由来の構造化フィールドを再利用**: 照合キーは style skill の `system.style`・works の `system.special.works.organization`（[Active_Effects.md](../01_Wiki/Game_Mechanics/Active_Effects.md) §6 が「後続」としていた構造化の実体化）。
+
+#### 留意点
+
+- ⚠️ styleKey/orgKey は技能側フィールドの生値直書き（入力補助の辞典ドロップダウンは未提供）。
+- 値バフ（`system.*`）側は未対応＝**判定キーのみ**。ダメージの対象依存（`@target`）は別途ユーザー確認待ち。
 - v0.11.0 同期（package.json/system.json・CHANGELOG）。タグ付け・push はユーザー。

@@ -50,11 +50,14 @@
 | キー | 対象 |
 |---|---|
 | `check.melee` | 技能判定（識別キー完全一致） |
-| `check.society_*` | 技能判定（プレフィックス前方一致） |
+| `check.society_*` | 技能判定（プレフィックス前方一致＝固有名詞技能の大分類はこれで束ねる） |
+| `check.style.<スタイル識別キー>` | **そのスタイルのスタイル技能すべて**（技能の `system.style` で照合。2026-07-10） |
+| `check.works.<組織識別キー>` | **そのワークスのワークス技能すべて**（技能の `system.special.works.organization` で照合。2026-07-10） |
 | `check.reason` | 能力値判定（reason/passion/life/mundane） |
-| `controlCheck.reason` | 制御判定 |
+| `controlCheck.reason` | 制御判定（能力値のみ。グループ参照不可） |
 
 - 末尾にパラメータを付けない技能キー＝その技能の判定への加算（`.judgment` 等の接尾は不要）。
+- **グループ参照（`check.style.*` / `check.works.*`）**: 識別キーでなく技能の `system.style` / `system.special.works.organization` で束ねる。`parseEffectTargetKey` は `{scope:"skillCheck", group:"style"|"works", selector:<キー>}` を返し、`checkChangeMatches` は判定に使った技能のうち該当 style/organization を持つものがあれば適用。
 
 ### 条件付き（標準キーに畳み込む）
 
@@ -103,7 +106,7 @@
 ### 判定フローへの配線
 
 `tnx-check-flow.mjs` `_computeCheckBonus(actor, ctx, abilityKey)` が effects を集め、判定種別で criteria を作る:
-- controlCheck → `{type:"control", ability}`、skillCheck → `{type:"skill", skillKeys:[参加技能の識別キー]}`、それ以外 → `{type:"ability", ability}`。
+- controlCheck → `{type:"control", ability}`、skillCheck → `{type:"skill", skills:[{key:識別キー, style, organization}]}`（グループ参照のため識別キーに加えスタイル/組織も載せる。旧 `skillKeys` も後方互換で受理）、それ以外 → `{type:"ability", ability}`。
 - `calcSkillCheck` は達成値に `+checkBonus`、`calcControlCheck` は制御値を `+checkBonus`（成功条件が緩む）。報酬点プレビューにも反映。
 
 ## 5. 重複可（stackable）チェックボックス UI
@@ -112,7 +115,7 @@
 
 ## 6. 構造化の前提（別途・後続）
 
-スタイル/ワークス述語には、スタイル技能の「スタイル」欄・ワークス技能の「組織」欄・専用欄の**構造化（辞典読み取りドロップダウン・キー化）**が前提。ワークス装備フラグも要追加。これらは AE 本体の後の作業。当面は識別キー/プレフィックス/カテゴリで賄う。
+**判定バフのスタイル/ワークス述語は実装済み（2026-07-10）**: スタイル技能の `system.style`・ワークス技能の `system.special.works.organization` を照合キーに用い、`check.style.<キー>` / `check.works.<キー>` で束ねる（§2「判定バフ」）。専用欄の辞典読み取りドロップダウンによる入力補助や、値バフ（`system.*`）側の同グループ化・ワークス装備フラグは未着手（当面は識別キー/プレフィックス/カテゴリで賄う）。
 
 分類（カテゴリ）の**コードキー化は実装済**（`category.melee` 等。`outfit-categories.mjs` が `{majorKey:{minors:{minorKey}}}`）。
 
