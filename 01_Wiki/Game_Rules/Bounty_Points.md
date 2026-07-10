@@ -43,9 +43,11 @@ bountyBase: new fields.NumberField({ initial: 0, integer: true }),  // 外界点
 | 判定種別 | `bountyAvailable` の設定 |
 |---|---|
 | 技能判定 (`skillCheck`) | `usesBounty === true` なら `bountyBase + bounty`、そうでなければ `0` |
-| 能力判定 (`abilityCheck`) | `bountyBase + bounty`（能力判定への報酬点適用は現状許容） |
+| 能力値判定 (`abilityCheck`) | **常に `0`（能力値判定では報酬点を消費できない。2026-07-10 ユーザー確定＝従前の「現状許容」は誤りとして訂正）** |
 | 制御判定 (`controlCheck`) | 常に `0`（制御判定に報酬点は使えない） |
 | スート不一致 | 常に `0`（`_execute` 内でスキップ） |
+
+報酬点を消費できるのは**技能判定のみ**（かつ `usesBounty` を持つ技能がベースのとき）。
 
 `TnxCheckFlow._execute` 内でカードをプレイした後、`bountyAvailable > 0` の場合のみ `_promptBountyUsage` を呼ぶ。
 
