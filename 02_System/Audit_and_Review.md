@@ -1878,6 +1878,8 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 ### ダメージ増加技能の再設計（boostDamage フラグ・アイテムロール使用・フェーズ12 補）
 
+> **🔁 置換（2026-07-11）**: `boostDamage` は「**ダメージを修正（`modifyDamage`）**」へ置換（ユーザー提案）。本エントリの待ち受け登録方式は廃止——下記「ダメージ修正技能への一本化」エントリが現行。
+
 **日付**: 2026-07-11
 **関連実装**: `usage.mjs`（`boostDamage` フラグ）、`usage-sheet.hbs`＋`tnx-usage-sheet`（〈攻撃〉の isAttack 横トグル・排他・ダメージ増加（式）＝`damageBonusSelf` 流用）、`damage-flow.mjs`（`useDamageBoost`＝pending 登録/トグル・カードプレイ時に評価/合算/消費・台帳「ダメージ増加（技能名）」・`boosts` フラグ復帰）、`tnx-character-sheet-base`/`tnx-item-sheet`（アイテムロール経路）。正本 [Damage_Rules.md](../01_Wiki/Game_Rules/Damage_Rules.md)「ダメージ増加技能」
 **ステータス**: ✅ 実装完了（本体 `56c2347`・全テスト green 1178・lint 0 error）・実機確認待ち
@@ -1897,3 +1899,28 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 - 増加できるのは**攻撃者自身の技能のみ**（pending はクライアントローカル・他者の算出への増加は将来ソケット化とあわせて検討）。
 - 待ち受け中の登録状態は算出ダイアログに表示されない（通知＋確定時の台帳で提示）。ダイアログのライブ表示は要望があれば追加。
+
+
+### ダメージ修正技能への一本化（boostDamage → modifyDamage・クリック適用方式・フェーズ12 補）
+
+**日付**: 2026-07-11
+**関連実装**: `usage.mjs`（`modifyDamage` フラグ・migrateData で `boostDamage`→`modifyDamage` 変換）、`usage-sheet.hbs`＋`tnx-usage-sheet`（攻撃モードラジオ「ダメージを修正」・ダメージ修正（式）＝`damageBonusSelf` 流用）、`tnx-check-flow.mjs`（クリック待ち kind="modifyDamage" 追加・`peekAchievementAction` 新設・達成値クリック側は modifyDamage を無視）、`damage-flow.mjs`（`handleDamageModifyClick`＝攻撃側合計クリックで適用・フラグ `mods`・台帳「事後修正」行。旧 `useDamageBoost`/`pendingBoosts`/`boosts` 全撤去）、`tnx-character-sheet-base`/`tnx-item-sheet`（アイテムロール経路をクリック待ち系へ統合）。正本 [Damage_Rules.md](../01_Wiki/Game_Rules/Damage_Rules.md)「ダメージ修正技能」
+**ステータス**: ✅ 実装完了（本体 `d2b13a8`・全テスト green 1185・lint 0 error）・実機確認待ち
+
+#### ルール解釈（メカニクス監査）
+
+- **発端**: ダメージ軽減技能のため「ダメージに対してアクセスして修正を適用する機能」が必要（ユーザー要望）。クリックのフローは判定の事後修正（達成値クリック）と同じで、**使用タイミングはダメージ算出後〜適用前**。
+- **「ダメージを増加」を「ダメージを修正」に置き換える**（ユーザー提案を Code が承認）: 増加=正・軽減=負の一本の機構で足りる（UI 上も修正欄=`damageBonusSelf` の流用は同じ）。「タイミング：ダメージ算出」の増加技能は**カードが出た直後にクリック**することで表す＝旧方式の「待ち受け中に登録→カードプレイと同時に発効」というアトミック性は、実運用上クリック順序の差でしかなく専用機構を要さない。
+- 適用済みダメージの修正は不可（警告）。発動条件（軽減は防御側のみ等）の強制はしない（卓裁定＝技能を強制しない方針）。
+
+#### 設計レビュー
+
+- **クリック待ち機構の共用**: `TnxCheckFlow._clickState` の kind に "modifyDamage" を追加（recheck/modify と排他・同用途の再使用でキャンセル・body class によるハイライトも共通）。damage-flow からは `peekAchievementAction("modifyDamage")` で覗く（check-flow は damage-flow を import しない＝一方向依存で循環なし）。
+- **適用はフラグ `mods` に積む**（`{label, value}` 行）: `applyDamagePatch` 経由のため非作者（防御側）からの適用も既存の damageUpdate ソケット委譲に乗る——旧 pendingBoosts（クライアントローカル）で不可能だった**他者のダメージへの軽減**が構造的に成立。台帳「事後修正（技能名）」行＋攻撃側合計へ合算（ライブ描画）。
+- 式が空/評価不能/0 のときは `AmountInputDialog` で手入力（判定の事後修正と同型・min −99）。
+- 旧データは migrateData で `boostDamage`→`modifyDamage`（modifyDamage 既設定なら上書きしない）。
+
+#### 課題・申し送り
+
+- 攻撃側合計クリックの装飾は達成値クリックと同じ `tnx-recheck-target`（モード中ハイライト）。モード外のクリックは無視（通常表示）。
+- スタン/説得（適用時選択）とは独立（modifyDamage は算出側の合計に効き、スタンの 10 頭打ちは適用段）。
