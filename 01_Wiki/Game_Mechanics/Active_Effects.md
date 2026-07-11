@@ -23,7 +23,7 @@
 |---|---|---|---|
 | **恒常（適用パス）** | キャラ値・アイテム値 | prepareDerivedData で base→total を出した後、アクターの適用パスが total を改変 | `system.` |
 | **判定時（check）** | 判定の達成値・制御値への加算 | 判定実行時にエフェクト単位で評価 | `check.` / `controlCheck.` |
-| **ダメージ時（damage.vs）** | ダメージへの**対象依存**加算 | ダメージ算出時に攻撃対象のスタイル/所属で照合し評価（2026-07-10） | `damage.vsStyle.` / `damage.vsWorks.` |
+| **ダメージ時（damage.*）** | 与えるダメージへの加算（無条件 `damage.dealt`・対象依存 `damage.vs*`） | ダメージ算出時に攻撃の系統/攻撃対象で照合し評価（2026-07-10〜11） | `damage.dealt` / `damage.vsStyle.` / `damage.vsWorks.` |
 
 - 後二者（判定時・ダメージ時）は**実行時評価の別系統**で、恒常の適用パス（`_applyEffectBuffs`）からは除外する。恒常はシート値へ焼き込むため「攻撃対象」を知らない＝対象依存を表せないのに対し、実行時系統はアクションが対象を確定した瞬間に評価するため対象を見られる。
 
@@ -62,12 +62,14 @@
 - 末尾にパラメータを付けない技能キー＝その技能の判定への加算（`.judgment` 等の接尾は不要）。
 - **グループ参照（`check.style.*` / `check.works.*`）**: 識別キーでなく技能の `system.style` / `system.special.works.organization` で束ねる。`parseEffectTargetKey` は `{scope:"skillCheck", group:"style"|"works", selector:<キー>}` を返し、`checkChangeMatches` は判定に使った技能のうち該当 style/organization を持つものがあれば適用。
 
-### ダメージ対象バフ（ダメージ時・`damage.vsStyle.` / `damage.vsWorks.`・2026-07-10）
+### ダメージバフ（ダメージ時・`damage.*`・2026-07-10〜11）
 
-攻撃対象が特定のスタイル/ワークスを持つとき、ダメージにフラット加算する（判定バフのダメージ・対象参照版）。
+ダメージ算出時に攻撃者の effects から集計してフラット加算する（判定バフと同じ実行時評価の別系統）。
 
 | キー | 対象 |
 |---|---|
+| `damage.dealt` | **与えるダメージ +値**（全系統・2026-07-11） |
+| `damage.dealt.<physical\|mental\|social>` | その系統の攻撃の与えるダメージ +値 |
 | `damage.vsStyle.<スタイル識別キー>` | 攻撃対象がそのスタイル（`type:"style"` アイテム）を持つとき +値 |
 | `damage.vsWorks.<組織識別キー>` | 攻撃対象がそのワークス（ワークス技能の組織）を持つとき +値 |
 
