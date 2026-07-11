@@ -58,6 +58,7 @@
 | `check.works.<組織識別キー>` | **そのワークスのワークス技能すべて**（技能の `system.special.works.organization` で照合。2026-07-10） |
 | `check.reason` | 能力値判定（reason/passion/life/mundane） |
 | `controlCheck.reason` | 制御判定（能力値のみ。グループ参照不可） |
+| `check.suitChange` | **スート変更マーカー**（値不要・2026-07-12）: 判定で使用できないスートのカードを使用可能なスートに変更できる（[Check_Rules](../Game_Rules/Check_Rules.md)「スートの変更」）。他者バフの付与形＝用途の適用効果で対象へ付与。失効は当面手動（「1回の判定」Duration は時間管理フェーズで持続時間側に追加＝**持続時間と AE キーは独立**）。制御判定は対象外 |
 
 - 末尾にパラメータを付けない技能キー＝その技能の判定への加算（`.judgment` 等の接尾は不要）。
 - **グループ参照（`check.style.*` / `check.works.*`）**: 識別キーでなく技能の `system.style` / `system.special.works.organization` で束ねる。`parseEffectTargetKey` は `{scope:"skillCheck", group:"style"|"works", selector:<キー>}` を返し、`checkChangeMatches` は判定に使った技能のうち該当 style/organization を持つものがあれば適用。
