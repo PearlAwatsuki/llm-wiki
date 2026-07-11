@@ -65,7 +65,7 @@
 
 ### ダメージバフ（ダメージ時・`damage.*`・2026-07-10〜11）
 
-ダメージ算出時に攻撃者の effects から集計してフラット加算する（判定バフと同じ実行時評価の別系統）。
+ダメージ算出時に攻撃者の effects から集計してフラット加算する（判定バフと同じ実行時評価の別系統）。※`damage.replaceTag`/`damage.addTag` のみ**対象（ダメージを受ける側）の effects** をチャート適用時に評価する。
 
 | キー | 対象 |
 |---|---|
@@ -73,6 +73,8 @@
 | `damage.dealt.<physical\|mental\|social>` | その系統の攻撃の与えるダメージ +値 |
 | `damage.vsStyle.<スタイル識別キー>` | 攻撃対象がそのスタイル（`type:"style"` アイテム）を持つとき +値 |
 | `damage.vsWorks.<組織識別キー>` | 攻撃対象がそのワークス（ワークス技能の組織）を持つとき +値 |
+| `damage.replaceTag.<元タグ>` | **ダメージタグ改変（対象側・2026-07-12）**: チャート適用時、元タグを値のタグへ**置換**（例 `damage.replaceTag.stupor`＝`dominated`＝昏睡→支配）。値=CONDITION_KINDS のタグキー |
+| `damage.addTag.<元タグ>` | 同・元タグ付与時に値のタグを**追加**（例 `damage.addTag.erased`＝`dominated`＝抹殺に支配を追加）。追加分は同じ負傷に紐づく |
 
 - `parseEffectTargetKey` は `{scope:"damageVs", group:"style"|"works", selector:<キー>}` を返す。**恒常適用パスからは除外**（対象が見えないため焼き込めない）。
 - ダメージフロー（`damage-flow.mjs` `openDamageRollDialog` → `collectDamageVsBonuses`）が攻撃対象を解決し、対象の style/works と `gatherDamageVsSources`（`collectActorEffectBuffs` で集めた攻撃者の effects）で照合。合致分を用途のダメージ修正と同じ台帳行（供給元＝効果名）としてダメージへ合算する。

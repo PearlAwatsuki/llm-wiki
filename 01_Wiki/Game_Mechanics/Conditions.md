@@ -150,3 +150,11 @@ status id（`CONFIG.statusEffects`）が condition の一意性を担い、`cond
 - [Bad_Status.md](../Game_Rules/Bad_Status.md) / [Damage_Rules.md](../Game_Rules/Damage_Rules.md)
 - [Time_Management.md](../Game_Rules/Time_Management.md)（回復タイミングの時間単位）
 - [Phase_9_Tasks_Detail.md](../Phases/Phase_9_Tasks_Detail.md)
+
+
+## 特殊タグ［支配］（dominated・2026-07-12 ユーザー確定）
+
+- **支配されたキャラクターは RL 操作になる**＝自動化せずに運用できる範囲。タグは type なしのマーカー（行動ブロック・ロスト処理なし・戦闘不能グループ・非重複）。
+- 付与＝**ダメージタグ改変 AE**（対象側・inflicts カスケードで評価・`applyDamageTagMods` 純関数）: `damage.replaceTag.<元タグ>`（置換・例 昏睡/精神崩壊→支配）／`damage.addTag.<元タグ>`（追加・例 抹殺に支配）。負傷由来の付与のみ対象（手動付与の状態には効かない）。
+- 解除（ユーザー裁定）: 上書き由来＝［昏睡］と同じ（治療目標値 20・`replacedFrom` が根拠・treatment-flow が参照）。追加由来＝追加元チャートの治療/無効化で同時解除（woundSource 紐づき・目標値には関与しない）。
+- 正本: [Damage_Rules.md](../Game_Rules/Damage_Rules.md)「特殊タグ［支配］」
