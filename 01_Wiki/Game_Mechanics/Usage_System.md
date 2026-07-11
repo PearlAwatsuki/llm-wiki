@@ -183,6 +183,10 @@ actions: ArrayField(SchemaField({
 
 ## 使用回数の消費（2026-06-20）
 
+> **11-6 で消費先設定（consumeTargets）に一本化**: 本節の `planUsesConsumption`/`_consumeUses`（参加技能の自動スキャン）は**全廃済み**。全ての消費は用途の消費先設定からのみ発生する（`usage-consumption.mjs`＝`resolveConsumeRowsForActor`→`promptConsumption`→`applyConsumptionPlan`。判定用途は判定実行時・他の用途は使用時・クリック待ち系は発動確定時に適用）。
+> **消費先の種別**: `parent`（親アイテムの使用回数）／`itemUses`（アイテムの使用回数）／`miracleUses`（神業の使用回数）／**`actionRank`（AR・2026-07-12 ユーザー確定）**。
+> **AR（actionRank）**: 実行アクターの AR（`actionRank.value`）を消費する。対象アイテム選択なし・消費量可変。**カット進行外は no-op**（AR を追跡しないため検証・消費なし）。AR 不足は他の行と同じ原則ブロック（チェックを外せば消費せず実行＝卓裁定）。分身でも本体へ差し替えない（AR は実行アクター自身の戦闘リソース）。**パリー専用の AR>0 検証＋AR−1 自動化（startReaction 内）は廃止**——パリー技能の用途に「AR を消費」を設定して表す（AR 消費の一本化）。
+
 判定起動時に参加技能の使用回数を消費する（ルール: [Check_Rules.md](../Game_Rules/Check_Rules.md#使用回数の消費確定-2026-06-20)）。
 
 - 使用回数は D&D 方式の **`uses.spent`（消費済み）** で保持（残り = `max − spent`）。旧 `uses.value`（残り回数）から `migrateUsesValueToSpent()` で移行（`helpers.mjs`、style-skill / outfit-base 共用）。
