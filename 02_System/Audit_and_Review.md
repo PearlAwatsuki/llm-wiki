@@ -1608,6 +1608,10 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 - AE `damage.vs*` はフラット +N（キャラ恒常）。**式ベース・用途固有の対象依存は用途のダメージ修正欄で `@target.*` を参照する形で実装済み**（下記「用途ダメージ修正の @target 参照」・`f66db00`）。「組み合わせた物理攻撃が〈スタイル名〉を対象とする場合～」等の用途固有効果はそちらで表現する。
 - 対象の「ワークス所属」は当面ワークス技能の組織で近似（キャラクター自身のワークス所属フラグは未整備＝[Active_Effects.md](../01_Wiki/Game_Mechanics/Active_Effects.md) §6）。
 
+#### 追記（2026-07-11・本体 `7c669fd`）: 与えるダメージキー `damage.dealt[.<系統>]`
+
+- **最重要キーの欠落をユーザー指摘**——無条件の「与えるダメージ +値」が無かった。`damage.dealt`（全系統）/`damage.dealt.physical|mental|social`（系統別）を同じ実行時評価系統に追加（`damageDealtChangeMatches`/`gatherDamageDealtSources`・攻撃の系統で照合・台帳は「ダメージ修正（効果名）」行・重複規約は判定バフと同一）。
+
 
 ### 用途ダメージ修正の @target 参照（式で攻撃対象を参照・フェーズ12 補）
 
