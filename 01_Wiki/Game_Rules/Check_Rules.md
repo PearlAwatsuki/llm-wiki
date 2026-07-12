@@ -242,14 +242,18 @@ PLが目標値を手入力するフローは採用しない（Foundry VTT のデ
 
 > **廃止（2026-07-11 ユーザー確定）**: `damageBoost`（ダメージ増加）/`damageReduce`（ダメージ軽減）タイプは削除。既存データは migrateData で宣言（declaration）へ変換。単独使用の増加/軽減技能は check 用途のフラグ **`modifyDamage`（ダメージを修正・増加=正/軽減=負・攻撃側合計クリックで適用）**、攻撃に組み合わせた増加は**攻撃用途のダメージ修正行**（供給元＝その技能）で表す（→ [Damage_Rules.md](Damage_Rules.md)「ダメージ修正技能」）。
 
-フェーズ8 実装で確定した usage `type` の値域:
+> **一本化（2026-07-13 ユーザー確定）**: タイプは **`check`（判定）と `declaration`（宣言）の2つのみ**（他タイプの存在が組み合わせ判定の不確定要素になるため）。攻撃・攻守の各メカニクスは用途の**設定（フラグ）**として両タイプに載る。
+> - 旧 `attack` → check＋damageCategory（2026-07-09）
+> - 旧 `damageBoost`/`damageReduce` → 廃止＝宣言へ変換（2026-07-11・modifyDamage 等で表現）
+> - 旧 `modification`（改造）→ **廃止＝check へ移行**（改造は判定で行う。機能未実装のため modifiableParams はデータ温存のみ・実装フェーズで再設計）
+> - 旧 `npcAcquire`（NPC取得）→ **フラグ化（`npcAcquire`）**＝判定/宣言のどちらにも設定できる（アイテムからの取得＝宣言など。migrateData でエキストラ＝宣言・トループ/エニグマ/分身＝判定へ移行。実行はモード駆動で従来どおり）。設定 UI は**効果タブ**の〈NPC取得〉（発動タブから移動＝この種の設定は効果タブが適切＝ユーザー指摘）
 
-| type | 説明 | 主な固有フィールド |
+現在の usage `type` の値域:
+
+| type | 説明 | 主な設定（フラグ） |
 |---|---|---|
-| `check` | 技能判定（情報収集・登場など） | baseSkillRef, skillRefs |
-| `attack` | 攻撃判定（物理・精神・社会戦） | baseSkillRef, skillRefs, weaponRef, damageType |
-| `declaration` | 宣言・神業を含む | — |
-| `modification` | 改造 | modifiableParams |
+| `check` | 判定（攻撃・回復・NPC取得・クリック待ち系もここに設定として載る） | damageCategory（攻撃）・recovery・npcAcquire・allowRecheck/grantRecheck/modifyCheck/modifyDamage/allowSuitChange/grantSuitChange |
+| `declaration` | 宣言（判定なしで使える能力＝神業を含む） | modifyCheck・modifyDamage・grantSuitChange・recovery・npcAcquire |
 
 ### タイプ設計の確定事項
 

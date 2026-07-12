@@ -66,12 +66,12 @@ actions: ArrayField(SchemaField({
 
 ### タイプ（type）値域
 
-| type | 説明 | 主な固有フィールド |
-|---|---|---|
-| `check` | 技能判定（情報収集・登場など） | baseSkillRef, skillRefs |
-| `attack` | 攻撃判定（物理・精神・社会戦） | baseSkillRef, skillRefs, weaponRef, damageType |
-| `declaration` | 宣言・神業を含む | — |
-| `modification` | 改造 | modifiableParams |
+> **一本化（2026-07-13）**: タイプは `check`/`declaration` のみ（→ [Check_Rules](../Game_Rules/Check_Rules.md)「用途タイプ」）。改造は廃止（check へ移行・機能未実装）・NPC取得はフラグ化（設定 UI は効果タブの〈NPC取得〉fieldset へ移動。設定できるのはトループ取得技能とアウトフィット＝旧作成ゲートの移管。OFF で設定リセット）。
+
+| type | 説明 |
+|---|---|
+| `check` | 判定（攻撃・回復・NPC取得等はフラグ/設定として載る） |
+| `declaration` | 宣言（神業を含む。修正系・スート変更・回復・NPC取得を設定可） |
 
 - `controlCheck` は独立した判定種別であり、usage タイプには含まない（timing で区別）
 - 神業（miracle）は当面 `declaration` に統合。専用システム分離は将来フェーズ
