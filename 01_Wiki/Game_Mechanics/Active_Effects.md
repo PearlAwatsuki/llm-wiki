@@ -66,7 +66,9 @@
 | `check.suitChange` | **スート変更マーカー**（値不要・2026-07-12）: 判定で使用できないスートのカードを使用可能なスートに変更できる（[Check_Rules](../Game_Rules/Check_Rules.md)「スートの変更」）。他者バフの付与形＝用途の適用効果で対象へ付与。失効は当面手動（「1回の判定」Duration は時間管理フェーズで持続時間側に追加＝**持続時間と AE キーは独立**）。制御判定は対象外 |
 
 - 末尾にパラメータを付けない技能キー＝その技能の判定への加算（`.judgment` 等の接尾は不要）。
-- **文字列フィールドの上書き（2026-07-13）**: `attack.damageType` は数値でなく**値の置き換え**で適用される（アイテム着地キー例: **`item.<武器の識別キー>.system.attack.damageType`**（統一記法・推奨）＝`system.skill.<武器の識別キー>.attack.damageType` と同義。`item.self.system.attack.damageType`・`system.category.<カテゴリ>.attack.damageType` も可。生身は `system.baseAttack.damageType`＝ネイティブ適用）。値は AE 設定シートで **S/P/I/X の選択式**（ベタ打ちさせない）。モードは「上書き」を推奨。同一効果内の重複は先勝ち・式評価は通さない。
+- **文字列フィールドの上書き（2026-07-13）**: `attack.damageType` は数値でなく**値の置き換え**で適用される（アイテム着地キー例: **`item.<武器の識別キー>.system.attack.damageType`**（統一記法・推奨）＝`system.skill.<武器の識別キー>.attack.damageType` と同義。`item.self.system.attack.damageType`・`system.category.<カテゴリ>.attack.damageType` も可。生身は `system.baseAttack.damageType`）。値は AE 設定シートで **S/P/I/X の選択式**（ベタ打ちさせない）。**着地は実効フィールド（`attack.damageTypeTotal`／生身は `baseAttack.damageTypeTotal`）＝設定欄（素値）は絶対に書き換えない**（同日ユーザー指摘で訂正）。文字列に加算は意味を成さないため、モード設定に関わらず常に上書きで適用・同一効果内の重複は先勝ち・式評価は通さない。
+- **キーの綴りと着地の正規化（2026-07-13）**: 統一記法では式と同じフルパス綴り（`….attack.value`・`….attack.total`・`….levelTotal` 等）で書かれるため、**素値/実効のどちらの綴りでも必ず実効（total 系）へ正規化して着地**する（`attack.value`→`attack.total` 等）。**設定欄（base）は不変**で、追加モードは実効値の上に加算・上書きモードは実効値を置き換える。
+- **転送された効果の明示表示（2026-07-13）**: 他のアイテム/アクター由来でそのアイテムに効いている効果は、**対象アイテムのエフェクト一覧に「転送された効果」セクション**として表示される（供給元名つき・斜体・読み取り専用・キーは self 表記 `item.self.system.*` へ変換して表示＝そのアイテムへの効果として読める形）。適用の実体はアクターの単一適用パスのまま（実体コピーは作らない＝二重適用・同期問題の回避）。編集・削除は供給元の効果で行う。
 - **グループ参照（`check.style.*` / `check.works.*`）**: 識別キーでなく技能の `system.style` / `system.special.works.organization` で束ねる。`parseEffectTargetKey` は `{scope:"skillCheck", group:"style"|"works", selector:<キー>}` を返し、`checkChangeMatches` は判定に使った技能のうち該当 style/organization を持つものがあれば適用。
 
 ### ダメージバフ（ダメージ時・`damage.*`・2026-07-10〜11）

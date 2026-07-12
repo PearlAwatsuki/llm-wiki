@@ -2181,3 +2181,21 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 - 「アイテムへの AE キーは作ったはずだが？」→ **存在する**（v2 の `system.skill.<識別キー>.*` 等・フェーズ9）。Code の前ターンの「未対応」は `item.<key>.system.*` という**綴り**の話で、式（@参照）と AE キーで綴りが食い違う**二重文法**が放置されていたのが根本問題——ユーザーが式の綴りで AE キーを書くのは自然であり、エイリアスで統一した（推奨綴り＝item.<識別キー>.system.*）。
 - 「Active_Effects.md と Formula_Reference.md がごっちゃ。Formula_Reference に AE キーが記載されるなど矛盾が多くどちらを見れば良いか分からない」→ **正本を分離**: AE change キーの唯一の正本＝Active_Effects（式の正本＝Formula_Reference）。Formula_Reference にあった AE キー表2節（判定キー・ダメージ対象キー）を削除しポインタに置換。両ページ冒頭に正本宣言を追加し、以後キーの表を複製しない。
+
+
+### アイテム AE の着地の是正（設定欄不変・モード修復・転送効果の明示表示・フェーズ12 補）
+
+**日付**: 2026-07-13
+**関連実装**: `helpers.mjs`（`resolveItemTotalPath` のフルパス正規化・`attack.damageTypeTotal` 着地・`collectTransferredItemEffects`）、`character-base.mjs`（文字列上書き=常に OVERRIDE・`baseAttack.damageTypeTotal` 既定+scope "baseAttackType"）、消費側（attack-flow/戦闘タブ/用途シート=実効値優先）、`effects-sheet-mixin`＋`active-effects-list.hbs`（転送セクション）。本体 `6f3c8f2`。正本 [Active_Effects.md](../01_Wiki/Game_Mechanics/Active_Effects.md)
+**ステータス**: ✅ 実装完了（全テスト green 1227・lint 0 error）・実機確認待ち
+
+#### 経緯（ユーザー指摘3件・いずれも Code の実装不備）
+
+1. **「最終値を書き換えろと言ったはずなのに設定欄の入力データが直接書き換わっている。此処は絶対に触らない」**: ダメージ種別の上書きを素値 `attack.damageType` に直接書いていた（total 相当が無かったため）——v2 の「base 不変・total 書き換え」の大原則への違反。実効フィールド `damageTypeTotal` を新設して着地を移した（生身も同様）。
+2. **「AE の効果タイプ（追加・上書き）も効いていない。追加なら元の値を崩さず追加しろ」**: 統一記法のフルパス綴り（`….attack.value` 等）が `attack.value.total` という壊れた着地パスを生成し、加算も上書きも正しく効いていなかった。素値/実効どちらの綴りでも実効（total 系）へ正規化することで、追加モードは base を崩さず実効値に加算されるように修復。文字列（種別）は加算が無意味なため常に上書きで適用。
+3. **「アイテムへの遠隔付与は不自然。対象アイテムに転送され、他アイテム由来であることを（一時/無効効果のような形で）明示表示し、転送先では self になって適用されるべき」**: 対象アイテムのエフェクト一覧に**「転送された効果」セクション**を追加（供給元名・斜体・読み取り専用・キーは `item.self.system.*` 表記に変換して表示）。**適用の実体は単一適用パスのまま**（実体コピーの転送は二重適用・変更/削除の同期問題を生むため作らない=Code の設計判断として明示。物理コピーが必要なら再訪）。
+
+#### 課題・申し送り
+
+- `baseAttack.value` 等の数値ネイティブキーは従来どおり（素値に直接効く Foundry ネイティブ）。生身の数値バフの実効化が必要になったら同じ手当てを行う。
+- 転送セクションは有効(active)な効果のみ表示（無効化された供給元効果は出ない）。
