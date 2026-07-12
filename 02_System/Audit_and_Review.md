@@ -2263,3 +2263,26 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 - 同期は自クライアント起点の操作でのみ発火（userId ガード・従来どおり）。
 - 供給元アイテム（bearer）の改名は効果の更新ではないため transferredSourceName に即時反映されない（次の効果更新時に取り直し）。
+
+
+### AE 適用モデル v3（フェーズ12 補・自動適用ゲート＋使用時付与の再設計）
+
+**日付**: 2026-07-13
+**関連実装**: `helpers.mjs`（parseEffectTargetKey v3＝素のパラメータキー・self/parent/system.skill 綴り廃止・疑似分類 generalSkill/styleSkill／effectAutoApplies／analyzeGrantLanding／itemGrantCandidates／rewriteGrantChangesForItem／buildTransferredEffectData の素キー書き換え・準備先モード・effectId/stackable 引き継ぎ）、`character-base.mjs`（値バフ収集・状態ペナルティ収集にゲート配線・parent スコープ撤去）、`tnx.mjs`（materializeItemTransfers のゲート/準備先分岐・updateItem フック新設＝装着/分類/識別キー変更で再転送・AE 設定シートへの注入=transfer ラベル差し替え「効果を対象に自動適用」＋「準備先（親アイテム）に適用」＋「付与先」）、`usage-effects.mjs`（付与先分岐＝自分向け即時付与・アイテム着地の選択付与・置き換えリフレッシュ・grantedFrom）、`effects-sheet-mixin.mjs`＋`active-effects-list.hbs`（「使用時付与用」セクション）、`outfit-categories.mjs`（OUTFIT_TYPES 導出）。正本 [Active_Effects.md](../01_Wiki/Game_Mechanics/Active_Effects.md)（v3 注記）・[Usage_System.md](../01_Wiki/Game_Mechanics/Usage_System.md)「対象への付与」
+**ステータス**: ✅ 実装完了（全テスト green 1251・lint 0 error）・実機確認待ち
+
+#### ルール解釈（メカニクス監査）
+
+- **恒久のデータ変更と「能力の使用による効果の転送」は別物**（ユーザー指摘が起点）: 「マイナーアクションで使用して武器の攻撃力＋」は使用時にのみ武器へ効く。従来はダメージ＋で代用するしかなく、攻撃力を参照する式・表示が素の値を読む弊害があった。v3 は攻撃力そのものを実効値で上げるため参照系も正確になる。
+- **付与先（対象/自分）**: 「効果Aを相手に与える代わりに自分がデバフを負う」を、AE 自身の付与先宣言＋自分向けの用途解決時即時付与（代償を後回しにしない）で表現する（ユーザー確定）。
+- **付与のアイテム選択**: 対象アクターの全アウトフィットから選択が既定。絞り込みは分類・疑似分類（一般技能/スタイル技能）・識別キーをキーに含めて表す（ユーザー確定）。
+- **多重付与の置き換えリフレッシュ**: 「明記なき同一効果は重複しない」原則の付与形（Code 提案・ユーザー承認＝異議なく実装指示）。
+- **混在非対応**: 1効果の changes にアイテム着地とアクター着地は同居しない。必要なら効果を分けるか、ダメージ＋（アクター着地）で代用（ユーザー裁定）。
+- 既存ワールドの移行は行わない（ユーザー裁定）。
+
+#### 設計レビュー
+
+- **transfer の再利用**: 死んでいたネイティブ transfer を「効果を対象に自動適用」ゲートへ昇格（ユーザー提案）。新フラグを増やさず、Foundry ユーザーの既知 UI の意味を自然に拡張。ゲートは effectAutoApplies 一箇所に集約し、収集系（collectActorEffectBuffs／_applyEffectBuffs／状態ペナルティ）が共用。実体化済みインスタンス（transferredFrom/grantedFrom）は常に生きる＝コピーへの transfer=true 付与を避け、コアの applyActiveEffects がアクターへ生パスを書く汚染を防いだ。
+- **キーの役割の一本化**: キー＝「どのパラメータ＋絞り込み」、AE 設定＝「どこに乗るか」（自動適用・準備先・付与先）。self/parent/system.skill の廃止で綴りは死にキー化（黙って別解釈に化けない）。式の `@item.self`/`@item.parent` は「値を引いてくる」参照のため残す（ユーザー確定・キーとは別物）。
+- **転送トリガーの穴を同時に閉塞**: 従来は効果の作成/更新とアイテム追加のみで、装着（parentItemId）・分類・識別キーの変更で再転送されなかった。updateItem フックを追加し準備先転送（準備で転送・解除で除去）とともに解決。
+- **課題・申し送り**: AE 設定シートの注入 UI（ラベル差し替え・出し分け）と選択ダイアログ・付与フローは実機確認待ち。付与コピーの失効は当面手動（持続時間は時間管理フェーズ）。transferredSourceName の即時性など既存の申し送りは従来どおり。

@@ -19,7 +19,7 @@
 | **`@card`** | **判定に使用したカードの値**（N◎VA数字。21固定は A の数字＝11）。**カードプレイ後**＝判定ボーナス評価時から参照可（ダメージ側は命中判定のカード値・2026-07-11） | `@card + 3` |
 
 - **`.total`（実効値・AE 込み）を使う**のが原則。`value` などの素フィールドは AE 適用前の入力値。**アクターの値もアイテムの値も同じ**——各 `prepareDerivedData` で `total=base` を置いた後、**アクターの単一適用パス（`_applyEffectBuffs`・`legacyTransferral=false`）が全 buff を集めて total を改変**する（AE モデル v2）。判定/ダメージは実行時に走るので、その時点で `.total` は AE 込みの最終値になっている。
-  - アクター: 能力値 `reason.total`/`reason.totalControl`。 アイテム: `attack.total`・`defence.S_total`・`levelTotal`・`<param>.total`（`system.self.attack`／`system.category.weapon.attack` 等の AE がここへ着地）。
+  - アクター: 能力値 `reason.total`/`reason.totalControl`。 アイテム: `attack.total`・`defence.S_total`・`levelTotal`・`<param>.total`（素のパラメータキー `system.attack.value`／`system.category.weapon.attack` 等の AE がここへ着地・v3）。
   - ※ **アイテムのパラメータが「キャラクターへ」与える修正**（制御値修正・CS 修正・危険値など）は AE でなく派生パイプラインが直接読む設計（[Active_Effects.md](Active_Effects.md) 大原則5）。ただしこれは「アイテム→キャラ」の話で、`@item.<識別キー>.system.<param>.total` が指す**アイテム自身の値**は上記どおり AE 込みで取れる。
 - `@item.<識別キー>` は**識別キーを持つアイテムだけ**引ける（辞典由来の技能・アウトフィットは持つ）。識別キーはアイテムの `system.identificationKey`。
 - どこで使えるか: 判定ボーナス（アクター・判定時）・ダメージ修正（攻撃者・ダメージ算出時）・**AE の「値」**（change.value にも式を書ける・2026-07-10）。`@diff`/`@achievement` はダメージ算出時のみ（AE 値・判定ボーナスでは不可）。**`@target.*` はダメージ修正（攻撃者側）でのみ**供給。**`@card` は判定ボーナス（カードプレイ後に評価されるため可）とダメージ修正**（命中判定のカード値を攻撃→ダメージフラグで持ち回り）で使える（AE 値は判定文脈がないため不可）。
