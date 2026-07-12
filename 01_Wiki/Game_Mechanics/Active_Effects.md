@@ -59,9 +59,11 @@
 | `check.works.<組織識別キー>` | **そのワークスのワークス技能すべて**（技能の `system.special.works.organization` で照合。2026-07-10） |
 | `check.reason` | 能力値判定（reason/passion/life/mundane） |
 | `controlCheck.reason` | 制御判定（能力値のみ。グループ参照不可） |
+| `check.cardValue` | **カード数字の上書き**（2026-07-13）: 判定に使用したカードの数字を **A〜K で上書き**する（値は AE 設定シートで選択式・自由入力なし・先勝ち）。以降の数字規約は上書き後の数字に従う（手札の絵札=10・A の21固定選択・山札の絵札=FUMBLE）。ジョーカー/切り札の宣言には適用しない。制御判定は対象外（用語規約）。結果カードに「数字上書き（元 → 後）」を明示 |
 | `check.suitChange` | **スート変更マーカー**（値不要・2026-07-12）: 判定で使用できないスートのカードを使用可能なスートに変更できる（[Check_Rules](../Game_Rules/Check_Rules.md)「スートの変更」）。他者バフの付与形＝用途の適用効果で対象へ付与。失効は当面手動（「1回の判定」Duration は時間管理フェーズで持続時間側に追加＝**持続時間と AE キーは独立**）。制御判定は対象外 |
 
 - 末尾にパラメータを付けない技能キー＝その技能の判定への加算（`.judgment` 等の接尾は不要）。
+- **文字列フィールドの上書き（2026-07-13）**: `attack.damageType` は数値でなく**値の置き換え**で適用される（アイテム着地キー例: `system.skill.<武器の識別キー>.attack.damageType`・`system.self.attack.damageType`・`system.category.<カテゴリ>.attack.damageType`。生身は `system.baseAttack.damageType`＝ネイティブ適用）。値は AE 設定シートで **S/P/I/X の選択式**（ベタ打ちさせない）。モードは「上書き」を推奨。同一効果内の重複は先勝ち・式評価は通さない。
 - **グループ参照（`check.style.*` / `check.works.*`）**: 識別キーでなく技能の `system.style` / `system.special.works.organization` で束ねる。`parseEffectTargetKey` は `{scope:"skillCheck", group:"style"|"works", selector:<キー>}` を返し、`checkChangeMatches` は判定に使った技能のうち該当 style/organization を持つものがあれば適用。
 
 ### ダメージバフ（ダメージ時・`damage.*`・2026-07-10〜11）

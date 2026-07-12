@@ -2151,3 +2151,21 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 - 宣言用途に判定系モード（トループ等）を設定した場合もモード駆動で判定が走る（migrateは判定へ振るため通常発生しない・卓設定の自由度として許容）。
 - 改造機能の実装時に modifiableParams を含めて再設計する。
+
+
+### カード数字上書き AE＋ダメージ種別上書きの選択式入力（フェーズ12 補）
+
+**日付**: 2026-07-13
+**関連実装**: `helpers.mjs`（`check.cardValue` パース scope="cardValue"・`actorCardValueOverride`＝A〜K→生数字・`resolveItemTotalPath("attack.damageType")`＝total なし直接パス）、`character-base.mjs`（**文字列上書きレーン**＝数値評価を通さず置換・先勝ち・値バフ除外に cardValue 追加）、`tnx-check-flow.mjs`（手札/山札の数字を上書きして以降の規約に流す・結果カード「数字上書き（元→後）」行）、`tnx.mjs`（AE 設定シートの値入力を選択式化＝check.cardValue は A〜K・*.attack.damageType は S/P/I/X・キー変更に追従）。本体 `031227b`。正本 [Active_Effects.md](../01_Wiki/Game_Mechanics/Active_Effects.md)
+**ステータス**: ✅ 実装完了（全テスト green 1224・lint 0 error）・実機確認待ち
+
+#### 監査（ユーザー確定）
+
+- **カード数字の上書き**: 値は自由入力でなく **A〜K の選択式**。上書き後の数字に既存規約が従う（手札絵札=10・A の21固定選択・山札絵札=FUMBLE=K へ上書きして山札判定すればファンブル）。ジョーカー/切り札は自前の宣言があるため対象外（Code 既定）。制御判定は無印「判定」の用語規約により対象外。
+- **ダメージ種別の上書き**: `…attack.damageType` は上書きで使用される想定のため、値は **S/P/I/X の選択式**（ベタ打ちさせない）。
+
+#### 設計レビュー
+
+- 値バフの適用パスは従来すべて数値（リテラル→式の2フェーズ）で、文字列は式評価に落ちて 0 になっていた——`attack.damageType` を文字列上書きパスとして分離（total を持たないため実 system パスへ直接置換・リテラル段で適用・同一効果内は先勝ち）。
+- AE 設定シートの選択式化は renderActiveEffectConfig の既存注入フックに追加（キー入力の変更に追従して value 入力を select⇄text で差し替え。対象キー以外は従来どおり自由入力）。
+- 攻撃カードには数字上書き行を出していない（カード値の行自体が無いため。達成値には反映済み・申し送り）。
