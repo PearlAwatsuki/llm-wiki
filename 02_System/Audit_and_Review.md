@@ -2169,3 +2169,15 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 - 値バフの適用パスは従来すべて数値（リテラル→式の2フェーズ）で、文字列は式評価に落ちて 0 になっていた——`attack.damageType` を文字列上書きパスとして分離（total を持たないため実 system パスへ直接置換・リテラル段で適用・同一効果内は先勝ち）。
 - AE 設定シートの選択式化は renderActiveEffectConfig の既存注入フックに追加（キー入力の変更に追従して value 入力を select⇄text で差し替え。対象キー以外は従来どおり自由入力）。
 - 攻撃カードには数字上書き行を出していない（カード値の行自体が無いため。達成値には反映済み・申し送り）。
+
+
+### AE キー文法の統一＋Active_Effects/Formula_Reference の正本分離（フェーズ12 補）
+
+**日付**: 2026-07-13
+**関連実装**: `helpers.mjs`（`item.<識別キー>.system.<パラメータ>`＝`system.skill.<識別キー>.*` と同義のエイリアス。self/parent も同様・category は対象外）。本体 `（コミット参照）`。wiki: Active_Effects/Formula_Reference の冒頭に正本宣言・Formula_Reference から AE キー表2節を除去しポインタ化
+**ステータス**: ✅ 実装完了（全テスト green 1225・lint 0 error）
+
+#### 経緯（ユーザー指摘2件）
+
+- 「アイテムへの AE キーは作ったはずだが？」→ **存在する**（v2 の `system.skill.<識別キー>.*` 等・フェーズ9）。Code の前ターンの「未対応」は `item.<key>.system.*` という**綴り**の話で、式（@参照）と AE キーで綴りが食い違う**二重文法**が放置されていたのが根本問題——ユーザーが式の綴りで AE キーを書くのは自然であり、エイリアスで統一した（推奨綴り＝item.<識別キー>.system.*）。
+- 「Active_Effects.md と Formula_Reference.md がごっちゃ。Formula_Reference に AE キーが記載されるなど矛盾が多くどちらを見れば良いか分からない」→ **正本を分離**: AE change キーの唯一の正本＝Active_Effects（式の正本＝Formula_Reference）。Formula_Reference にあった AE キー表2節（判定キー・ダメージ対象キー）を削除しポインタに置換。両ページ冒頭に正本宣言を追加し、以後キーの表を複製しない。

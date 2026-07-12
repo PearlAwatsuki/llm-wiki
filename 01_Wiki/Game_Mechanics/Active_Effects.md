@@ -8,6 +8,8 @@
 
 ---
 
+> **正本の分離（2026-07-13 ユーザー指摘で整理）**: **AE の change キー（着地キー・実行時キー）の唯一の正本はこのページ**。式（`@` 参照＝AE の「値」・判定ボーナス・ダメージ修正・目標値の式で使うデータ）の正本は [Formula_Reference.md](Formula_Reference.md)。キーの表を他ページに複製しない。
+
 ## 0. 大原則
 
 1. **base（UI 編集値）と total（実効値）を分離**。UI が編集するのは base（value / growth / mod 等）、表示・判定・ダメージが読むのは total。
@@ -43,6 +45,7 @@
 | `system.category.weapon.attack` | 大分類 weapon のアイテム群（大小キーは衝突しない） |
 | `system.skill.melee.level` | 識別キー melee の技能 → `levelTotal` |
 | `system.skill.society_*.level` | 識別キー前方一致の技能群 |
+| `item.<識別キー>.system.<パラメータ>` | **アイテム着地の統一記法（2026-07-13・推奨）**: 式（`@item.<識別キー>.system.*`）と同じ綴りで書ける。`system.skill.<識別キー>.<パラメータ>` と同義（前方一致 `*`・`item.self.system.*`／`item.parent.system.*` も同様に self/parent と同義） |
 | `system.handMaxSizeMod` | ネイティブキー（KI-020 特例。所有 cast に着地→User へ合算） |
 
 - パスは内部で total 系へ解決（`resolveItemTotalPath`）: `attack`→`attack.total`、`defence.S`→`defence.S_total`、`level`→`levelTotal`、`FAValue`→`FAValueTotal`、その他→`<param>.total`。base は不変。
@@ -63,7 +66,7 @@
 | `check.suitChange` | **スート変更マーカー**（値不要・2026-07-12）: 判定で使用できないスートのカードを使用可能なスートに変更できる（[Check_Rules](../Game_Rules/Check_Rules.md)「スートの変更」）。他者バフの付与形＝用途の適用効果で対象へ付与。失効は当面手動（「1回の判定」Duration は時間管理フェーズで持続時間側に追加＝**持続時間と AE キーは独立**）。制御判定は対象外 |
 
 - 末尾にパラメータを付けない技能キー＝その技能の判定への加算（`.judgment` 等の接尾は不要）。
-- **文字列フィールドの上書き（2026-07-13）**: `attack.damageType` は数値でなく**値の置き換え**で適用される（アイテム着地キー例: `system.skill.<武器の識別キー>.attack.damageType`・`system.self.attack.damageType`・`system.category.<カテゴリ>.attack.damageType`。生身は `system.baseAttack.damageType`＝ネイティブ適用）。値は AE 設定シートで **S/P/I/X の選択式**（ベタ打ちさせない）。モードは「上書き」を推奨。同一効果内の重複は先勝ち・式評価は通さない。
+- **文字列フィールドの上書き（2026-07-13）**: `attack.damageType` は数値でなく**値の置き換え**で適用される（アイテム着地キー例: **`item.<武器の識別キー>.system.attack.damageType`**（統一記法・推奨）＝`system.skill.<武器の識別キー>.attack.damageType` と同義。`item.self.system.attack.damageType`・`system.category.<カテゴリ>.attack.damageType` も可。生身は `system.baseAttack.damageType`＝ネイティブ適用）。値は AE 設定シートで **S/P/I/X の選択式**（ベタ打ちさせない）。モードは「上書き」を推奨。同一効果内の重複は先勝ち・式評価は通さない。
 - **グループ参照（`check.style.*` / `check.works.*`）**: 識別キーでなく技能の `system.style` / `system.special.works.organization` で束ねる。`parseEffectTargetKey` は `{scope:"skillCheck", group:"style"|"works", selector:<キー>}` を返し、`checkChangeMatches` は判定に使った技能のうち該当 style/organization を持つものがあれば適用。
 
 ### ダメージバフ（ダメージ時・`damage.*`・2026-07-10〜11）
