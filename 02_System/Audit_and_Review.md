@@ -2268,8 +2268,8 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 ### AE 適用モデル v3（フェーズ12 補・自動適用ゲート＋使用時付与の再設計）
 
 **日付**: 2026-07-13
-**関連実装**: `helpers.mjs`（parseEffectTargetKey v3＝素のパラメータキー・self/parent/system.skill 綴り廃止・疑似分類 generalSkill/styleSkill／effectAutoApplies／analyzeGrantLanding／itemGrantCandidates／rewriteGrantChangesForItem／buildTransferredEffectData の素キー書き換え・準備先モード・effectId/stackable 引き継ぎ）、`character-base.mjs`（値バフ収集・状態ペナルティ収集にゲート配線・parent スコープ撤去）、`tnx.mjs`（materializeItemTransfers のゲート/準備先分岐・updateItem フック新設＝装着/分類/識別キー変更で再転送・AE 設定シートへの注入=transfer ラベル差し替え「効果を対象に自動適用」＋「準備先（親アイテム）に適用」＋「付与先」）、`usage-effects.mjs`（付与先分岐＝自分向け即時付与・アイテム着地の選択付与・置き換えリフレッシュ・grantedFrom）、`effects-sheet-mixin.mjs`＋`active-effects-list.hbs`（「使用時付与用」セクション）、`outfit-categories.mjs`（OUTFIT_TYPES 導出）。正本 [Active_Effects.md](../01_Wiki/Game_Mechanics/Active_Effects.md)（v3 注記）・[Usage_System.md](../01_Wiki/Game_Mechanics/Usage_System.md)「対象への付与」
-**ステータス**: ✅ 実装完了（全テスト green 1251・lint 0 error）・実機確認待ち
+**関連実装**: `helpers.mjs`（parseEffectTargetKey v3＝素のパラメータキー・self/parent/system.skill 綴り廃止・疑似分類 generalSkill/styleSkill／effectAutoApplies／analyzeGrantLanding／itemGrantCandidates／rewriteGrantChangesForItem／buildTransferredEffectData の素キー書き換え・準備先モード・effectId/stackable 引き継ぎ）、`character-base.mjs`（値バフ収集・状態ペナルティ収集にゲート配線・parent スコープ撤去）、`tnx.mjs`（materializeItemTransfers のゲート/準備先分岐・updateItem フック新設＝装着/分類/識別キー変更で再転送・AE 設定シートへの注入=transfer ラベル差し替え「効果を対象に自動適用」＋「準備先（親アイテム）に適用」＋「付与先」）、`usage-effects.mjs`（付与先分岐＝自分向け即時付与・アイテム着地の選択付与・置き換えリフレッシュ・grantedFrom）、`effects-sheet-mixin.mjs`＋`active-effects-list.hbs`（「使用時付与用」セクション）、`outfit-categories.mjs`（OUTFIT_TYPES 導出）。本体 `fb2c582`＋是正 `6dd7b07`。正本 [Active_Effects.md](../01_Wiki/Game_Mechanics/Active_Effects.md)（v3 注記）・[Usage_System.md](../01_Wiki/Game_Mechanics/Usage_System.md)「対象への付与」
+**ステータス**: ✅ 実装完了（全テスト green 1251・lint 0 error）。**注入 UI（保存方式是正込み・transfer→準備先→保存の一連と保存後の転送発火）は実機確認済み（2026-07-13 ユーザー確認）**・付与フロー（選択ダイアログ・対象/自分付与・ダメージ連動）は実機確認継続
 
 #### ルール解釈（メカニクス監査）
 
@@ -2285,10 +2285,11 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 - **transfer の再利用**: 死んでいたネイティブ transfer を「効果を対象に自動適用」ゲートへ昇格（ユーザー提案）。新フラグを増やさず、Foundry ユーザーの既知 UI の意味を自然に拡張。ゲートは effectAutoApplies 一箇所に集約し、収集系（collectActorEffectBuffs／_applyEffectBuffs／状態ペナルティ）が共用。実体化済みインスタンス（transferredFrom/grantedFrom）は常に生きる＝コピーへの transfer=true 付与を避け、コアの applyActiveEffects がアクターへ生パスを書く汚染を防いだ。
 - **キーの役割の一本化**: キー＝「どのパラメータ＋絞り込み」、AE 設定＝「どこに乗るか」（自動適用・準備先・付与先）。self/parent/system.skill の廃止で綴りは死にキー化（黙って別解釈に化けない）。式の `@item.self`/`@item.parent` は「値を引いてくる」参照のため残す（ユーザー確定・キーとは別物）。
 - **転送トリガーの穴を同時に閉塞**: 従来は効果の作成/更新とアイテム追加のみで、装着（parentItemId）・分類・識別キーの変更で再転送されなかった。updateItem フックを追加し準備先転送（準備で転送・解除で除去）とともに解決。
-- **課題・申し送り**: AE 設定シートの注入 UI（ラベル差し替え・出し分け）と選択ダイアログ・付与フローは実機確認待ち。付与コピーの失効は当面手動（持続時間は時間管理フェーズ）。transferredSourceName の即時性など既存の申し送りは従来どおり。
+- **課題・申し送り**: 注入 UI は保存方式是正（追補）を経て実機確認済み。選択ダイアログ・付与フロー（対象/自分・ダメージ連動）は実機確認継続。付与コピーの失効は当面手動（持続時間は時間管理フェーズ）。transferredSourceName の即時性など既存の申し送りは従来どおり。
 
 #### 追補（2026-07-13・注入 UI の保存方式是正）
 
 - **ユーザー報告**: 「準備先に適用」をオンにすると「効果を対象に自動適用」が自動でオフになり欄が消える（再オンで再表示）。設計意図の確認要求に対し原因を特定——**transfer がオフになるのではなく、未保存のフォーム状態が巻き戻っていた**: ネイティブ AE 設定シートは保存ボタン方式（送信まで未保存）なのに、注入フィールド（重複可の前例踏襲）が change 即時 setFlag ＝ドキュメント更新→シート再描画→フォームが保存済み値で再構築され、未保存の transfer オンが破棄→出し分けが（正しく）欄を隠す。
 - **是正**: 注入3種（重複可・準備先・付与先）に `name="flags.tokyo-nova-axleration.*"` を与え**ネイティブ項目と同じフォーム送信で保存**（即時 setFlag 廃止）。出し分けは純粋な表示制御のまま。準備先のみ表示＝自動適用オン時という出し分け自体は設計意図どおりで維持（ペイロードでは準備先概念が効かない・エンジンも transfer 状態でゲート済みのため隠れた設定値の残存は無害）。
 - **申し送り**: BS 効果値フィールドの注入は statuses 連動の再注入ロジックと不可分のため即時 setFlag のまま（同種の巻き戻りを潜在的に持つ・別途扱い）。「重複可」も従来から同じ巻き戻り副作用を持っていた（今回まで顕在化せず）。
+- **実機確認済み（2026-07-13 ユーザー確認）**: 是正後の一連（transfer 未保存オン→準備先チェック→保存）と保存後の転送発火。本体 `6dd7b07`。
