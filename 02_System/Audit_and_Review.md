@@ -2380,3 +2380,22 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 - **GM メニューが表示されない（ユーザー報告）**: `getChatMessageContextOptions` の登録が `Hooks.once("ready")` 内にあり、**ChatLog のコンテキストメニュー構築（ready 発火前のサイドバー描画時）に間に合っていなかった**。init 側（getUserContextOptions と同所）へ移動して解消。本体 `105decd`。教訓: メニュー系フックは「メニューがいつ構築されるか」に対して登録タイミングを検証する（render 系と違い毎回は発火しない）。
 - **武器攻撃力の表示と実測の食い違い（ユーザー報告）**: UI 表示（用途シート・戦闘タブ＝`total ?? value`・生身=`value+mod`）に対し、**攻撃フローが素値を読んでいた**。是正=武器攻撃力（`attack.value`→`total ?? value`）・FA値（`FAValue`→`FAValueTotal ?? FAValue`）・パリー受け値（`guardValue.value`→`total ?? value`）・生身攻撃（`value`のみ→`value+mod`）・パリー未選択時の生身受け値（0 固定→`baseGuard.value+mod`=戦闘タブ表示と同値）。本体 `6b98b3f`。dbdc6f3 の教訓（実効フィールドの読み手を grep 全数掃引）を消費側=フローに対して再適用した形（当時は表示側のみ掃引していた）。
+
+### 修正の上書きモード＋状況修正スピナー＋数値入力のスピナー統一（フェーズ12 補）
+
+**日付**: 2026-07-14
+**関連実装**: `tnx-dialog.mjs`（AmountInputDialog に `allowOverride`＝上書きチェック・`okLabel`・共有 `spinnerDialogActions`＝step 後に input 発火）、`tnx-check-flow.mjs`（`_applyCheckModify` の上書き対応＝差分正規化＋`overrideTo` 行・`manualEditAchievement` を加減算既定＋上書きチェックへ・`setManualMod`）、`damage-flow.mjs`（同・ロール/軽減ダイアログへ actions 配線）、`tnx-check-dialog.mjs`＋`check-dialog.hbs`（状況修正スピナー常設）、`tnx-check-engine.mjs`（`calcControlCheck` に `manualMod`＝制御値へ加算・テスト2件）、`check-result.hbs`（制御判定の「修正（手動）」行）、`tnx-rl-request-app.mjs`/`treatment-flow.mjs`（代用ダイアログの手動修正欄スピナー化）、テンプレート3種スピナー化。本体 `095b280`。正本 [Check_Rules.md](../01_Wiki/Game_Rules/Check_Rules.md)
+**ステータス**: ✅ 実装完了（全テスト green 1258・lint/stylelint 0 error）・実機確認待ち
+
+#### ルール解釈（メカニクス監査・2026-07-14 ユーザー確定）
+
+- **修正は加減算に加えて「上書き」も可能**（チェックボックス）。対象＝手動入力ダイアログの全4経路（GMメニュー2種＋用途の式なし手入力フォールバック2種）。式は加算のみ。
+- **全ての判定で状況ボーナス／ペナルティを入力できる**（判定ダイアログ常設）。**制御判定は制御値（成功条件）への修正**として働く（CoC の KP ボーナス相当・正で緩和/負で厳格化）。
+- GM「達成値を修正」の入力方式は絶対値入力→**加減算既定＋上書きチェック**へ統一（計画で明示・ユーザー承認）。
+
+#### 設計レビュー
+
+- **上書きは内部で差分に正規化**: `overrideTo` を行に添えて表示だけ「→N」にし、達成値/攻撃側合計の再計算・ソケット委譲・帰結処理（成否再計算・攻撃再解決）は既存の合算機構を無変更で流用。
+- **状況修正は既存 `manualMod` 経路の露出**: 代用判定用に一本通っていた配管（ctx→calcSkillCheck→内訳→スナップショット）へダイアログから書くだけ。制御判定のみ `calcControlCheck` に加算先（effectiveControl）を追加。代用/再判定の値が初期値に入り二重入力にならない。
+- **スピナー統一**: 共有 `spinnerDialogActions` は step 後に input イベントを発火（軽減ダイアログのライブプレビューが±ボタンにも追従）。素の number input はダメージ算出/軽減/代用判定2種を掃引して置換（数値入力は必ず spinner の既定方針）。
+- AmountInputDialog の戻り値は `allowOverride` 時のみ `{value, override}`（既存呼び出し＝カードドロー枚数は数値のまま＝後方互換）。
