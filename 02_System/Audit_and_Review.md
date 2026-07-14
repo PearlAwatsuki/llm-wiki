@@ -2352,3 +2352,26 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 - **是正（e157f86）**: fonts.ready 待ちを撤去し、**フレーム（`this.element`）の ResizeObserver** で「サイズが変わったら縮小を再適用」に一元化。初回の幅確定に加えて**手動リサイズへの追従**（従来は未対応で同種の見切れが起き得た）も同時に獲得。transform は box を変えないため観測の再帰発火なし・縮小処理は冪等・`_onClose` で解除（派生シートに `_onClose` 上書きなしを確認）。
 - **教訓**: once-per-session の署名からフォントを疑ったが、**計測なしの2手目はなかった**。誤計測系の不具合は「どの量が狂っているか」（今回なら contentWidth か availableWidth か）を先に実測で切り分ける。
 - **申し送り**: ユーザー記録シート等の `.squeeze-text` は JS 縮小を持たない別物（対象外・現状問題報告なし）。
+
+### 再判定の置き換え着地＋特殊処理の GM メニュー集約（フェーズ12 補・再設計）
+
+**日付**: 2026-07-14
+**関連実装**: `tnx-check-flow.mjs`（`recheckBlockReason`＝一度だけ/タイミングゲート・`startRecheck` に `recheckMessageId`・`_applyRecheckReplacement`＝置き換え着地・`_renderResultContent` 抽出・`_onGrantAchievementClick` のモード外=allowRecheck 直接入口・`_applyCheckModify` の manual 変種・`manualEditAchievement`・全幅ボタン廃止＋`tnx-recheck-ready` 常設装飾）、`attack-flow.mjs`（`buildAttackCardContent` 抽出）、`attack-flow-logic.mjs`（純関数 `resolveAttackRecheckState`＋テスト5件）、`damage-flow.mjs`（`manualEditDamage`）、`tnx.mjs`（`getChatMessageContextOptions` フック＝GM 限定メニュー3項目）、`tnx-socket-handler.mjs`（checkModify に content 受理を追加）、`tnx2.css`。正本 [Check_Rules.md](../01_Wiki/Game_Rules/Check_Rules.md)「再判定」「特殊処理の置き場」
+**ステータス**: ✅ 実装完了（全テスト green 1256・lint/stylelint 0 error）・実機確認待ち
+
+#### ルール解釈（メカニクス監査・すべて 2026-07-14 ユーザー確定）
+
+- **再判定の本来の形＝達成値の置き換え**: 新カードを出すのは誤り（従来実装を訂正）。元判定に働いた一回性の増強（持続中の効果・組み合わせた判定以外の増強分）は失われるため、内訳も新しい判定の構成のみに差し替える。**再判定結果に対するリアクションのやり直しは無い**＝解決済みは保存済みの相手値で再解決。
+- **一度だけ**: 再判定系は基本的に「1度だけ」の能力＝一度置き換えたカードは再判定不可（イレギュラーは GM の手動修正で裁定）。
+- **ダメージ算出後の不可はタイミング不一致が理由**: 再判定系のタイミングは「判定の成功/失敗時」＝算出後は過ぎている（「巻き戻し禁止」ではない・警告文もその趣旨）。
+- **特殊処理のアーキテクチャ**: 判定・ダメージへの特殊処理は**右クリックメニューが正規の置き場（GM のみ表示）**。用途フラグ付きアイテムロールは同じ内部機能への**例外的な外部アクセス**（クリック待ち経由）。allowRecheck のプレイヤー入口は達成値の数字クリック（従来の全幅ボタンは廃止）。
+- **達成値の手動書き換え（新設）**: 処理が壊れた時の卓の最終裁定ツール。唯一の強制（ダメージ算出後の修正不可）の例外として制限しない。
+
+#### 設計レビュー
+
+- **実体は一つの関数・入口が三つ**: 数字クリック（allowRecheck）・付与のクリック待ち・GM メニューがすべて `startRecheck`→置き換え着地に合流。ゲート（`recheckBlockReason`）も三導線で共用＝表示と実行の判定が一致。
+- **置き換えは「本文再レンダリング＋フラグパッチ」**: 結果カードは投稿と同じテンプレートを新データで再レンダリング（`_renderResultContent` 抽出＝投稿と共用）。攻撃カードは本文再構築（`buildAttackCardContent` 抽出）＋状態はライブ描画のまま `resolveAttackRecheckState`（純関数・受動有利含めテスト済）でフラグ再解決。非作者は既存 `checkModify` ソケットに content を追加受理させて委譲。
+- **手動修正は事後修正の manual 変種**: `_applyCheckModify` に `{label:"手動修正", mod}` 経路を追加（評価・消費・ダメージ算出後ゲートをスキップ）＝台帳「事後修正（手動修正）」行で可視化・帰結再計算は共通。ダメージ側も `applyDamagePatch` の mods 行に合流＝新機構なし。
+- **GM メニューの表示ゲート検証**: 「達成値を修正」はスナップショット持ちに限定——movement 等の継続処理カードも `checkResult` を持つため、当初案（checkResult||attackCheck）では帰結と乖離する編集経路が開いてしまう＋checkMods のライブ描画がスナップショット持ちでしか動かない（到達経路の検証で発見・修正）。
+- **クリック待ち中の対象外クリックはモード維持で警告**（発動を空費しない）。装飾（`tnx-recheck-ready`）は所有者/RL かつ実行可能な時のみ＝見えているものは押せる。
+- **申し送り**: 従来の「出し直しカードにもボタンが残る＝回数は卓」運用は一度だけフラグに置換。旧形式（新カード投稿）で残っている過去ログのカードはスナップショットを持つため引き続き操作可能（旧「再判定」バッジ付き新カードは歴史として残る）。他者の判定への付与がクライアントローカルな制限は従来どおり（申し送り継続）。
