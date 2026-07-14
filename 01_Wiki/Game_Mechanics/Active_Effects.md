@@ -23,7 +23,7 @@
 3. **パラメータと絞り込みは「変更（changes）のキー」で、乗り先の関係は AE 自身の設定で表す**（v3）。標準 UI に存在するのはキー（テキスト）＋モード（選択）＋値（テキスト）のみで、これに詳細タブへの自前注入（§5＝自動適用ラベル差し替え・準備先・付与先・重複可）を加える。
 4. **ネイティブ transfer チェック＝「効果を対象に自動適用」ゲート**（v3・2026-07-13 ユーザー確定）。アイテム上の効果は **オンのときだけ**自動適用（値バフ・判定/ダメージの実行時系統・物理転送のすべて）に乗る。**オフ＝使用時付与用ペイロード**（自動では一切効かない）。アクター上の効果と実体化済みインスタンス（転送コピー transferredFrom／付与コピー grantedFrom）は常に生きる（無効化手段は disabled のみ）。ゲートの実装は `effectAutoApplies()`（helpers.mjs）で、`collectActorEffectBuffs`（実行時系統）と `_applyEffectBuffs`／状態ペナルティ収集（恒常）が共用する。適用自体は従来どおり**アクターの単一適用パス**（`CONFIG.ActiveEffect.legacyTransferral=false`、ネイティブ applyActiveEffects には依存しない）。※旧 v2 の「transfer OFF でも反映される」は**廃止**。
 5. **パラメータと解説の境界（2026-07-02 ユーザー確定）**: アイテムの**パラメータ（データ欄の値。ユーザー呼称「データ」）によるキャラクターデータへの修正は AE で表現しない**——派生パイプラインが**直接読み取って適用**する（例: アウトフィットの制御値修正・CS 修正・危険値は `computeOutfitAggregates` が携帯/準備ゲート込みで直接集計。防御力・受け値をダメージから直接引くのも同方針＝[Damage_Rules.md](../Game_Rules/Damage_Rules.md)）。**パラメータの特殊挙動**（適用条件・例外。例: ゴースト登場時の CS 修正無視）**も AE を使わず、直接読み取りロジック側の条件で処理**する。AE で表現するのは (a) **完全に解説由来の挙動**、(b) 『CS：0（+1）』のように**機械化がどうしても難しく同様の例がほぼ存在しない個別事象**（仕方なく AE）——の2つに限る。
-6. **CS への AE 着地点は必要（2026-07-02 ユーザー確定）**: 準備・使用することで CS に修正を与える**解説由来の効果を持つアウトフィットが存在する**ため、v2 キー文法に CS の着地点を設ける。ただし **CSベース／CS／CSカレントのどれへの修正かを区別**できるキー設計とする（3層の派生関係・具体キー文法はフェーズ10-5＝KI-010 の CS パイプライン設計で確定）。
+6. **CS への AE 着地点は必要（2026-07-02 ユーザー確定）**: 準備・使用することで CS に修正を与える**解説由来の効果を持つアウトフィットが存在する**ため、v2 キー文法に CS の着地点を設ける。ただし **CSベース／CS／CSカレントのどれへの修正かを区別**できるキー設計とする → **実装済み**（フェーズ10-5＝KI-010 の CS パイプラインで確定。仮想名前空間 `system.cs.base` / `system.cs.value` / `system.cs.current`・§2.1）。
 
 ## 1. 注入点は3つ
 
@@ -35,44 +35,64 @@
 
 - 後二者（判定時・ダメージ時）は**実行時評価の別系統**で、恒常の適用パス（`_applyEffectBuffs`）からは除外する。恒常はシート値へ焼き込むため「攻撃対象」を知らない＝対象依存を表せないのに対し、実行時系統はアクションが対象を確定した瞬間に評価するため対象を見られる。
 
-## 2. 変更キーの文法（標準 UI で打つ・実装済み）
+## 2. 変更キーの文法と全キー一覧（標準 UI で打つ・実装済み）
 
-`parseEffectTargetKey(key)`（`scripts/data/item/helpers.mjs`）が解析する。
+`parseEffectTargetKey(key)`（`scripts/data/item/helpers.mjs`）が解析する。**キーの増減はコードが権威**＝迷ったら `parseEffectTargetKey`（キー文法）と `resolveItemTotalPath`（着地パスの正規化）を見る。本節は [Formula_Reference.md](Formula_Reference.md) と同じ粒度の実務用索引で、**書けるキーを全数**載せる。
 
-### 値バフ（恒常・v3 文法）
+文法は `<セレクタ>[<条件>].<パス>`（条件は省略可・§2.6）。系統は3つ＝**値バフ**（恒常・§2.1〜2.5）・**判定バフ**（`check.`／`controlCheck.`・§2.7）・**ダメージバフ**（`damage.`・§2.8）。
 
-| キー | 対象 → 着地 total |
-|---|---|
-| `system.ability.reason` | アクター能力値 → `reason.total` |
-| `system.control.reason` | アクター制御値 → `reason.totalControl` |
-| `system.attack.value`（**素のパラメータキー**） | **効果（またはそのコピー）が乗っているアイテム自身** → `attack.total`。旧 `system.self.*`／`item.self.system.*` の後継（v3 で廃止・死にキー） |
-| `system.category.melee.attack` | 小分類 melee のアイテム群 → `attack.total` |
-| `system.category.weapon.attack` | 大分類 weapon のアイテム群（大小キーは衝突しない） |
-| `system.category.generalSkill.level` / `system.category.styleSkill.level` | **疑似分類（v3）**: 一般技能／スタイル技能をアイテムタイプで束ねる（分類キーと同じ名前空間の予約語） |
-| `item.<識別キー>.system.<パラメータ>` | 識別キー該当アイテム。式（`@item.<識別キー>.system.*`）と同じ綴り・前方一致 `*` 可。**唯一の綴り**（旧 `system.skill.<識別キー>.*` は v3 で廃止・死にキー） |
-| `system.handMaxSizeMod` | ネイティブキー（KI-020 特例。所有 cast に着地→User へ合算） |
+### 2.1 値バフ① キャラクターへの着地（この表が全数）
 
-- **準備先（親アイテム）はキーで表さない（v3）**: AE 設定シートの「**準備先（親アイテム）に適用**」チェック（flags.applyToParent）で宣言する。チェックした効果は素のパラメータキーの変更が**準備先ホスト**（`parentItemId`）へ物理転送される（準備で転送・解除で除去。素のキー以外の変更は落ちる＝混在非対応）。旧 `system.parent.*`／`item.parent.system.*` キーは廃止（死にキー）。
-- 予約名前空間（ability/control/cs/ar/baseAttack/category/handMaxSizeMod）以外の `system.<パス>` はすべて素のパラメータキーとして解釈される。アイテムのトップレベルフィールドと予約語の衝突は無いことを確認済み（style の `control`・uses の `type` 等は入れ子で無関係）。
-- パスは内部で total 系へ解決（`resolveItemTotalPath`）: `attack`→`attack.total`、`defence.S`→`defence.S_total`、`level`→`levelTotal`、`FAValue`→`FAValueTotal`、その他→`<param>.total`。base は不変。素値/実効どちらの綴り（`….value`/`….total`）でも実効へ正規化して着地する。
+| キー | 着地 total | 備考 |
+|---|---|---|
+| `system.ability.reason` / `.passion` / `.life` / `.mundane` | `<能力>.total` | 能力値（理性／感情／生命／外界） |
+| `system.control.reason` / `.passion` / `.life` / `.mundane` | `<能力>.totalControl` | 制御値 |
+| `system.cs.base` | `combatSpeed.baseTotal` | **CSベース**への常時修正。**準備ゲートあり**（保持アイテムが未準備なら読み飛ばし。`noPrepareRequired` 品・styleSkill・アクター自身は対象外＝2026-07-02 裁定/2026-07-09） |
+| `system.cs.value` | `combatSpeed.valueTotal` | **CS**への修正（準備ゲートなし） |
+| `system.cs.current` | `combatSpeed.currentTotal` | **CSカレント**への修正（準備ゲートなし） |
+| `system.ar.max` | `actionRank.maxTotal` | **付与AR**への常時修正（フェーズ11）。`cs.base` と同じ準備ゲートあり |
+| `system.baseAttack.damageType` | `baseAttack.damageTypeTotal` | **生身のダメージ種別上書き**（2026-07-13。値=S/P/I/X の選択式・モード不問で常に上書き・素値は不変） |
+| `system.handMaxSizeMod` | ネイティブ着地（base） | 手札上限修正の特例（KI-020）。所有 cast に着地（ADD）→ `resolveEffectiveHandMaxSize` が User の実効手札上限へ合算 |
+
+- `cs.*`／`ar.*` は**仮想名前空間**——実スキーマパス（`system.combatSpeed.*` 等）と分けることで、アクター自身の効果がネイティブ適用と二重に効くのを防ぐ。
+- **予約名前空間（ability / control / cs / ar / baseAttack / category / handMaxSizeMod）以外の `system.<パス>` はすべて素のパラメータキー＝「乗っているアイテム自身」の意味**（§2.2）。したがって**アクター上の効果に素の `system.<パス>` を書いてもキャラ値には効かない**（self スコープは保持元が Item のときだけ着地する）。アイテムのトップレベルフィールドと予約語の衝突は無いことを確認済み（style の `control`・uses の `type` 等は入れ子で無関係）。
+- ネイティブ着地（base を直接書き換える枠外の特例）は `system.handMaxSizeMod` と、`system.baseAttack` の damageType 以外（`.value`／`.mod`）のみ。他の実スキーマパスの直書きは規範外。
+
+### 2.2 値バフ② アイテムへの着地——乗り先の選び方（この表が全数）
+
+| 書き方 | 乗り先 | 適用経路 |
+|---|---|---|
+| `system.<パラメータ>`（**素のパラメータキー**） | 効果（またはその転送/付与コピー）が**乗っているアイテム自身**。旧 `system.self.*`／`item.self.system.*` の後継（§2.10） | 適用パスが直接（所持時のみ） |
+| `item.<識別キー>.system.<パラメータ>` | 識別キー**完全一致**のアイテム。**前方一致 `*` 可**（`item.<プレフィックス>*.system.<パラメータ>`）。式（`@item.<識別キー>.system.*`）と同じ綴り・**唯一の綴り** | **物理転送**（§2.5） |
+| `system.category.<分類キー>.<パラメータ>` | 大分類/小分類/**疑似分類**のアイテム群（分類キーの全数は §2.4） | **物理転送**（§2.5） |
+| （キーでなく）AE 設定「**準備先（親アイテム）に適用**」チェック（flags.applyToParent） | **素のパラメータキー**の変更が**準備先ホスト**（`parentItemId`）へ（準備で転送・解除で除去。素のキー以外の変更は落ちる＝混在非対応） | **物理転送**（§2.5） |
+
+- **キーは「どのパラメータ＋絞り込み」だけを語り、乗り先の関係は AE 自身の設定が語る**（v3）。
 - 識別キー（技能）と `category`（アウトフィット）で住み分け（アウトフィットは識別キーで個体指定しない方針）。
+- **識別キー指定は、識別キーを持つアイテムにしか届かない**（辞典由来のアイテムは持つ。手作りアイテムは武器シートで識別キーを設定するか、素のキー／カテゴリを使う）。ここが「効かない」ときの最頻の原因。
 
-### 判定バフ（判定時・`check.` / `controlCheck.`）
+### 2.3 値バフ③ 着地できる `<パラメータ>`（型別・全数）
 
-| キー | 対象 |
+**キーの綴りと着地の正規化（2026-07-13）**: キーは式と同じフルパス綴り（`….attack.value`・`….attack.total`・`….levelTotal` 等）で書かれるため、**素値/実効のどちらの綴りでも必ず実効（total 系）へ正規化して着地**する（`attack.value`→`attack.total` 等。`resolveItemTotalPath`）。**設定欄（base）は不変**で、追加モードは実効値の上に加算・上書きモードは実効値を置き換える。
+
+| 型 | パラメータ（キーに書く綴り → 着地 total） |
 |---|---|
-| `check.all` | **判定全般**（無印「判定」＝能力値判定＋技能判定のすべて・2026-07-13）。制御判定には掛からない（用語規約）。※`all` は識別キーの予約語 |
-| `check.melee` | 技能判定（識別キー完全一致） |
-| `check.society_*` | 技能判定（プレフィックス前方一致＝固有名詞技能の大分類はこれで束ねる） |
-| `check.style.<スタイル識別キー>` | **そのスタイルのスタイル技能すべて**（技能の `system.style` で照合。2026-07-10） |
-| `check.works.<組織識別キー>` | **そのワークスのワークス技能すべて**（技能の `system.special.works.organization` で照合。2026-07-10） |
-| `check.reason` | 能力値判定（reason/passion/life/mundane） |
-| `controlCheck.reason` | 制御判定（能力値のみ。グループ参照不可） |
-| `check.cardValue` | **カード数字の上書き**（2026-07-13）: 判定に使用したカードの数字を **A〜K で上書き**する（値は AE 設定シートで選択式・自由入力なし・先勝ち）。以降の数字規約は上書き後の数字に従う（手札の絵札=10・A の21固定選択・山札の絵札=FUMBLE）。ジョーカー/切り札の宣言には適用しない。制御判定は対象外（用語規約）。結果カードに「数字上書き（元 → 後）」を明示 |
-| `check.suitChange` | **スート変更マーカー**（値不要・2026-07-12）: 判定で使用できないスートのカードを使用可能なスートに変更できる（[Check_Rules](../Game_Rules/Check_Rules.md)「スートの変更」）。他者バフの付与形＝用途の適用効果で対象へ付与。失効は当面手動（「1回の判定」Duration は時間管理フェーズで持続時間側に追加＝**持続時間と AE キーは独立**）。制御判定は対象外 |
+| **全アウトフィット共通** | `buy`（購入値）・`hide`（隠匿値）・`appearancePenalty`（危険値）・`hack`（電脳制御値）・`preserveExp`（常備化経験点）→ 各 `.total` |
+| **武器 weapon** | `attack`（攻撃力）・`guardValue`（受け値）→ `.total` ／ `FAValue`（フルオート値）→ `FAValueTotal` ／ `attack.damageType`（ダメージ種別上書き）→ `attack.damageTypeTotal` |
+| **防具 armor** | `defence.S`／`defence.P`／`defence.I`（防御力）→ `defence.{S,P,I}_total` ・ `controlMod`（制御値修正）→ `.total` |
+| **義体 cyborg** | `attack`・`guardValue`・`defence.S/P/I`（＋共通） |
+| **ヴィークル vehicle** | `attack`・`defence.S/P/I`・`speedFactor`（移動力）・`passenger`（乗員）・`controlMod`（＋共通） |
+| **IANUS ianus** | `controlMod`（＋共通） |
+| **タップ tap** | `cycle`（サイクル）・`combatSpeedMod`（CS 修正）（＋共通） |
+| **住宅施設 residence** | `appearanceTarget`（外見目標値）・`cyberSecurity`・`analogSecurity`（セキュリティ）→ `<名>Total` |
+| **技能 generalSkill / styleSkill** | `level`（技能レベル）→ `levelTotal` |
 
-- 末尾にパラメータを付けない技能キー＝その技能の判定への加算（`.judgment` 等の接尾は不要）。
-- **ダメージ種別の上書き（2026-07-13）**: 値は S/P/I/X の選択式・**モードは何でもよい（常に上書きとして適用）**。着地は実効フィールド（設定欄の素値は書き換えない）。**そのまま書けば動くキー**:
+- **total を持たない（＝実効値の読み手が無い）フィールドには効かない**: `quantity`・`uses`・`ammo`・`range` 等。ダメージ種別以外の文字列・真偽フィールドも対象外。
+- ※アイテムのパラメータが「キャラクターへ」与える修正（controlMod・combatSpeedMod・危険値など）は AE でなく派生パイプラインが直接読む（大原則5）。本表は「アイテム自身の実効値」を AE で動かす話。
+
+#### ダメージ種別の上書き（2026-07-13）
+
+値は S/P/I/X の選択式・**モードは何でもよい（常に上書きとして適用）**。着地は実効フィールド（設定欄の素値は書き換えない）。**そのまま書けば動くキー**:
 
 | 置き場所と狙い | キー |
 |---|---|
@@ -81,12 +101,54 @@
 | カテゴリ一括（小分類/大分類） | `system.category.<カテゴリ>.attack.damageType` |
 | 生身 | `system.baseAttack.damageType` |
 
-  - **識別キー指定は、識別キーを持つアイテムにしか届かない**（辞典由来のアイテムは持つ。手作りアイテムは武器シートで識別キーを設定するか、素のキー／カテゴリを使う）。ここが「上書きが効かない」ときの最頻の原因。
-- **キーの綴りと着地の正規化（2026-07-13）**: キーは式と同じフルパス綴り（`….attack.value`・`….attack.total`・`….levelTotal` 等）で書かれるため、**素値/実効のどちらの綴りでも必ず実効（total 系）へ正規化して着地**する（`attack.value`→`attack.total` 等）。**設定欄（base）は不変**で、追加モードは実効値の上に加算・上書きモードは実効値を置き換える。
-- **アイテム狙いの効果は物理転送＋供給元が正の片方向同期（2026-07-13 転送確定/v3 改定・2026-07-12 同期追加）**: **自動適用オン**の効果の `item.<識別キー>`／`system.category`（疑似分類含む）の変更は、効果の作成/更新時・アイテムの追加/装着系更新時（parentItemId・分類・識別キーの変更＝v3 で updateItem フックを追加し「装着変更が反映されない」穴を塞いだ）に**対象アイテム上の実体コピー**として転送される（キーは素の `system.<パス>` に書き換え・由来は origin／transferredFrom フラグ・effectId/stackable は引き継ぐ）。「準備先（親アイテム）に適用」チェックの効果は素のパラメータキーの変更が準備先ホストへ同様に転送される。コピーは対象アイテムの通常の効果＝**無条件でそのアイテムのパラメータに効く**（識別キーの再照合に依存しない）。遠隔の直接適用は廃止（コピーと二重にならない）。**同期は供給元が正の片方向**（「後から供給元を更新しても反映されない」とのユーザー指摘で無同期から変更）: 供給元の更新（変更行・有効/無効・名前・アイコン・自動適用・フラグ）でコピーは現在値に上書きされ、供給元がそのアイテムを狙わなくなったとき（キー変更・自動適用オフ化・準備解除）／供給元の効果・供給元アイテムが削除されたときはコピーも除去される。**コピー側の手動編集・切替は供給元の次の更新で上書きされる**（コピー自身の削除は独立＝供給元へ波及しない。ただし供給元が狙い続ける限り次の更新で再転送される）。既存の効果は一度保存（または OFF→ON）すると転送される。コピーは対象アイテムのエフェクト一覧の**「転送された効果」セクション**に表示される（名前は斜体＋供給元名・操作は通常の効果と同じ）。**使用時付与のコピー（grantedFrom）は同期対象外の一回性インスタンス**（失効は当面手動＝持続時間は時間管理フェーズ）。
+### 2.4 分類キー（`system.category.<分類キー>`・全数）
+
+正本は `outfit-categories.mjs`（`{majorKey:{minors:{minorKey}}}`）。大分類・小分類は同じ名前空間だが**衝突しない**（小分類キーは全体で一意）。疑似分類は同じ名前空間の予約語（v3）。
+
+| 大分類キー | 小分類キー |
+|---|---|
+| `weapon`（武器） | `melee` 白兵武器 ・ `ranged` 射撃武器 ・ `mounted` 搭載兵器 ・ `weaponOption` 武器オプション ・ `specialAmmo` 特殊弾 |
+| `armor`（防具） | `bodyArmor` ボディアーマー ・ `armorGear` アーマーギア ・ `fashion` ファッション |
+| `cyberware`（サイバーウェア） | `ianus` IANUS ・ `ianusOption` IANUSオプション ・ `neuralware` ニューラルウェア ・ `artificialBody` アーティフィシャルボディ ・ `organicware` オーガニックウェア ・ `psychoApp` サイコアプリ ・ `cosmetic` コスメティック ・ `fullCyborg` 全身義体 |
+| `tron`（トロン） | `pocketron` ポケットロン ・ `ptOption` PTオプション ・ `tap` タップ ・ `software` ソフトウェア ・ `hardware` ハードウェア |
+| `vehicle`（ヴィークル） | `groundVehicle` 地上車両 ・ `aircraft` 航空機 ・ `ship` 船舶 ・ `walker` ウォーカー ・ `drone` ドローン ・ `vehicleOption` ヴィークルオプション |
+| `housing`（住宅） | `residence` 住宅施設 ・ `housingOption` 住宅オプション ・ `housingAccessory` 住宅アクセサリ |
+| `item`（アイテム） | `tool` ツール ・ `magicItem` マジックアイテム ・ `biotech` 生体装備 ・ `drug` ドラッグ ・ `food` フーズ |
+| `service`（サービス） | `social` ソーシャル ・ `background` バックグラウンド ・ `extra` エキストラ ・ `combiner` コンバイナー |
+| **疑似分類**（予約語） | `generalSkill` 一般技能 ・ `styleSkill` スタイル技能（アイテムタイプで束ねる） |
+
+### 2.5 アイテム狙いの適用経路——物理転送＋供給元が正の片方向同期（2026-07-13 転送確定/v3 改定・2026-07-12 同期追加）
+
+**自動適用オン**の効果の `item.<識別キー>`／`system.category`（疑似分類含む）の変更は、効果の作成/更新時・アイテムの追加/装着系更新時（parentItemId・分類・識別キーの変更＝v3 で updateItem フックを追加し「装着変更が反映されない」穴を塞いだ）に**対象アイテム上の実体コピー**として転送される（キーは素の `system.<パス>` に書き換え・由来は origin／transferredFrom フラグ・effectId/stackable は引き継ぐ）。「準備先（親アイテム）に適用」チェックの効果は素のパラメータキーの変更が準備先ホストへ同様に転送される。コピーは対象アイテムの通常の効果＝**無条件でそのアイテムのパラメータに効く**（識別キーの再照合に依存しない）。遠隔の直接適用は廃止（コピーと二重にならない）。
+
+**同期は供給元が正の片方向**（「後から供給元を更新しても反映されない」とのユーザー指摘で無同期から変更）: 供給元の更新（変更行・有効/無効・名前・アイコン・自動適用・フラグ）でコピーは現在値に上書きされ、供給元がそのアイテムを狙わなくなったとき（キー変更・自動適用オフ化・準備解除）／供給元の効果・供給元アイテムが削除されたときはコピーも除去される。**コピー側の手動編集・切替は供給元の次の更新で上書きされる**（コピー自身の削除は独立＝供給元へ波及しない。ただし供給元が狙い続ける限り次の更新で再転送される）。既存の効果は一度保存（または OFF→ON）すると転送される。コピーは対象アイテムのエフェクト一覧の**「転送された効果」セクション**に表示される（名前は斜体＋供給元名・操作は通常の効果と同じ）。**使用時付与のコピー（grantedFrom）は同期対象外の一回性インスタンス**（失効は当面手動＝持続時間は時間管理フェーズ）。
+
+### 2.6 条件付き（標準キーに畳み込む）
+
+`<セレクタ>[<条件>].<パス>`。角括弧内に `パス 比較 値`、複数は `;` 区切り。`parseEffectConditions` / `evalEffectConditions`。
+
+- 例: `system.category.melee[hack>=3].attack` = 電制 total が 3 以上の白兵武器の攻撃力。
+- 比較演算: `>= <= > < == !=`。左辺は対象アイテムの system パス（`hack`→`hack.total` 等に解決）。
+- 条件はキー文字列内で完結（標準 UI のみで書ける）。
+
+### 2.7 判定バフ（判定時・`check.` / `controlCheck.`・この表が全数）
+
+| キー | 対象 |
+|---|---|
+| `check.all` | **判定全般**（無印「判定」＝能力値判定＋技能判定のすべて・2026-07-13）。制御判定には掛からない（用語規約）。※`all` は識別キーの予約語 |
+| `check.<技能識別キー>` | その技能の技能判定（識別キー完全一致。例 `check.melee`） |
+| `check.<プレフィックス>*` | 技能判定（プレフィックス前方一致＝固有名詞技能の大分類はこれで束ねる。例 `check.society_*`） |
+| `check.style.<スタイル識別キー>` | **そのスタイルのスタイル技能すべて**（技能の `system.style` で照合。2026-07-10） |
+| `check.works.<組織識別キー>` | **そのワークスのワークス技能すべて**（技能の `system.special.works.organization` で照合。2026-07-10） |
+| `check.reason` / `.passion` / `.life` / `.mundane` | その能力値の能力値判定 |
+| `controlCheck.reason` / `.passion` / `.life` / `.mundane` | その能力値の制御判定（**能力値のみ**。グループ参照不可・`controlCheck.all` は現状なし＝必要時に追加） |
+| `check.cardValue` | **カード数字の上書き**（2026-07-13）: 判定に使用したカードの数字を **A〜K で上書き**する（値は AE 設定シートで選択式・自由入力なし・先勝ち）。以降の数字規約は上書き後の数字に従う（手札の絵札=10・A の21固定選択・山札の絵札=FUMBLE）。ジョーカー/切り札の宣言には適用しない。制御判定は対象外（用語規約）。結果カードに「数字上書き（元 → 後）」を明示 |
+| `check.suitChange` | **スート変更マーカー**（値不要・2026-07-12）: 判定で使用できないスートのカードを使用可能なスートに変更できる（[Check_Rules](../Game_Rules/Check_Rules.md)「スートの変更」）。他者バフの付与形＝用途の適用効果で対象へ付与。失効は当面手動（「1回の判定」Duration は時間管理フェーズで持続時間側に追加＝**持続時間と AE キーは独立**）。制御判定は対象外 |
+
+- 末尾にパラメータを付けない技能キー＝その技能の判定への加算（`.judgment` 等の接尾は不要）。
 - **グループ参照（`check.style.*` / `check.works.*`）**: 識別キーでなく技能の `system.style` / `system.special.works.organization` で束ねる。`parseEffectTargetKey` は `{scope:"skillCheck", group:"style"|"works", selector:<キー>}` を返し、`checkChangeMatches` は判定に使った技能のうち該当 style/organization を持つものがあれば適用。
 
-### ダメージバフ（ダメージ時・`damage.*`・2026-07-10〜11）
+### 2.8 ダメージバフ（ダメージ時・`damage.*`・この表が全数・2026-07-10〜12）
 
 ダメージ算出時に攻撃者の effects から集計してフラット加算する（判定バフと同じ実行時評価の別系統）。※`damage.replaceTag`/`damage.addTag` のみ**対象（ダメージを受ける側）の effects** をチャート適用時に評価する。
 
@@ -96,25 +158,29 @@
 | `damage.dealt.<physical\|mental\|social>` | その系統の攻撃の与えるダメージ +値 |
 | `damage.vsStyle.<スタイル識別キー>` | 攻撃対象がそのスタイル（`type:"style"` アイテム）を持つとき +値 |
 | `damage.vsWorks.<組織識別キー>` | 攻撃対象がそのワークス（ワークス技能の組織）を持つとき +値 |
-| `damage.replaceTag.<元タグ>` | **ダメージタグ改変（対象側・2026-07-12）**: チャート適用時、元タグを値のタグへ**置換**（例 `damage.replaceTag.stupor`＝`dominated`＝昏睡→支配）。値=CONDITION_KINDS のタグキー |
+| `damage.replaceTag.<元タグ>` | **ダメージタグ改変（対象側・2026-07-12）**: チャート適用時、元タグを値のタグへ**置換**（例 `damage.replaceTag.stupor`＝`dominated`＝昏睡→支配）。値=CONDITION_KINDS のタグキー（一覧は [Conditions.md](Conditions.md)） |
 | `damage.addTag.<元タグ>` | 同・元タグ付与時に値のタグを**追加**（例 `damage.addTag.erased`＝`dominated`＝抹殺に支配を追加）。追加分は同じ負傷に紐づく |
 
 - `parseEffectTargetKey` は `{scope:"damageVs", group:"style"|"works", selector:<キー>}` を返す。**恒常適用パスからは除外**（対象が見えないため焼き込めない）。
 - ダメージフロー（`damage-flow.mjs` `openDamageRollDialog` → `collectDamageVsBonuses`）が攻撃対象を解決し、対象の style/works と `gatherDamageVsSources`（`collectActorEffectBuffs` で集めた攻撃者の effects）で照合。合致分を用途のダメージ修正と同じ台帳行（供給元＝効果名）としてダメージへ合算する。
 - 値は**リテラル**（判定バフと同じ）。重複規約も判定バフと同一（identity 単位で最大1回・stackable はスタック）＝`_gatherBonusSources` を判定バフと共用。
 
-### 条件付き（標準キーに畳み込む）
-
-`<セレクタ>[<条件>].<パス>`。角括弧内に `パス 比較 値`、複数は `;` 区切り。`parseEffectConditions` / `evalEffectConditions`。
-
-- 例: `system.category.melee[hack>=3].attack` = 電制 total が 3 以上の白兵武器の攻撃力。
-- 比較演算: `>= <= > < == !=`。左辺は対象アイテムの system パス（`hack`→`hack.total` 等に解決）。
-- 条件はキー文字列内で完結（標準 UI のみで書ける）。
-
-### モード・値
+### 2.9 モード・値
 
 - モード = 標準の Add / Override / Multiply / Upgrade / Downgrade。値 = 数値。
 - 複数効果は `change.priority`（既定 mode×10）順に適用。
+
+### 2.10 廃止キー（死にキー・書いても何も起きない）
+
+v3 再設計（2026-07-13）で廃止した旧綴り。パーサが明示的に null を返す（素のキーと紛れて誤解釈しない）。
+
+| 旧キー | 現行の書き方 |
+|---|---|
+| `system.self.<パス>` ／ `item.self.system.<パス>` | 素のパラメータキー `system.<パス>`（§2.2） |
+| `system.parent.<パス>` ／ `item.parent.system.<パス>` | AE 設定「準備先（親アイテム）に適用」チェック＋素のパラメータキー |
+| `system.skill.<識別キー>.<パス>` | `item.<識別キー>.system.<パス>` |
+
+- ※式の相対参照 `@item.self.system.*`／`@item.parent.system.*` は「値を引いてくる」参照で**別物・存続**（[Formula_Reference.md](Formula_Reference.md)）。
 
 ## 3. 恒常適用パス（`CastDataModel.prepareDerivedData` → `_applyEffectBuffs`）
 
