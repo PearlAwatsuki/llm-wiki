@@ -52,9 +52,11 @@
 | `system.cs.current` | `combatSpeed.currentTotal` | **CSカレント**への修正（準備ゲートなし） |
 | `system.ar.max` | `actionRank.maxTotal` | **付与AR**への常時修正（フェーズ11）。`cs.base` と同じ準備ゲートあり |
 | `system.baseAttack.damageType` | `baseAttack.damageTypeTotal` | **生身のダメージ種別上書き**（2026-07-13。値=S/P/I/X の選択式・モード不問で常に上書き・素値は不変） |
+| `system.partSlot.<部位キー>` | `partSlotsEffective`（非スキーマ・`partSlotDeltas.<キー>` 経由） | **アクター部位スロットの増減**（フェーズ12・値=増減数・式可）。仮想名前空間 `partSlot`。既存部位はキー照合で count に加算（0クランプ）・**未知キーは正のデルタのときだけ新規実効スロットを作る**（負は既存のみ＝幽霊部位ガード）。`cs.base` と同じ準備ゲートあり。負傷 `partSlotMod` と合成して `partSlotsEffective` に着地（占有計算・装備先候補が読む。base の `partSlots` は編集用に不変） |
 | `system.handMaxSizeMod` | ネイティブ着地（base） | 手札上限修正の特例（KI-020）。所有 cast に着地（ADD）→ `resolveEffectiveHandMaxSize` が User の実効手札上限へ合算 |
 
-- `cs.*`／`ar.*` は**仮想名前空間**——実スキーマパス（`system.combatSpeed.*` 等）と分けることで、アクター自身の効果がネイティブ適用と二重に効くのを防ぐ。
+- `cs.*`／`ar.*`／`partSlot.*` は**仮想名前空間**——実スキーマパス（`system.combatSpeed.*`・`system.partSlots` 等）と分けることで、アクター自身の効果がネイティブ適用と二重に効くのを防ぐ。
+- **部位キー（フェーズ12）**: 部位スロットは `key`（安定参照）と `value`（表示ラベル）を持つ。AE・アイテム part 行・エイリアスの参照は**キー**で持ち、表示は**逆引きした現在ラベル**（識別キー・分類コードキーと同じ原則。ラベルのリネームで参照が壊れない）。既定ラベルは英語キー（`one-hand`＝片手持ち・`occiput`＝後頭部・「〜部」は `-part` 等・2026-07-15 ユーザー確定）。既存データは ready 一回の `migratePartSlotKeys` でキーを永続付与。正本は [Outfits.md](../Game_Rules/Outfits.md)「部位管理」。
 - **予約名前空間（ability / control / cs / ar / baseAttack / category / handMaxSizeMod）以外の `system.<パス>` はすべて素のパラメータキー＝「乗っているアイテム自身」の意味**（§2.2）。したがって**アクター上の効果に素の `system.<パス>` を書いてもキャラ値には効かない**（self スコープは保持元が Item のときだけ着地する）。アイテムのトップレベルフィールドと予約語の衝突は無いことを確認済み（style の `control`・uses の `type` 等は入れ子で無関係）。
 - ネイティブ着地（base を直接書き換える枠外の特例）は `system.handMaxSizeMod` と、`system.baseAttack` の damageType 以外（`.value`／`.mod`）のみ。他の実スキーマパスの直書きは規範外。
 
@@ -87,10 +89,10 @@
 | **住宅施設 residence** | `appearanceTarget`（外見目標値）・`cyberSecurity`・`analogSecurity`（セキュリティ）→ `<名>Total` |
 | **技能 generalSkill / styleSkill** | `level`（技能レベル）→ `levelTotal` |
 
-- **total を持たない（＝実効値の読み手が無い）フィールドには効かない**: `quantity`・`uses`・`ammo`・`range` 等。ダメージ種別以外の文字列・真偽フィールドも対象外。
+- **数値フィールドで total を持たないもの**（`quantity`・`uses`・`ammo`・`range` 等）には効かない。文字列・真偽の上書きは §2.3b（ダメージ種別）・§2.3c（特性フラグ）・§2.3d（名前装飾）で個別に扱う。
 - ※アイテムのパラメータが「キャラクターへ」与える修正（controlMod・combatSpeedMod・危険値など）は AE でなく派生パイプラインが直接読む（大原則5）。本表は「アイテム自身の実効値」を AE で動かす話。
 
-#### ダメージ種別の上書き（2026-07-13）
+#### 2.3b ダメージ種別の上書き（2026-07-13）
 
 値は S/P/I/X の選択式・**モードは何でもよい（常に上書きとして適用）**。着地は実効フィールド（設定欄の素値は書き換えない）。**そのまま書けば動くキー**:
 
@@ -100,6 +102,40 @@
 | 別のアイテム（技能等）から特定の武器を指定 | `item.<武器の識別キー>.system.attack.damageType` |
 | カテゴリ一括（小分類/大分類） | `system.category.<カテゴリ>.attack.damageType` |
 | 生身 | `system.baseAttack.damageType` |
+
+#### 2.3c 特性フラグのオン/オフ（フェーズ12・この表が全数）
+
+真偽の**特性フラグ**を AE でオン/オフする。値＝オン（`true`/`1`）／オフ（`false`/`0`）——AE 設定シートでは**オン/オフの選択式**。**モード不問で常に上書き**。着地は実効フィールド `<フラグ>Total`（設定欄=素値は不変）。乗り先の選び方は値バフと同じ（素のキー＝乗っているアイテム自身・`item.<識別キー>.<フラグ>`・`system.category.<分類>.<フラグ>`）。
+
+| 型 | フラグ（キーに書く綴り） | 主な読み手 |
+|---|---|---|
+| 武器 | `isFullAuto`（フルオート）・`isLaser`（レーザー武器）・`isFleshChange`（生身変更装備） | 攻撃フロー・部位ホスト照合・使用武器表示 |
+| アウトフィット共通 | `isCyber`（サイバーウェア）・`isMutantOrgan`（変異器官）・`isShiki`（式神装備）・`noPrepareRequired`（準備不要）・`isConsumption`（消費アイテム） | ホスト照合・「※」表示・準備ゲート・常備化経験点 |
+| 技能共通 | `usesBounty`（報酬点使用可）・`suits.spade`／`.heart`／`.diamond`／`.club`（使用スート） | 判定エンジン・判定/攻撃フロー・用途シート |
+
+- **読み手は必ず `readFlag(system, "<フラグ>")`** を経由して実効値を読む（`<フラグ>Total ?? base`）。素の直読みは AE が効かない。
+- **`noPrepareRequired` の順序境界**: アウトフィット集計（`computeOutfitAggregates`＝制御値/CS/危険値）は `_applyEffectBuffs` より前に走るため**base を読む**（AE 反転は乗らない）。実行時ゲート（ダメージ/判定/戦闘表示）は AE 後に走るため実効を読む。
+- **除外＝`isAction`／`noCombo`**（フェーズ12・意図的な非対応）: どちらも「特性」だが**構造的読み手**（用途チェーン設定・辞典構築）がフラグを読んで**永続設定を書き込む**。実行時 AE 上書きと両立させるには「config 書き手は base・実行時解決は実効」の作り分け＝チェーン再解決の設計が要るため、実効読みへの一括掃引が構造的に安全でない。よってレジストリ（`AE_FLAG_PARAMS`）から外す（将来別設計で扱う）。レジストリの正本はコード（`AE_FLAG_PARAMS`）。
+
+#### 2.3d 名前装飾（フェーズ12・アイテムのみ）
+
+**キー `name`**（system 外・ドキュメント直下）。効果（またはその転送/付与コピー）が乗っている**アイテム自身の名前**を実行時に飾る（in-memory・`_source.name` は不変）。
+
+| 値 | 挙動 |
+|---|---|
+| `{}` を含む（例 `{}（マジック）`） | `{}` を**現在の名前に置換**（D&D 方式。「ロングソード（マジック）」） |
+| `{}` を含まない（ベタ打ち） | 名前を**そのまま上書き** |
+
+- 複数効果は priority 順に**重ね掛け**（非 stackable は identity ごとに1回・先勝ち）。識別キー狙いは `item.<識別キー>.name`（物理転送で対象アイテム上の素の `name` コピーになる）。
+- **ネイティブ適用の一点抑止**: 自動適用オン（transfer:true）のアイテム効果はネイティブ適用パスで**アクターに**適用されるため、`name` を放置すると `actor.name` を破壊する。`TokyoNovaActiveEffect.apply` が **Actor への `name` 変更だけ**無効化する（アイテム名の装飾は適用パスが bearer へ直接行う）。アクターの名前は装飾対象外（アイテムのみ）。
+- **表示/編集の分離**: 一覧・チャット・シート見出しは装飾後（`item.name`／`tnxDecoratedName`）を表示。アイテムシートの名前入力欄は**素値**（`sourceName`＝`_source.name`）を編集する（装飾後を素値として保存しないため）。
+
+#### 2.3e アイテム部位行の追加（フェーズ12）
+
+**キー `system.part.<部位キー>`**。値＝`and`（追加占有）／`or`（択一候補）、消費数は `:N` 接尾（省略=1。例 `and:2`）。着地はアイテム派生の実効 part（`partAdded`。base の部位編集欄は不変）。乗り先は値バフと同じ（素のキー＝乗っているアイテム自身・`item.<識別キー>.system.part.<部位キー>`・分類）。
+
+- **and 追加**＝既存部位に加えて常に占有（表記「(既存)+C」）。base の relation（and/or）と独立に無条件加算。
+- **or 追加**＝base 部位一式との**択一候補**（表記「(既存)、もしくはC」）。装備先に選んだとき（`partAltChoice`＝部位キー・空=base を占有）base の代わりに占有する。base の part モデル自体は書き換えない。
 
 ### 2.4 分類キー（`system.category.<分類キー>`・全数）
 
@@ -179,6 +215,8 @@ v3 再設計（2026-07-13）で廃止した旧綴り。パーサが明示的に 
 | `system.self.<パス>` ／ `item.self.system.<パス>` | 素のパラメータキー `system.<パス>`（§2.2） |
 | `system.parent.<パス>` ／ `item.parent.system.<パス>` | AE 設定「準備先（親アイテム）に適用」チェック＋素のパラメータキー |
 | `system.skill.<識別キー>.<パス>` | `item.<識別キー>.system.<パス>` |
+| `system.name` | 素のキー `name`（system 外・§2.3d） |
+| `system.part`（セレクタ無し） | `system.part.<部位キー>`（§2.3e） |
 
 - ※式の相対参照 `@item.self.system.*`／`@item.parent.system.*` は「値を引いてくる」参照で**別物・存続**（[Formula_Reference.md](Formula_Reference.md)）。
 
@@ -232,6 +270,16 @@ v3 再設計（2026-07-13）で廃止した旧綴り。パーサが明示的に 
 | **「付与先」**セレクタ（対象/自分・既定=対象） | `flags.grantTarget` | **アイテム上の効果で常時**（2026-07-13 ユーザー指摘で是正: 用途の適用効果は自動適用オンの効果も選択できる＝付与先は transfer と**直交**。オフ時のみ表示だと自動適用オンの効果の付与先に到達できない。アクター上の効果は用途の効果になれないため非表示） |
 | **「重複可」**チェック | `flags.stackable` | 常時。未チェック＝重複適用不可、チェック＝スタック |
 
+**変更（changes）行の入力補助（`renderActiveEffectConfig`・値をベタ打ちさせない）**:
+
+| 対象キー | 値入力の見た目 |
+|---|---|
+| `check.cardValue` | A〜K の選択式 |
+| `*.attack.damageType`／`system.baseAttack.damageType` | S/P/I/X の選択式 |
+| 特性フラグ（§2.3c・キーが `AE_FLAG_PARAMS` を指すとき） | **オン/オフの選択式**（フェーズ12） |
+| `system.part.<部位キー>`（§2.3e） | `and`/`or`/`and:2`/`or:2` の datalist（消費数付きも打てるよう自由入力保持・フェーズ12） |
+
+- **キー入力の datalist**（フェーズ12）: 全 change 行のキー欄に候補 datalist（`system.partSlot.<キー>`・`system.part.<キー>`・`name`・`system.<フラグ>`）を付けてオートコンプリート（自由入力は妨げない）。部位キーはワールドの部位スロットプリセットから引く。
 - **保存はネイティブ項目と同じフォーム送信**（`name="flags.tokyo-nova-axleration.*"` を与えて「変更を保存」で一括保存・2026-07-13 ユーザー指摘で是正）。旧方式の change 即時 `setFlag` は、ドキュメント更新→シート再描画で**未保存のフォーム状態（transfer のオン等）が巻き戻る**バグの原因だった（「準備先をオンにすると自動適用がオフに戻り欄が消える」＝実際はオフになるのではなく未保存のオンが破棄されていた）。
 - **準備先のみ** transfer チェックの切替で出し分ける（常時自動適用の乗り先修飾そのもので、使用時付与ではコピー作成時に applyToParent を落とすためオフ時に意味を持つ経路が無い。純粋な表示制御でデータには触れない）。隠れている間も設定値はドキュメントに残るが、エンジンが transfer 状態でゲートするため実害はない。
 - **申し送り**: コンディション（BS）効果値フィールドの注入は従来どおり即時 `setFlag`（独自の再注入ロジックと不可分）。同種の巻き戻りを潜在的に持つが、statuses 変更との連動要件があるため別途扱い。
