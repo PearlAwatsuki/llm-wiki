@@ -2342,7 +2342,7 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 **日付**: 2026-07-14
 **関連実装**: `tnx-character-sheet-base.mjs`（`_squeezeResizeObserver`＝フレームのサイズ変化で `_applyTextSqueezing` を再適用・`_onClose` で解除）。本体 `94e305a`（誤修正）→`e157f86`（是正）。
-**ステータス**: ✅ 実装完了（全テスト green 1251・lint 0 error）・実機確認待ち
+**ステータス**: ✅ 実装完了（全テスト green 1251・lint 0 error）・**実機確認済み（2026-07-14 ユーザー確認）**
 
 #### 設計レビュー
 
