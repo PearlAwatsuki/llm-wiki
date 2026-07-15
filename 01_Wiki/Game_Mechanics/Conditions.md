@@ -61,7 +61,7 @@ status id（`CONFIG.statusEffects`）が condition の一意性を担い、`cond
 ### ② 行動制限型 — kind による遮断（数値でない）
 恐慌・重圧・捕縛・気絶/失神/仮死/昏睡。消費側が active condition を見て遮断/警告。
 - 重圧 = `targetAbility` を使う上方判定を不可（スート→能力値一致の技能判定＋能力値判定。制御は可）。**9-4 で判定時に配線**。
-- 捕縛 = 指定武器（識別キー）で攻撃不可。**9-4 で攻撃判定時に配線**（対象武器の保持方法は実装時詳細）。
+- 捕縛 = 指定武器で攻撃不可。**対象武器の指定機構（2026-07-15 実装）**＝効果設定シート詳細タブの `対象武器` プルダウン（対象アクターの `type:"weapon"` アイテム＋**生身**）。保持は **`targetWeapon`＝アイテム ID・空=生身**（攻撃の「攻撃で使用」`attackItemId` と同型・[[feedback_reuse_existing_ui_precedent]]）。従来の生キー手入力欄は指定機構として機能していなかったため置換。攻撃判定時の遮断配線は 9-4/13。
 - 恐慌（リアクション不可）・気絶等（メインプロセス不可）は **13 申し送り**。
 
 ### ③ 計算型 — kind＋強度をコードが算出（実装済み `computeJammingPenalty`）
@@ -84,7 +84,7 @@ status id（`CONFIG.statusEffects`）が condition の一意性を担い、`cond
 | 邪毒 | ④ | magnitude=n | 非（最大n） |
 | 重圧 | ② | targetAbility | 非 |
 | 衰弱 / 衰弱(-n) | ① | magnitude=n（全制御値 -n） | **重複** |
-| 捕縛 | ② | 対象武器（識別キー） | **武器ごと** |
+| 捕縛 | ② | 対象武器（`targetWeapon`＝アイテムID・空=生身） | **武器ごと** |
 | 酩酊(小/大) | ① | magnitude=2/5 | 小大別・**重複** |
 | 萎縮 | ①+対象 | targetUuid・targetMode=include | **対象ごと** |
 | 憎悪 | ①+対象 | targetUuid・targetMode=exclude | 対象ごと存在・ペナルティ非重複 |

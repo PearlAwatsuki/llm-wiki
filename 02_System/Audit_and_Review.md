@@ -2459,7 +2459,7 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 #### 課題・申し送り
 
-- **単体※の選び直し**: 現行攻撃は `game.user.targets[0]` で既に単体解決のため構造的に満たす。多対象攻撃を将来入れる場合に「複数→単体の選び直し」を追加。
+- **単体※の選び直し**: 複数対象一括を実装した後（下の 2026-07-15 追補）も、スタン／説得の単体※は**先頭の命中対象で成立**させている。複数ターゲット時に「効果等で変更不可の単体」をユーザーへ明示選択させる UI は未実装（現状は先頭固定で満たす）。
 - **再判定時の宣言引き継ぎ**: recheck スナップショットに stunDeclared を含めるかは未対応（edge case）。
 - **実機確認待ち**: 判定ダイアログのトグル→攻撃カード→ダメージカードの 10 表示→適用の一連（CLAUDE.md §2.1 によりユーザーが確認）。
 
@@ -2468,4 +2468,100 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 - **武器依存 canStun (ii)**: 武器（アウトフィット）に `canStun` フラグ新設（`weapon.mjs`・outfit-sheet に「スタン可能」チェック）。実効可否＝**物理かつ〔使用武器いずれか可 ∨ 生身 ∨ 用途.canStun（スタイル技能効果用に存置）〕**。`attack-flow` が `stunCapable` を算出して攻撃ペイロードに載せ、判定ダイアログのトグル可否に使う（用途チェックの自動オンや再判断機構は採らず、実行時判定＝ユーザーが (ii) を選択）。
 - **説得の効果タグ抑止**: `applyDamageChartResult` に persuade 引数 → 負傷 AE に `persuade` フラグ → `tnx.mjs` の createActiveEffect カスケードで **incapacitation グループ（戦闘不能・支配含む）の inflicts を skip**。BS は通常付与。「説得に応じる」は状態・機構を持たないフレーバー（＝効果タグを付けないだけ）。※「+α」の具体があれば要追加（現状は incapacitation グループのみ抑止）。
 - **対象/レティクル是正**: `attack-flow` の対象取得を `game.user.targets` **全件**へ。未ターゲット時の選択ダイアログは選んだトークンに `setTarget` で**レティクルを付与**してから進める（内部だけで対象を決めない）。
-- **複数対象「一括」＝未実装（保留）**: 攻撃カード・リアクション状態機械・ダメージ適用は単体前提のままで、現状は**先頭対象で単体処理**。設計合意＝命中判定は共有・**リアクションは対象ごと**・**ダメージ適用は1ボタンで対象ごとの軽減をまとめた1ダイアログ**。状態機械の対象配列化は戦闘中核の改修のため、実機検証できる土台の上で別途実装する（ユーザー確定＝先に本追補までをコミット）。
+#### 追補（2026-07-15 複数対象への一括＝実装）
+
+戦闘フローを単体前提から**全ターゲット一括**へ改修した（→ [Damage_Rules](../01_Wiki/Game_Rules/Damage_Rules.md)「複数対象への一括」）。
+
+- **攻撃ペイロードの対象配列化**: `attack-flow.startAttack` が `game.user.targets` 全件を `targets` 配列で持ち回る（旧 `targetUuid/targetName` 単体フィールドを撤去）。`postAttackCard` が対象ごとに `{uuid,name,controlValue,state,resolution,reactionAchievement,diff,parryGuard}` へ展開。命中判定（カードプレイ）は 1 回で全対象共有。
+- **攻撃カード＝D&D 風対象リスト**: `renderAttackCard` を対象リスト（`.tnx-attack-targets`・行＝アイコン/名前/制御値/判定）へ再設計。カード上にリアクションボタンは持たない（対象ごとの個別カードへ分離）。全対象のリアクション解決後、命中があれば「ダメージカードを出す」を表示。
+- **個別リアクションカード**: `postReactionCard(attackMsg,targetIndex)` が対象ごとに `attackReaction` フラグ付きカードを **whisper（GM＋対象所有者）**で投稿。`renderReactionCard` が未解決＝ドッジ／パリー／なしのボタン、解決後＝制御値／達成値を判定結果カード様に描画。`startReaction`/`handleNoReaction`/`completeReactionFromCheck` は `reactionMessageId/attackMessageId/targetIndex` で該当対象を更新。`applyReactionPatch` は GM/author 時に **whisper を空へ＝全体公開**、非権限は `emitCheckModify` でフラグのみ委譲。攻撃カードの対象リストへも結果反映（`applyAttackTargetPatch`）。
+- **ダメージ＝1 ボタン 1 ダイアログ**: ダメージカードは命中対象を保持し**適用ボタンは 1 つ**（`canApply` = GM ∨ いずれかの命中対象を所有）。`openMitigationDialog` を**対象ごとの軽減入力を並べた 1 ダイアログ**（各行ライブプレビュー）へ再設計し、確定で全対象へ一括適用（`appliedResult.targets`）。対象ごとの適用ボタンは廃止。
+- **対象依存値の近似**: 攻撃側合計に効く `@target.*`・対象バフ AE は共有のため**先頭の命中対象で近似**（`hitTargets[0]`）。単体※のスタン／説得も先頭対象で成立。
+- **再判定（置き換え着地）の配列化＝統合欠落の是正**: 配列化で攻撃フラグの `state/resolution/targetValue/targetUuid` を各 `targets[i]` へ移したため、旧・単体前提の再判定分岐（トップレベル単体フィールドを読み書き）が機能しなくなっていた（テスト・lint は緑でも実経路が壊れる＝[[feedback_verify_integration_not_just_params]] の類型）。是正: `attack-flow.rebuildRecheckedTargets` が**共有達成値の再ロールを対象リスト全体へ再解決**（リアクションのやり直しはしない＝保存済み相手値で成否・差分を再導出。純判定は既存 `resolveAttackRecheckState`）。仕切り直し（pending 復帰）対象は対決系保存値を初期化し**新スートの制御値を取り直す**。上位状態も fumble/miss/open/active へ導き直す。加えて、リアクションが**別カードのスナップショット**になった帰結として、`refreshReactionCardsAfterRecheck` が**未解決リアクションカードの達成値/スート/本文を追従**（全体失敗＝ファンブル/スート不一致に転じたらリアクション余地なしとして未解決カードを削除）。再判定の実行者は攻撃者（＝各カードの author）か GM のため更新権限がある。
+- **既知の小限界**: 複数ターゲット時に「効果等で変更不可の単体」を明示選択させる UI は未実装（スタン/説得は先頭固定）。`@target.*`/対象バフは先頭命中対象で近似（対象ごとに異なる対象依存ダメージ修正は未対応）。
+- 検証: `npm test` 全 1285 通過・`npm run lint`（eslint）0 error・`npm run lint:css`（stylelint）clean。`rebuildRecheckedTargets` は Foundry 結合（`fromUuid`）のため慣行どおり単体テスト対象外（純判定 `resolveAttackRecheckState` は既存テストで担保）。**実機確認待ち**（CLAUDE.md §2.1）。
+- **UI 調整（実機フィードバック・2026-07-15）**: ①個別リアクションカードの状態領域 `.tnx-reaction-status` に余白が無く、解決後の目標値/差分行・成否バナーが無余白だった → 解決後は目標値/差分を `cr-calc-section` へ足し成否は `cr-result` フルバナー（check-result と同型）、未解決の注記/ボタンは内側余白の `.tnx-reaction-actions` ラッパへ。②ダメージカードの合計値が狭いカードで縦折り返し → `.cr-total-num` を `white-space:nowrap; flex-shrink:0`、対象名込みの長いラベルは `.cr-total-row .cr-calc-label` を `min-width:0; overflow-wrap:anywhere` で折り返し側へ。③「効果を適用済み」等の `・` 連結名は、名前自体が `・`（例「カブキ・トループ」）を含むと区切り不明 → 各名を `「」` で囲う（`usage-effects`・`damage-flow` の対象名/効果名・警告文。既存 `npc-acquisition` の `map(i => \`「${i.name}」\`)` 様式に統一）。
+
+#### 追補（2026-07-15 達成値の下限・技能起動の単一関数集約）
+
+- **達成値の 0 下限**（ルール）: ユーザー確定「判定結果はマイナスにならない」。AE ペナルティ等で計算途中は負でも最終達成値は 0 まで戻す。`calcSkillCheck`（基本計算）と `_applyCheckModify` の `newAch`（事後修正／GM 手動）の両方を `Math.max(0, …)`。GM 手動ツールは使用自体を制限しないが結果値は下限に従う。制御判定は達成値を持たないため対象外。テスト追加（`tnx-check-engine.test.mjs`・大ペナルティ／負の能力値実効値で 0）。正本＝[[Check_Rules]]「達成値の下限」。
+- **技能起動の単一関数集約**（アーキテクチャ・設計レビュー／ユーザー確定「技能の起動は必ず一つの関数だけ・新しい起動関数を作らない・入口は多くてよいが実体は 1 つ」）: 従来は起動が 5 箇所に分散し、シートクリック以外（リアクション/治療/操縦移動/判定要求）は**用途処理の一部を手組みして迂回**していた（適用効果・不備検知・複数用途選択の欠落、操縦移動と判定要求に至っては**用途を一切見ない単一技能**）。→ `TnxCharacterSheetBase._activateItemCheck(actor, item, extraOpen)` を**唯一の起動関数**とし、`_onStartSkillCheck` は DOM から `(actor,item)` を解決して呼ぶ薄い入口に。**4 迂回箇所（`startReaction`／`startTreatment`／`startVehicleMove`／`onDoCheck` の技能判定分岐）は各自の追加文脈（`reaction`/`treatment`/`movement`/`requestMessageId`・目標値上書き・代用）だけを `extraOpen` に載せてこの 1 関数を呼ぶ**形へ置換（`extraOpen` は通常判定の `open` へ最後に合流し既定を上書き）。**帰結＝これらも用途のコンボ・消費・判定ボーナス・適用効果を通す**＝挙動がシートクリックと完全一致（操縦移動・判定要求は従来の単一技能から挙動変更）。**設計原則: 組み合わせ（コンボ）の可否は（RL を含む）ユーザーのみが決定権を持ち、システム側は一切制限しない**（ユーザー確定）。対象外＝能力値/制御判定・シナリオ情報収集（技能名のみで技能アイテムを起動しない）・再判定の再入（保存済み ctx の再実行）。付随して起動集約で死んだ手組みロジック（`treatment-flow.resolveCheckSkillSet`・各所の未使用 import）を除去。技能選択ダイアログのラベルを 1 行（「〈モード〉に使用する技能を選択」）に短縮し、ラベルは全幅・プルダウンは `max-width` で据え置き（`.tnx-select-dialog`）。検証＝全 1286 テスト green・eslint/stylelint 0 error。**実機確認待ち**（CLAUDE.md §2.1・特にリアクション/治療/操縦移動/判定要求の一連が正規フローで走ること）。
+
+#### 追補（2026-07-15 リアクション成否表記・BS バッジ表示・捕縛の対象武器機構・計算行の折り返し）
+
+- **リアクション成否の表記是正**: 「回避／受け（攻撃無効）」は**ルールに無い言い換え**（「受け」はパリーの別名でない・存在するのは「受け値」のみ）＝ユーザー叱責。成功は**「リアクション成功」に統一**（ドッジ/パリー/精神・社会リアクション共通）。ただし「リアクションしない」で被弾しなかった場合はリアクションをしていないため**「攻撃無効」**（ルール語「勝利で攻撃無効」）。`renderReactionCard` の verdict のみ変更。
+- **BS バッジに効果値/対象を表示**（状態タブ・正本 [[Bad_Status]] の表記に従う）: 従来バッジは名前＋アイコンのみ。→ `readConditions` から `_bsValueSuffix` で表記を作り名前に付す。**表記は wiki 正本どおり**＝邪毒/電子妨害は名前に数字直付け（`[BS：邪毒n]`/`[BS：電子妨害n]`）、衰弱は `（-n）`・スート引き版は `（能力値の制御値 -n）`、重圧は `（能力値）`（`[BS：重圧(生命)]`）、萎縮/憎悪は `（対象名）`、捕縛は `（武器名/生身）`。**効果や名前で値が決まるもの（酩酊(大/小)・恐慌 等）は表示しない**。カードで決まるもの（重圧の指定なし・衰弱のスート引き）は**ドロー結果が `conditions[kind]` に保存済み**のため再描画で自然に表示される。**戒め＝表記を設計する前に必ず Bad_Status.md を引く**（「強度2」という語を wiki 記載 `[BS：電子妨害n]` を読まずにでっち上げ強叱責・[[feedback_consult_wiki_before_asking]]）。
+- **捕縛の対象武器指定機構を新設**: 従来は効果設定の生キー手入力欄のみで指定機構として機能せず。→ 効果設定シート詳細タブに `対象武器` プルダウン（対象アクターの `type:"weapon"`＋**生身**）。保持は `targetWeapon`＝**アイテム ID・空=生身**（攻撃の `attackItemId` と同型）。`readConditions` に `targetWeapon` を追加。
+- **計算行のラベル折り返し是正**（リアクションカードの「攻撃」が縦に割れる）: `.cr-calc-label` を `flex-shrink:0; white-space:nowrap`（短いラベルは折り返さず値側を折り返す）。合計行だけは例外（対象名込みの長ラベルを折り返す）＝`.cr-total-row .cr-calc-label` に `white-space:normal; flex-shrink:1` を上書き。
+- 検証＝全 1286 テスト green・eslint/stylelint 0 error。**実機確認待ち**。
+
+#### 追補（2026-07-15 BS効果の任意編集ダイアログ・NPC取得の再判定＝表示のみ）
+
+- **BS 効果の任意編集ダイアログ**（ユーザー確定「カードを引く等の操作なく効果を任意決定・効果設定シートでなくダイアログ・主用途＝再判定確定後に消えるはずでなかった BS を同効果で与え直す」）: 状態タブのバッジのコンテキストメニューに **「効果を編集」** を追加（治療と併存）。`condition-edit.mjs` の `openConditionEditDialog` が def の効果値フィールド（強度/効果量・対象能力値・対象アクター・対象武器＝生身含む）を DialogV2 で出し、確定で `conditions.<kind>` へ保存（他経路と同じ保存先＝`readConditions`/バッジ表示と一貫）。**衰弱に `abilityField: "optional"` を追加**（手動で対象制御値を指定可＝空=全制御値・適用側は指定=その制御値のみ/未指定=全制御値を既に対応）。編集項目を持たない BS（酩酊等）はメニューを出さない。
+- **NPC取得の再判定＝表示のみ更新**（継続判定の再判定の第一歩）: `_buildRecheckContext` の除外から `npcAcquire` を外した。再判定/修正は通常結果カードの達成値を差し替えて再描画するだけで、`completeAcquisitionFromCheck` は再実行しない（`_applyRecheckReplacement` は継続ディスパッチ手前で return するため自然に表示のみ＝設計どおり・生成物は自動で触らず手動）。明確な成功失敗のある**分身**もこの扱い。
+- **継続判定の再判定・修正＝全種実装**（2026-07-15・A/B/C）: `_buildRecheckContext` の除外を撤廃し、継続文脈（reaction/treatment/recovery/controlNegate/npcAcquire/movement）を rc に載せる（rc は結果カードの `checkRecheck` フラグに保存＝**再判定は ctx 経由・事後修正は カードの `checkRecheck` 経由**の両方から読める）。新ヘルパー `_rerunContinuation(cc, result, {oldSuccess})` が種別ごとに再実行し、`_applyRecheckReplacement`（再判定）と `_applyCheckModify`（修正）の両方から呼ぶ:
+  - **A リアクション**＝`completeReactionFromCheck` に `allowResolved` を追加し、解決済み(hit/miss)でも**新達成値で対決を再解決**（両方向・副作用なし）。
+  - **A 操縦移動**＝通常結果カードを持たないため `buildMovementCardContent` を抽出し `_applyRecheckReplacement` に移動カード分岐を追加（達成値÷10 段階を**表示のみ**再描画）。`postMovementCard` は `recheckCtx` を受けて `checkRecheck` を保存。
+  - **B 治療/回復/controlNegate**＝**失敗→成功の遷移でのみ**除去/無効化ハンドラを再呼び（`oldSuccess` でゲート・ハンドラは ID 指定の除去で冪等）。成功→失敗は表示のみ（手動復元）。
+  - **C NPC取得**＝表示のみ（再実行なし）。
+  - **二重実行の防止**＝`_execute` は再判定でも継続ディスパッチ(738-772)へフォールスルーするため、各継続ブロックを `!ctx.recheckMessageId` でゲート（requestMessageId 発火は表示追随のため維持）。`startRecheck` は rc の継続文脈を再実行 ctx へ引き継ぐ。
+  - **リアクションの二重カード解消（2026-07-15 追加是正・ユーザー指摘「非常に気になる」）**＝リアクション判定では**通常の結果カードを出さない**（`_execute` の投稿分岐に `else if (!ctx.reaction)`）。**書き換わったリアクションカードが結果カードそのもの**。再判定/修正の導線もリアクションカードへ移設: `completeReactionFromCheck` が初回解決時に `recheckCtx` を受け、リアクションカードへ **`checkResult`＋`checkRecheck`（＋用途の `usageEffects`）** を保存（`applyReactionPatch` に `extraFlags` 追加・所有権委譲はそのまま）。`_applyRecheckReplacement` にリアクション分岐（本文は attackReaction フラグ由来のため上書きせず、`_rerunContinuation` が対決を再解決して表示更新）。
+  - **リアクションの再判定＝プレイヤー導線も付与（是正）**: フック順 `renderReactionCard`→`renderRecheckButton` を利用し、`renderReactionCard` の解決表示で**リアクション達成値を「達成値」総計行**として描く（`renderRecheckButton` がこの行を再判定/修正の対象に拾う＝プレイヤーの達成値クリックが効く・GMメニューも併用）。「リアクションしない」は checkRecheck 非保存＝再判定なし（カード未プレイのため）。
+  - **リアクションの適用効果＝保持（是正）**: リアクションカードに `usageEffects` を保存し `renderUsageEffectButton` が「効果を適用」ボタンを出す（`attackCheck` フラグ非保持のため発火）。
+  - **統一起動の同種取りこぼし＝操縦移動も是正**: 専用カードを出すフロー（攻撃・操縦移動・リアクション）は統一起動 `_activateItemCheck` が用意する `usageEffects` を専用カードへ載せる必要がある。攻撃は既に対応済み、**操縦移動も `postMovementCard` が `usageEffects` を保存**するよう是正（リアクションと同型）。通常結果カードを使うフロー（治療/回復/NPC取得/controlNegate/RL要求）は元々 `usageEffects`＋再判定が結果カードに乗るため対応不要。
+  - 検証＝全 1286 テスト green・eslint/stylelint 0 error。**実機確認待ち**。
+
+- **BS バッジの効果値表示＝名前と値を分離＋長い値は縮小して収める（2026-07-15 是正・ユーザー指摘「衰弱の効果値が長すぎて表示しきれない」）**: バッジ本文を `名前`＋`値`の別要素に分離（`.tnx-bs-label`＝内容幅／`.tnx-bs-value` を `.tnx-bs-value-wrap` 内）。値は**既存の `.squeeze-text`（`_applyTextSqueezing` の scaleX 縮小・ResizeObserver 再計測）**で残り幅に収める（衰弱「（生命の制御値 -3）」等の長い効果値対応）。検証＝stylelint 0 error。**実機確認待ち**。
+
+- **達成値21固定＝完全固定の徹底（2026-07-15 ユーザー確定）**: A の 21固定は engine 段階（`calcSkillCheck` FIXED_21）で報酬点・能力値・判定バフ/ボーナス・状況修正を無視済みだが、通常経路の事後修正が抜けていた。→ `_applyCheckModify` に `checkF.result.fixedAt21` ガードを追加し、**用途「判定を修正」＝通常経路は 21固定でブロック**。**GM メニュー「達成値を修正（手動）」＝管理者権限の最終裁定（`manual`）だけは通す**（ユーザー確定）。正本＝[[Check_Rules]]「Aの達成値21固定」。
+
+- **ダメージ修正の per-target 化＝防御側軽減が全対象に効くバグの是正（2026-07-15 ユーザー指摘）**: 複数対象一括で攻撃側合計を共有にした結果、**防御側の `modifyDamage`（ダメージを修正＝軽減技能）が共有の攻撃側合計に乗り、一人の軽減が全対象を下げていた**（単体時代は露見せず・Code の設計ミス）。修正:
+  - **`handleDamageModifyClick` を使用者で振り分け**: 使用者が命中対象の一人（防御側）なら**その対象の `targets[i].mods` に per-target で積む**。攻撃側/GM 代行は従来どおり共有の `f.mods`（全対象の起点＝増強）。発動方法（攻撃側合計クリック）は不変。上書きの基準も対象ごと。
+  - **`openMitigationDialog` を対象ごとの攻撃側合計へ**: `resolvedTargets` に `mods` を取り込み、各対象の `targetRaw = 共有raw + その対象の modsSum` でプレビュー/適用（`computeDamage` の `damageCard` を per-target 化）。
+  - **カードに対象ごとの「適用予定ダメージ」を表示**（`targetPlannedPreview`＝共有攻撃側合計＋その対象の防御側修正−自動軽減・手動軽減は適用ダイアログで最終調整のため予定表示）。適用済み表示に「ダメージ修正（防御側）」行を追加。
+  - **適用ボタンのアクセスを RL と攻撃者に**（`canApply = isGM || attacker.isOwner`。各自が算出後〜適用前の増減を切り終えたら RL/攻撃者が押して全対象へ一括適用）。
+  - ※スタン上限は攻撃側合計（共有・攻撃側）にかかったまま。防御側 modifyDamage は攻撃側合計側（cap 前）に乗る＝現行メカニクスを踏襲（スタン時は上限で吸収され得る＝既存の性質）。検証＝全 1286 テスト green・eslint/stylelint 0 error。**実機確認待ち**。**この per-target 土台の上に「別種類として適用」（当初目的）を載せる**のが次段。
+
+#### 追補（2026-07-15 リアクションの追加挙動＝範囲攻撃へのリアクション/攻撃を失敗させる・全公開・攻撃者へのAE）
+
+ユーザー確定のリアクション拡張（メカニクス監査＋設計レビュー）。正本＝[[Combat_Flow]]「リアクションの追加挙動」。用途データモデル `usage.mjs` に `reactionAreaAttack`／`reactionFailsAttack`（BooleanField・初期 false）を新設し、用途シートに「リアクション」セクション（当面は全用途に表示・条件表示は後続）。
+
+- **範囲攻撃へのリアクション（`reactionAreaAttack`）**: リアクション成功（`ok && !hit`＝有効な判定で攻撃回避）で、同じ攻撃の**全対象を回避で一括解決**。他対象は `resolution:"areaCover"`・状態 miss（達成値なし・表示「範囲攻撃へのリアクション」）。1 人の成功で他対象は反応不要になる。
+- **攻撃を失敗させる（`reactionFailsAttack`）**: リアクション勝利で攻撃の overall `state:"failed"`（`renderAttackCard` で「攻撃失敗（リアクションによる）」バナー・対象一覧は続けて表示）＋全対象 miss。ダメージなし。範囲攻撃へのリアクションとは**別フラグ**（前者は全員回避、後者は攻撃自体の無効化）。両立可（fails は state も落とす上位）。
+- **実装の要点＝単一パッチ**: `completeReactionFromCheck` で本人分と全他対象を **1 回の `applyAttackPatch`** で送る（`f`＝解決前スナップショットを基点に本人分を明示 `Object.assign`）。当初は本人分 `applyAttackTargetPatch` ＋別パッチの二段だったが、**非作者クライアントのソケット委譲（`emitAttackUpdate`）が二重発火して本人分の解決を stale な配列で上書きし得る**レースを自レビューで検知（[[feedback_logical_consistency_first]]＝動く前に理屈で検算）→ 単一パッチへ是正。
+- **誤った再解決のガード**: 既に解決済み（回避確定）の対象へ以後 `startReaction`／`handleNoReaction` を押しても、攻撃対象が `pending` でなければ通知して返す（被弾へ戻さない）。まだ未解決の他対象リアクションカードは `closeUnresolvedReactionCards` が**削除権限（GM か作者＝攻撃者）のある側でのみ削除**（無ければ残すが上記ガードで無害）。
+- **リアクションカードの全公開**: `postReactionCard` の whisper を撤去（`reactionWhisperFor` 削除）。単体対象でも他者が肩代わりできるため公開必須（ユーザー確定）。`renderReactionCard` のボタンゲートを緩和＝ドッジ/パリー/精神・社会リアクションは**全員**、「リアクションしない」のみ対象所有者/GM（`canDeclineForTarget`）。実行アクターは `resolveReactor`（選択トークン→割り当てキャラ）で押下時解決。
+- **リアクションの適用効果は攻撃者へ**: リアクションの対象は「なし」のため、用途に付与先「対象」の AE があれば**攻撃者**へ返す。`prepareUsageEffectPayload` に `targetOverride` を追加し、`_activateItemCheck` がリアクション時に攻撃カードの `attackerUuid` から攻撃者を解決して渡す（対象確認ダイアログを挟まない・空配列＝攻撃者未解決時は対象なし）。付与先「自分」は従来どおりリアクター自身へ即時。
+- **監査結果 ✅**: 範囲攻撃へのリアクション/攻撃を失敗させるの区別・全員回避の帰結・公開範囲・AE の攻撃者返しはすべてユーザー確定に一致。用語は在ゲーム呼称のみ（`areaCover` は内部識別値でありユーザー可視文字列に出さない・表示は「範囲攻撃へのリアクション」＝[[feedback_no_dev_terms_in_ui]]）。
+- **課題・申し送り**: ①非 GM・非攻撃者のリアクターが範囲/失敗を発火した場合、他対象カードの削除権限が無く**カードが残る**（inert・ガードで無害）＝掃除の GM 委譲は未実装。②「リアクション」セクションの**技能特性に応じた表示切替は後続**（当面は全用途表示）。③範囲攻撃へのリアクションで既に解決済みだった対象（先に被弾/回避）も miss へ上書きする（＝全員回避の確定挙動・ユーザー意図どおり）。
+- 検証＝全 1286 テスト green・eslint/stylelint 0 error（変更ファイルに新規警告なし）。**実機確認待ち**（CLAUDE.md §2.1）。
+
+**リアクター解決を「誰がクリックしたか」へ変更（2026-07-15 ユーザー確定・実機フィードバック）**: 実機で「別キャラで肩代わりしたのに対象キャラのリアクションになる」と指摘。原因＝`resolveReactor` が `controlled[0]?.actor ?? game.user.character`（選択トークン優先）で、攻撃対象のトークンが選択されたままだと対象を拾っていた（＋リアクションカードが対象の発話者・名前のまま＝見た目も対象）。**ユーザー裁定「カードが誰の名前で作られたかではなく、誰がクリックしたかで判断する方式に変更すべき」**。→ ①`resolveReactor` を **`game.user.character ?? controlled[0]?.actor`** に是正（クリックしたユーザーの割り当てキャラを最優先・GM 等の未割り当てのみ選択トークンへフォールバック）。②解決後のリアクションカードに **`reactorName`**（＝クリックしたユーザーのキャラ名）を保存し、`renderReactionCard` の解決表示に「リアクション: 「名前」（ドッジ 等）」として明示（対象と別人＝肩代わりが一目で分かる）。「リアクションしない」も対象＝リアクター名を保存。検証＝全 1286 テスト green・eslint/stylelint 0 error。**実機確認待ち**（この後 2026-07-16 に実機確認済みとユーザー報告）。**申し送り**＝1 ユーザーが複数キャラを所有し割り当てキャラ以外で肩代わりしたい場合は、そのキャラを割り当てるか（未割り当て前提の）トークン選択が要る（明示ピッカーは今回不採用＝「クリックしたユーザーで判断」の決定的方式をユーザーが選択）。
+
+### 別のダメージとして適用（当初目的・per-target 土台の上に実装）（フェーズ12 補）
+
+**日付**: 2026-07-16
+**関連実装**: `damage-flow.mjs`（`openMitigationDialog` に `applyCategory` 引数・`renderDamageCard` に展開式ボタン群・適用済み表示に差し替え系統の明示）、`css/tnx2.css`（`.tnx-damage-altapply`/`.tnx-damage-altnote`）。正本 [Damage_Rules.md](../01_Wiki/Game_Rules/Damage_Rules.md)「別のダメージとして適用」。
+**ステータス**: ✅ 実装完了（全 1286 テスト green・eslint/stylelint 0 error）・実機確認待ち
+
+#### ルール解釈（メカニクス監査・2026-07-16 ユーザー確定＝AskUserQuestion で 3 点確定）
+
+- **差し替えるのは系統のみ**（肉体/精神/社会＝参照するダメージチャート）。ダメージ種別 S/P/I/X や算出式は変えない。
+- **軽減は元の系統のまま**行う（肉体なら防具＝防御力の軽減も含めすべて）。その**軽減後の最終値**を、選んだ系統のチャートへ適用する（＝「元系統でフル軽減 → 軽減後の値を別系統チャートへ流す」）。**値はそのまま保持**（再計算しない）。
+- **どの攻撃でも常に選べる**（RL 裁量。用途フラグ等のゲート無し＝システムは可否を制限しない）。
+
+#### 実装
+
+- `openMitigationDialog(message, applyCategory=null)`: `category`（=軽減・値算出に使う元系統 `f.category`）と `applyCat`（=チャートに使う差し替え先）を分離。軽減の自動値（防御力）・報酬点欄・スタン10上限・`computeDamage` はすべて `category`（元系統）で計算し、**チャートのプレビュー（`describeDamagePreview`）と適用（`applyDamageToTarget`）だけ `applyCat`** を使う。複数対象一括の 1 ダイアログはそのまま（軽減は各対象の元系統防御力・適用先チャートのみ差し替え）。
+- `renderDamageCard`: 「ダメージ適用」（元系統）に加え、`canApply` かつ対象ありのとき **`<details>`「別のダメージとして適用」** に他 2 系統への適用ボタンを出す（`openMitigationDialog(message, cat)`）。適用済みは `appliedResult.applyCategory` を保存し「「精神」ダメージとして適用」の注記を表示。
+- **説得の効果タグ抑止は元系統＝精神を精神チャートに適用したときのみ**（`persuade: stun && category==="mental" && applyCat==="mental"`）。別系統として適用する場合は説得の意味論が対応しないため付与しない。スタンの 10 上限は攻撃側合計の算出時点で掛かるため差し替えても保持。
+- トループ/エニグマ/分身は系統に依らず heads 減算/消滅（チャート不参照）のため、差し替えの影響は cast/guest のチャートにのみ及ぶ。
+
+#### 監査結果 ✅
+
+- ルール解釈は 2026-07-16 のユーザー確定（系統のみ・元系統でフル軽減後の値・値保持・常時選択可）に一致。per-target 軽減の土台（2026-07-15）の上に、適用チャートの差し替えを直交軸として載せた（軽減は対象ごと・チャート系統は適用全体で 1 つ選ぶ）。
+
+#### 課題・申し送り
+
+- 別系統として適用したときのスタン10上限・説得の扱いは上記の保守的解釈（10上限は保持・説得は元系統精神のみ）。別系統適用と説得/スタンの組み合わせに固有ルールがあれば要追補。
+- 実機確認待ち（CLAUDE.md §2.1）。
