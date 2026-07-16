@@ -2565,3 +2565,29 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 - 別系統として適用したときのスタン10上限・説得の扱いは上記の保守的解釈（10上限は保持・説得は元系統精神のみ）。別系統適用と説得/スタンの組み合わせに固有ルールがあれば要追補。
 - 実機確認待ち（CLAUDE.md §2.1）。
+
+### ダメージ算出の是正（防御力・受け値を算出で確定）＋カバー（フェーズ12 補）
+
+**日付**: 2026-07-16
+**関連実装**: `damage-flow.mjs`（`targetPlannedPreview` を防御力/受け値に分離・`renderDamageCard` の行を最終ダメージ表示＋カバー表示/クリック・`openMitigationDialog` を縮小＝防御力/受け値固定＋手動軽減/社会報酬点のみ・`handleCoveringClick`/`completeCoveringFromCheck` 新設）、`usage.mjs`（`covering` フラグ）、`usage-sheet.hbs`＋`tnx-usage-sheet.mjs`（カバー トグル＋保存）、`tnx-check-flow.mjs`（`covering` クリック待ち種別＋完了ディスパッチ）、`tnx-character-sheet-base.mjs`（`_activateItemCheck` にカバー待ち受け分岐＋再入時の用途プリセレクト）、`css/tnx2.css`。正本 [Damage_Rules.md](../01_Wiki/Game_Rules/Damage_Rules.md)「算出の適用順序（表示）」「カバー」。
+**ステータス**: ✅ 実装完了（全 1286 テスト green・eslint/stylelint 0 error）・実機確認待ち
+
+#### ルール解釈（メカニクス監査・2026-07-16 ユーザー確定）
+
+- **防御力・受け値は「ダメージ算出」の一部**（勘違いの是正）。よってダメージカードの各キャラ行は**軽減後の最終ダメージ**を表示する。攻撃側合計はレジャーに残す（攻撃側の事後増強のため）。適用ダイアログは縮小＝防御力/受け値は自動・固定、入力は手動の状況軽減＋社会の報酬点のみ。「ダメージ軽減技能」（`modifyDamage`）の事後修正は別系統で従来どおり有効（攻撃側合計クリック）。
+- **カバー**: ダメージ算出の直前に他者への予定ダメージを自身へ付け替える。**1体分のみ**（複数対象でも1体を選ぶ・全対象集約は別能力＝作らない）。**カバーした側が元々対象なら2ダメージが別々に入る**（自分の分＝自分のリアクション/受け値あり、カバーした分＝受け値なし）。**判定が要る**が目標値「なし」運用が多い＝スート一致で成功（固有ロジック無し）。**軽減はカバーした側自身の防御力で算出・受け値は参照しない**（自分でリアクションしていないため）。常に選べる（用途フラグを持つ技能）。「カバーリング」は固有技能名なので行動名は「カバー」（UI に「かばう者/かばう人」を出さない＝[[feedback_no_dev_terms_in_ui]]）。
+
+#### 実装
+
+- 起動＝カバー技能をアイテムロール → `_activateItemCheck` の `covering` 分岐で **`startAchievementAction("covering")`** の待ち受け（消費はここではせず、判定起動時に一度だけ）→ ダメージカードの命中対象行クリック（`handleCoveringClick`）→ **`_activateItemCheck(coverer, skill, {covering:{damageMessageId,targetIndex,usageId}})` で再入**（`extraOpen.covering` があれば待ち受け分岐を通さず通常判定・用途は usageId でプリセレクト）→ 判定完了（`_execute`）で `completeCoveringFromCheck`。成功＝`!fumble && !suitMismatch && success!==false`（目標値なしは success=null）。
+- 付け替え＝元対象に `coveredBy`（apply でスキップ・表示は「「◯」がカバー（ダメージなし）」）、`targets` にカバー行を push（`uuid`=カバーした側・`parryGuard:0`・`coveringFor`=元対象名）。カバーした側の防御力は `targetPlannedPreview`/`openMitigationDialog` が `uuid` から解決するため自動でカバー側基準。非作者は `emitDamageUpdate` で GM 委譲。
+- カバーした側＝クリックしたユーザーの割り当てキャラ（アイテムロール元＝`_activateItemCheck` の actor）。リアクターの `resolveReactor` とは別（カバーはシート起動なので actor がそのまま実行者）。
+
+#### 監査結果 ✅
+
+- ルール解釈は 2026-07-16 のユーザー確定に一致。二重ダメージ（自分の分＝受け値あり／カバー分＝受け値なし）は、カバー行を parryGuard:0 の別エントリにし、元の対象エントリ（受け値あり）を残すことで別々に適用される（per-target 土台の自然な帰結）。
+
+#### 課題・申し送り
+
+- カバーの判定は通常の結果カードも出す（カバーの旨は結果カードには明示していない＝通知＋ダメージカードの付け替え表示で担保）。カバー結果カードの再判定は付け替えを再実行しない（`_buildRecheckContext` に covering を含めない＝表示のみ）。
+- 実機確認待ち（CLAUDE.md §2.1・特に「カバー技能をアイテムロール→対象クリック→判定→付け替え」「防御力・受け値がカードの各行に出る」「適用ダイアログが手動/報酬点のみに縮小」の一連）。
