@@ -31,7 +31,7 @@
 |---|---|---|---|
 | **恒常（適用パス）** | キャラ値・アイテム値 | prepareDerivedData で base→total を出した後、アクターの適用パスが total を改変 | `system.` |
 | **判定時（check）** | 判定の達成値・制御値への加算 | 判定実行時にエフェクト単位で評価 | `check.` / `controlCheck.` |
-| **ダメージ時（damage.*）** | 与えるダメージへの加算（無条件 `damage.dealt`・対象依存 `damage.vs*`） | ダメージ算出時に攻撃の系統/攻撃対象で照合し評価（2026-07-10〜11） | `damage.dealt` / `damage.vsStyle.` / `damage.vsWorks.` |
+| **ダメージ時（damage.*）** | 与えるダメージへの加算（攻撃側・無条件 `damage.dealt`・対象依存 `damage.vs*`）＋**受けるダメージへの加算（対象側・負=軽減・`damage.taken`/`damage.from*`）** | ダメージ算出時に攻撃の系統/攻撃対象/攻撃者で照合し評価（2026-07-10〜11・taken 系=2026-07-17） | `damage.dealt` / `damage.vsStyle.` / `damage.vsWorks.` / `damage.taken` / `damage.fromStyle.` / `damage.fromWorks.` |
 | **無視ゲート（ignore.*・対象自己）** | **自分が受けているコンディションの効果**（数値ペナルティ・行動制限の両方）を消費段階で**抑止**（加算でなく除外） | 各効果の消費時（判定/派生値/将来の戦闘・時間）に評価。タグ・BS・負傷は残す | `ignore.` |
 
 - 後三者（判定時・ダメージ時・無視ゲート）は**実行時評価の別系統**で、恒常の適用パス（`_applyEffectBuffs`）からは除外する。恒常はシート値へ焼き込むため「攻撃対象」を知らない＝対象依存を表せないのに対し、実行時系統はアクションが対象を確定した瞬間に評価するため対象を見られる。無視ゲートは「対象自己」＝自分が受けている状態の効果を、その効果が読まれる各消費点で除外する（§2.11）。
@@ -187,7 +187,7 @@
 
 ### 2.8 ダメージバフ（ダメージ時・`damage.*`・この表が全数・2026-07-10〜12）
 
-ダメージ算出時に攻撃者の effects から集計してフラット加算する（判定バフと同じ実行時評価の別系統）。※`damage.replaceTag`/`damage.addTag` のみ**対象（ダメージを受ける側）の effects** をチャート適用時に評価する。
+ダメージ算出時に攻撃者の effects から集計してフラット加算する（判定バフと同じ実行時評価の別系統）。※**対象（ダメージを受ける側）の effects を評価するもの**が2群ある: `damage.replaceTag`/`damage.addTag`（チャート適用時）と、**受けるダメージ軽減の `damage.taken`/`damage.fromStyle`/`damage.fromWorks`（ダメージ算出時・2026-07-17）**。
 
 | キー | 対象 |
 |---|---|
@@ -195,12 +195,22 @@
 | `damage.dealt.<physical\|mental\|social>` | その系統の攻撃の与えるダメージ +値 |
 | `damage.vsStyle.<スタイル識別キー>` | 攻撃対象がそのスタイル（`type:"style"` アイテム）を持つとき +値 |
 | `damage.vsWorks.<組織識別キー>` | 攻撃対象がそのワークス（ワークス技能の組織）を持つとき +値 |
+| `damage.taken` | **受けるダメージ +値（対象側・2026-07-17）**: 値は受けるダメージへの加算＝**負で軽減**・正で増加（`dealt` と対称の符号規約）。**恒久軽減**としてダメージ算出時＝防御力・受け値と同段（スタン/説得の 10 上限の**前**）に効く。X 種別にも効く（X が無視するのは対応防御力のみ）。派生ダメージには効かない（軽減不可）。「別のダメージとして適用」でも元系統で照合 |
+| `damage.taken.<physical\|mental\|social>` | その系統のダメージを受けるとき +値 |
+| `damage.taken.<S\|P\|I\|X>` | その**ダメージ種別**（肉体のみ）のダメージを受けるとき +値（種別セレクタは肉体を含意・精神/社会には合致しない） |
+| `damage.fromStyle.<スタイル識別キー>` | **攻撃者**がそのスタイル（`type:"style"` アイテム）を持つとき、受けるダメージ +値（`vsStyle` の対称） |
+| `damage.fromWorks.<組織識別キー>` | **攻撃者**がそのワークス（ワークス技能の組織）を持つとき、受けるダメージ +値（`vsWorks` の対称） |
 | `damage.replaceTag.<元タグ>` | **ダメージタグ改変（対象側・2026-07-12）**: チャート適用時、元タグを値のタグへ**置換**（例 `damage.replaceTag.stupor`＝`dominated`＝昏睡→支配）。値=CONDITION_KINDS のタグキー（一覧は [Conditions.md](Conditions.md)） |
 | `damage.addTag.<元タグ>` | 同・元タグ付与時に値のタグを**追加**（例 `damage.addTag.erased`＝`dominated`＝抹殺に支配を追加）。追加分は同じ負傷に紐づく |
 
 - `parseEffectTargetKey` は `{scope:"damageVs", group:"style"|"works", selector:<キー>}` を返す。**恒常適用パスからは除外**（対象が見えないため焼き込めない）。
 - ダメージフロー（`damage-flow.mjs` `openDamageRollDialog` → `collectDamageVsBonuses`）が攻撃対象を解決し、対象の style/works と `gatherDamageVsSources`（`collectActorEffectBuffs` で集めた攻撃者の effects）で照合。合致分を用途のダメージ修正と同じ台帳行（供給元＝効果名）としてダメージへ合算する。
 - 値は**リテラル**（判定バフと同じ）。重複規約も判定バフと同一（identity 単位で最大1回・stackable はスタック）＝`_gatherBonusSources` を判定バフと共用。
+- **taken 系（受けるダメージ軽減・2026-07-17）の固有規約**:
+  - `parseEffectTargetKey` は `{scope:"damageTaken", category, damageType}` / `{scope:"damageFrom", group, selector}` を返す。恒常適用パスからは除外（他の実行時系統と同じ）。
+  - 重複規約の「最も有利な値」は**受け手基準＝最小値**（最も負＝最も軽減。`gatherDamageTakenSources` が `_gatherBonusSources` の pick=min で集計）。**taken と from\* を1回の走査で束ねる**ため、同一効果に両キーを併記しても1回だけ効く（※攻撃側の `dealt` と `vs*` は別走査＝併記で二重加算になりうる既存挙動。要裁定の申し送り→ [Audit_and_Review](../../02_System/Audit_and_Review.md)）。
+  - 集計はダメージフローが**対象ごと**に評価（対象行プレビュー `targetPlannedPreview`・適用ダイアログ→ `collectDamageTakenRows`。攻撃者は `attackerUuid` から解決して from\* を照合）。攻撃側 `vs*` のような「先頭命中対象で近似」は生じない。内訳は対象行・適用ダイアログ「軽減（算出済み）」・適用済み表示に効果名で帰属（符号つき）。
+  - AE 設定シートのキー候補（datalist）に `damage.dealt`/`damage.taken` の固定キーを載せる（識別キーを取る `vs*`/`from*` は候補外）。
 
 ### 2.9 モード・値
 
