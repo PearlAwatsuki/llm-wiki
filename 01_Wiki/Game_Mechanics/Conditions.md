@@ -185,3 +185,59 @@ BS・戦闘不能・負傷を除去する回復・治療系スタイル技能の
 - **表示**: 無視中の BS はバッヂを残しつつ取り消し線＋淡色、tooltip に供給元名（ignore を与えた効果名）。トークンのステータスアイコンは対象外（ユーザー確定）。
 - **手動オーバーライド（卓ツール・2026-07-16 ユーザー確定）**: ルール由来の AE とは別に、RL／プレイヤーが**個別インスタンスの効果をその場で止める**。BS バッヂのコンテキストメニュー「効果を無視する／無視を解除する」で `flags…manuallyIgnored` をトグル（可否ゲートなし・いつでも）。`ignore.*` と同じ `effectIgnored` に合流し、消費側の抑止・取り消し線を共有（tooltip は「手動で無視中」）。位置づけは「手動ダメージ修正」など既存の"卓の最終裁定"ツールと同じ＝ゲームルールそのものではない。
 - AE キー（`ignore.all`／`ignore.bs`[`.<kind>`]／`ignore.damage`[`.<系統>`]）と実装詳細は [Active_Effects.md](Active_Effects.md)「無視ゲート」。純関数 `ignoreRuleMatches`／`gatherIgnoreRules`／`getEffectiveConditions`（`conditions.mjs`・テスト付き）。
+
+
+## 負傷そのものの直接効果（特定技能ペナルティ／使用不可／報酬点不可・2026-07-16 ユーザー確定）
+
+一部のダメージ（負傷）は BS へのカスケードではなく、**負傷そのもの**が効果を課す（ユーザー確定「負傷そのものに効果を持たせる。そうでなければ意味がない」）。従来「負傷は直接効果を持たず inflicts/notes で表す」とした前提を、この 7 負傷について更新する。効果は damage-chart の負傷 def に直接持たせ、`readConditions` の実効行から消費点が読む。
+
+### 対象と効果（3メカニクス）
+
+| 負傷 | ① 数値 −5 | ② 技能使用不可 | ③ 報酬点不可 | 持続 |
+|---|---|---|---|---|
+| 眼部損傷 phys-14 | 〈知覚=perception〉 | — | — | 治療まで |
+| 口座凍結 soc-13 | — | 〈信用=stature〉固定 | ○ | 治療まで |
+| 造反 soc-14 | — | 〈社会〉選択 | — | 治療まで |
+| 人脈消失 soc-15 | — | 〈コネ〉選択 | — | 治療まで |
+| 信用失墜 soc-6 | — | 〈信用=stature〉固定 | ○ | 次シーン（休眠） |
+| スキャンダル soc-7 | — | 〈社会〉選択 | — | 次シーン（休眠） |
+| 信頼喪失 soc-8 | — | 〈コネ〉選択 | — | 次シーン（休眠） |
+
+- **「使用」＝判定**（組み合わせ参加技能も含む・ユーザー確定）。②は判定に参加する技能（ベース＋組み合わせ）の識別キーで照合。
+- **使用不可は判定起動時にブロック**（警告を出して判定を開かない。**2026-07-16 改訂**＝当初「警告のみ・判定続行」としたが、重圧が「カードを消費できず完全ブロック」なのに合わせ、ユーザー裁定で完全ブロックへ変更）。照合は `gatherSkillUseWarnings`（重圧の能力値ブロック `getCheckBlock` とは別関数だが、起動ブロックの体裁は共通）。
+- **技能の識別は識別キー**で行う（名前照合しない）。固定（知覚/信用）は def にキーをハードコード（判定ロジックの構造的最小限＝§4.1 許容）、選択（社会/コネ）は付与時にユーザーが選び `targetSkill`（識別キー）に確定。
+
+### データ構造
+
+- 負傷 def（`damage-chart.mjs`）: `skillPenalty:{skillKey,value}` ／ `skillBlock:{skillKey}` or `{category:"society"|"contact"}` ／ `bountyBlock:true` ／ `sceneDeferred:true`。
+- condition インスタンスフラグ（`flags…conditions[<kind>]`）: `targetSkill`（選択結果の識別キー）・`pendingScene`（次シーン発火の休眠）。`readConditions` が両者を読む。
+
+### 消費点（既存注入点を流用）
+
+- ① `gatherConditionCheckSources`（達成値 −value・上方判定のみ・酩酊と同経路＝チャート内訳に自動表示）。ctx に参加技能識別キー `skillKeys`（`ctx.skillIds`→`identificationKey`）を渡す。
+- ② `TnxCheckFlow.open` の `_activationBlockReason` が `gatherSkillUseWarnings` を参照し、該当すれば**警告＋起動中止（判定を開かない）**。
+- ③ `hasBountyBlock`（`_onStartSkillCheck` の `bountyAvailable` を 0 に落とす＝消費ダイアログ自体をスキップ）。
+- いずれも `active` かつ `!pendingScene`（休眠除外）。`effectIgnored`（無視ゲート）は入力側 `getEffectiveConditions` 経由で既に除外。
+
+### 重圧の起動ブロック是正（2026-07-16 ユーザー指摘の修正）
+
+重圧（対象能力値の上方判定不可）は従来カードプレイ時（`_execute` の `getCheckBlock`）でしかブロックせず、**能力値判定の起動まではできてしまう**のが誤り。是正:
+
+- **能力値判定**は起動時にブロック。`_activationBlockReason` が `type==="abilityCheck"` かつ対象能力値が重圧なら起動中止。さらにシートで**対象能力値をクリック不可**（`_getAbilitiesData` の `checkBlocked`＝`getCheckBlock`／`tab-abilities.hbs` で `check-blocked` 淡色表示・`data-action` 除去）。制御判定トリガーは残す（重圧は制御可）。
+- **技能判定**の重圧は、使うスート＝能力値が**カードで決まる**ため従来どおりカードプレイ時（`_execute`）でブロック（起動時には確定できない）。
+
+### 判定修正のマイナス表記是正（2026-07-16）
+
+判定ボーナス／内訳の値をテンプレートで `+{{value}}` とハードコードしていたため、負値が `+-5` になっていた（酩酊 −2・眼部損傷 −5 等）。Handlebars ヘルパー `signed`（負値は `-n`・0以上は `+n`）を新設し、`check-result.hbs` の合計・各内訳（`checkBonus`／各 source `value`）に適用。
+
+### 選択（社会/コネ「ひとつ」）と休眠
+
+- **選択タイミング＝付与時**（ユーザー確定）。**付与経路を問わない `createActiveEffect` フック**（`promptWoundSkillSelection`・衰弱/重圧のドロー受付と同じ場所）で、対象の所持技能から該当プレフィックス（`society_`/`contact_`）の一般技能を候補にダイアログ提示 → `targetSkill`（識別キー）を `setFlag`。**付与ユーザー＝対象の所有者/GM**（フック `userId` 一致）の画面で選ぶ。候補ゼロは通知して選択なし（負傷自体は付与される）。
+  - **2026-07-16 是正**: 当初 `applyDamageChartResult`（ダメージ適用経路のみ）に置いたため、トークンのステータス効果トグル等では選択ダイアログが出なかった。ドロー（衰弱/重圧）が経路を問わず出るのに合わせ、フックへ移設。
+- **次シーンものは ignore と別方法で off**（ユーザー確定）: 休眠 `pendingScene` は `readConditions` が **`def.sceneDeferred` から導出**（`sceneFired` が立つまで true）。付与時のフラグ設定に依存しない＝**付与経路を問わず自動で休眠**（同上の是正）。消費点は `pendingScene` を除外＝発火まで効果 off。発火（シーン境界＝`sceneFired` を立てる）は **13/15 申し送り**。`effectIgnored`（無視ゲート）とは別フラグ・別意味論（無視＝取り消し線／休眠＝未発火）。
+
+### 申し送り
+
+- 次シーン発火（`pendingScene` の解除）＝シーン進行 13／時間管理 15。
+- 報酬点は技能判定と同時消費のみ（[Bounty_Points.md](../Game_Rules/Bounty_Points.md)）＝判定時ゲートで足りる（他経路なし）。
+- 実機確認待ち（CLAUDE.md §2.1）。正本: [Damage_Rules.md](../Game_Rules/Damage_Rules.md) 各負傷。

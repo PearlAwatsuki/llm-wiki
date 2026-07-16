@@ -2579,8 +2579,9 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 #### 実装
 
-- 起動＝カバー技能をアイテムロール → `_activateItemCheck` の `covering` 分岐で **`startAchievementAction("covering")`** の待ち受け（消費はここではせず、判定起動時に一度だけ）→ ダメージカードの命中対象行クリック（`handleCoveringClick`）→ **`_activateItemCheck(coverer, skill, {covering:{damageMessageId,targetIndex,usageId}})` で再入**（`extraOpen.covering` があれば待ち受け分岐を通さず通常判定・用途は usageId でプリセレクト）→ 判定完了（`_execute`）で `completeCoveringFromCheck`。成功＝`!fumble && !suitMismatch && success!==false`（目標値なしは success=null）。
-- 付け替え＝元対象に `coveredBy`（apply でスキップ・表示は「「◯」がカバー（ダメージなし）」）、`targets` にカバー行を push（`uuid`=カバーした側・`parryGuard:0`・`coveringFor`=元対象名）。カバーした側の防御力は `targetPlannedPreview`/`openMitigationDialog` が `uuid` から解決するため自動でカバー側基準。非作者は `emitDamageUpdate` で GM 委譲。
+- **アクセスは攻撃カード**（ダメージ算出の直前＝ダメージカードを出す前）。当初ダメージカードにトリガーを置いたが、「ダメージカードが出た時点で算出は始まっている＝『直前』でなく『算出後』」で時制矛盾とユーザー指摘 → 攻撃カードへ移設。
+- 起動＝カバー技能をアイテムロール → `_activateItemCheck` の `covering` 分岐で **`startAchievementAction("covering")`** の待ち受け（消費はここではせず、判定起動時に一度だけ）→ **攻撃カードの命中対象行クリック**（`handleCoveringClick`・`attack-flow`・`!damageRolled` かつ `state==="hit"` かつ未カバーのみ）→ **`_activateItemCheck(coverer, skill, {covering:{attackMessageId,targetIndex,usageId}})` で再入**（`extraOpen.covering` があれば待ち受け分岐を通さず通常判定・用途は usageId でプリセレクト）→ 判定完了（`_execute`）で `completeCoveringFromCheck`（`attack-flow`）。成功＝`!fumble && !suitMismatch && success!==false`（目標値なしは success=null）。
+- 成功＝攻撃カードの対象に **`coveredBy:{uuid,name}`** を付ける（`applyAttackTargetPatch`・非作者は `emitAttackUpdate` で GM 委譲）。攻撃カードは「「◯」がカバー」表示。**ダメージカード生成時（`buildDamageTargets`）に展開**＝元対象（被弾なし・`coveredBy` 保持で apply スキップ・表示）＋カバー行（`uuid`=カバーした側・`parryGuard:0`・`coveringFor`）。カバーした側が元々命中対象なら自分の行（受け値あり）は別に残る＝2ダメージ別々。カバー側の防御力は `targetPlannedPreview`/`openMitigationDialog` が `uuid` から解決＝自動でカバー側基準。
 - カバーした側＝クリックしたユーザーの割り当てキャラ（アイテムロール元＝`_activateItemCheck` の actor）。リアクターの `resolveReactor` とは別（カバーはシート起動なので actor がそのまま実行者）。
 
 #### 監査結果 ✅
@@ -2591,6 +2592,19 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 - カバーの判定は通常の結果カードも出す（カバーの旨は結果カードには明示していない＝通知＋ダメージカードの付け替え表示で担保）。カバー結果カードの再判定は付け替えを再実行しない（`_buildRecheckContext` に covering を含めない＝表示のみ）。
 - 実機確認待ち（CLAUDE.md §2.1・特に「カバー技能をアイテムロール→対象クリック→判定→付け替え」「防御力・受け値がカードの各行に出る」「適用ダイアログが手動/報酬点のみに縮小」の一連）。
+
+#### 追補（2026-07-16 ユーザー指摘：防御力の合算源＝戦闘タブの合計に一本化）
+
+Part A で防御力が各キャラ行の最終ダメージに載るようになった結果、「適切な防御力が引かれていない」とユーザー指摘。原因＝ダメージ算出の `aggregateDefence` は **armor/cyborg のみ**を合算しており、**搭乗中ヴィークルの防御力が抜けていた**（一方 戦闘タブの合計 `combatDefenceTotal` は armor/cyborg/**vehicle** を合算＝両者が乖離していた・[[feedback_trace_data_path_before_presentation]]）。ユーザー確定「適用されるべき防御力は戦闘タブに表示されている全防御力の合計」。→ ①`aggregateDefence` に **vehicle** を追加（`usable` 判定・`S_total??S_defence` の読みは元々同一なので、これで戦闘タブ合計と一致）。②**シートの `combatDefenceTotal` をインライン計算から `aggregateDefence(items)` 呼び出しに一本化**（同じ合算を2箇所で持たない＝将来の乖離防止）。Part A/カバーの軽減はこの `aggregateDefence` を通るため両方が是正される。テスト追加（ヴィークル防御力の合算）。全 1321 テスト green。**実機確認待ち**。
+
+#### 追補（2026-07-16 ユーザー指摘：表示のはみ出し・冗長の撤廃／[[feedback_self_review_ui_output]] 起票）
+
+実機で①カバーの各サブ行に長い接頭辞（「A（Bをカバー）:」）を繰り返し**はみ出し切れ**、②`.cr-tn`（`white-space:nowrap`）継承で注記が折り返せず切れる、③「対象2体」（カバーで受け手が付け替わった対象を数えていた）、④無意味な「」・「（リアクションしない）」等の冗長、を一括指摘（「UI設計はこの種の無駄が多すぎる／実機確認を都度は不可能／自分で見つけて全部直せ」）。是正:
+- **対象ごとに見出し（名前）は1回**＝軽減内訳は名前を繰り返さない小注記に畳む（`.tnx-damage-sub`＝`white-space:normal`+`overflow-wrap:anywhere`。`cr-tn` は nowrap のため使わない）。
+- **カバーの二重表示を解消**＝`buildDamageTargets` はカバーされた元対象をダメージカードに**載せない**（カバーした側の行だけ）。ダメージカードは被弾者のみ＝「対象N体」も正しい。被弾しない事実は攻撃カードの「〜がカバー」で分かる。
+- **リアクションしない**＝「制御値」と成否だけ（「（リアクションしない）」を繰り返さない）。カード解決の実行者名は**肩代わり（reactor≠target）時のみ**添える。verdict は「被弾」（「（攻撃命中）」を削る）。
+- **無意味な「」を撤廃**（カバー行/注記/攻撃カードのカバー表記の入れ子「」を除去）。**ただし ・区切りの対象一覧は「」を残す**（名前が ・ を含む場合の区切り＝以前のユーザー要望）。
+- 全 1321 テスト green・eslint/stylelint 0 error。**実機確認待ち**。
 
 ### コンディション効果の無視ゲート（`ignore.*`・フェーズ12）
 
@@ -2618,3 +2632,34 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 - **消費点の網羅はフェーズ13 依存**: 恐慌（リアクション不可）・捕縛（武器不可）・狼狽（ムーブ不可）・戦闘不能（メインプロセス不可）・邪毒（継続ダメージ）の効果は 13 で消費点が実装される＝そのとき `getEffectiveConditions` 経由で書けば自動でゲートされる（据え置き＝先送りでなく設計上の依存）。
 - 実機確認待ち（CLAUDE.md §2.1・特に「`ignore.bs` 付与で酩酊/衰弱等の数値が効かなくなる」「`ignore.damage.physical` で肉体由来 BS のみ無視」「バッヂは残り取り消し線が出る」）。
+
+### 負傷そのものの直接効果（特定技能ペナルティ／使用不可／報酬点不可）
+
+**日付**: 2026-07-16
+**関連実装**: `damage-chart.mjs`（7 負傷 def に `skillPenalty`/`skillBlock`/`bountyBlock`/`sceneDeferred`・ヘッダ更新）、`conditions.mjs`（`gatherConditionCheckSources` に skillPenalty＋pendingScene 除外・新 `gatherSkillUseWarnings`/`hasBountyBlock`・`readConditions` に `targetSkill`/`pendingScene`）、`tnx-check-flow.mjs`（`skillKeys` を ctx へ・`open` の `_activationBlockReason` で②使用不可＋重圧・能力値判定を起動ブロック）、`tnx-character-sheet-base.mjs`（`bountyBlocked` で `bountyAvailable=0`・`_getAbilitiesData` の `checkBlocked` で重圧の能力値をクリック不可）、`condition-resolution.mjs`＋`tnx.mjs` フック（社会/コネ選択は `promptWoundSkillSelection` を **`createActiveEffect` フック**で実行＝付与経路を問わない・ドロー受付と同じ場所。休眠は `readConditions` が `def.sceneDeferred` から導出）、`tnx.mjs`＋`check-result.hbs`（`signed` ヘルパーでマイナス修正表記是正）、`tab-abilities.hbs`＋`css/tnx2.css`（`check-blocked` 表示）。正本 [Conditions.md](../01_Wiki/Game_Mechanics/Conditions.md)「負傷そのものの直接効果」。
+- **2026-07-16 是正（ユーザー指摘）**: 選択ダイアログ・休眠を当初 `applyDamageChartResult`（ダメージ適用経路のみ）に置いたため、トークンのステータス効果トグルでの付与で出なかった。ドロー（衰弱/重圧）が経路を問わないフックで走るのに合わせ、選択をフックへ移設・休眠は def 導出に変更（付与経路を問わず機能）。
+**ステータス**: ✅ 実装完了（全 1320 テスト green・eslint 0 error）・実機確認待ち
+
+#### ルール解釈（メカニクス監査・2026-07-16 ユーザー確定）
+
+- 対象 7 負傷（眼部損傷／口座凍結／造反／人脈消失／信用失墜／スキャンダル／信頼喪失）は BS カスケードでなく**負傷そのもの**が効果を課す（ユーザー確定「負傷そのものに効果を持たせる。そうでなければ意味がない」）。
+- 「技能の使用」＝**判定**であり、**組み合わせ参加技能**もその対象。使用不可は**判定起動時に警告＋ブロック**（**2026-07-16 改訂**＝当初「警告のみ・続行」→重圧が完全ブロックなのに合わせてブロックへ。ユーザー指摘）。
+- **重圧の是正（同日ユーザー指摘）**: 能力値判定は起動自体を不可に（対応能力値をクリック不可）。技能判定の重圧はスート＝能力値がカードで決まるためカードプレイ時ブロックのまま。
+- **表示是正（同日）**: 判定修正のマイナス値が `+-n` になる不具合＝`signed` ヘルパーで `-n` に。
+- **どの〈社会〉〈コネ〉が使用不可になるかは付与時にユーザーが決定**。候補は対象所持の該当技能を**識別キーのプレフィックス**（`society_`/`contact_`）で絞る。
+- 次シーンものは既存 ignore とは**別方法で off**（休眠）にし、発火（次シーン）は据え置き。報酬点は使用不可の間、消費ダイアログ自体をスキップ（「消費できないのにダイアログが出るのはおかしい」）。
+
+#### 監査結果 ✅
+
+- 「特定技能」の識別を**識別キー**で行い名前照合しない（当初のユーザー懸念＝技能名識別への回答）。知覚=`perception`／信用=`stature` は compendium 実値を確認して確定（推測せず）。
+- 3 メカニクス（数値ペナルティ／使用不可警告／報酬点スキップ）を着地点ごとに分離し、既存注入点（`gatherConditionCheckSources`・判定開始警告・`bountyAvailable`）へ最小結合。休眠は消費点の純関数除外で表現し ignore（無視＝取り消し線）と混同しない。
+
+#### 設計レビュー
+
+- 純関数（skillPenalty 照合／`gatherSkillUseWarnings`／`hasBountyBlock`／`readConditions` 拡張／pendingScene 除外）は TDD（RED→GREEN）でテスト先行・実キー非依存（任意キーで検証）。負傷 def→CONDITION_KINDS のガードテストで typo と配線を固定。
+- 社会/コネ選択が**同期ダイアログ**でよいのは damage-flow の不変条件「適用者＝対象の所有者（または GM）」による（権限委譲不要）。この前提が崩れる呼び出し元が増えたら委譲が必要＝要再検討。
+
+#### 課題・申し送り
+
+- 次シーン発火（`pendingScene` 解除）＝シーン進行 13／時間管理 15。
+- 実機確認待ち（CLAUDE.md §2.1・特に「〈知覚〉判定でチャート内訳に眼部損傷 −5 が **-5** 表記で出る」「使用不可技能の判定は起動時に警告＋ブロック（開かない）」「重圧の能力値がクリック不可・能力値判定が起動しない（制御判定は可）」「口座凍結中は報酬点ダイアログが出ない」「造反付与時に社会選択ダイアログが出る」「信用失墜など次シーンものは付与直後は効果 off・バッヂのみ」）。
