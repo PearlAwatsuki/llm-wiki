@@ -3295,3 +3295,26 @@ armor / cyborg / tap / vehicle / ianus / weapon / housing-area / residence)、
 
 - ⚠️ 攻撃の再判定は新しい攻撃カードを出す＝旧カードは pending のまま残る（卓運用）。
 - ⚠️ `startRecheck` はワールドアクター前提（`game.actors.get`）。合成アクターの再判定はフェーズ13 のトラッカー文脈（リアクションと同じ制限）。
+
+
+### コンディション効果の無視ゲート（`ignore.*`）（フェーズ12 補）
+
+**日付**: 2026-07-16
+**レビュー対象**: `conditions.mjs`（`getEffectiveConditions`＝正規アクセサ・`ignoreRuleMatches`/`gatherIgnoreRules`）、`helpers.mjs`（`parseEffectTargetKey`）、`tnx-check-flow.mjs`／`character-base.mjs`（消費点）、`tnx-character-sheet-base.mjs`／`bad-status-list.hbs`／`css`／`tnx.mjs`
+**ステータス**: レビュー済(問題なし)・本体未コミット（実機確認待ち）
+
+#### 設計判断（ユーザーとの対話で確定）
+
+- **「効果が各所で個別に読まれる」設計は据え置きが妥当**: コンディションの効果は異種サブシステムに異なる時点で着地する（達成値＝判定時・制御値/部位＝派生値算出時・恐慌/邪毒＝13）。文脈依存の実行時効果（萎縮＝対象次第・重圧＝能力値次第）は事前計算できないため、値バフのような単一パイプラインには畳めない。無理な統一より個別読みが妥当と判断。
+- **堅牢性は「どこで適用するか（分散・据え置き）」と「無視されるか（中央化）」の分離で確保**: 前者は各消費点のまま、後者を**単一の正規アクセサ `getEffectiveConditions` に中央化**。各行に `effectIgnored` を付与し、消費側は尊重するだけ。将来コンディションに実効果を足す＝新消費点をアクセサ経由で書けば ignore が自動で効く。担保レベルは `readFlag`/`AE_FLAG_PARAMS` と同じ「必ず経由＋追加時 grep 全数掃引」（TNX にコンディション→効果の単一パイプラインが無いため物理的バイパス不能にはできない＝規約で担保）。
+
+#### 良かった点
+
+- **既存前例の踏襲**: 照合は回復対象の `recoveryKindMatches` と同じ group/kind の考え方。キーは `check.suitChange` と同じ値不要マーカー。パーサ（`parseEffectTargetKey`）・実行時系統の除外（`_applyEffectBuffs` から外す）も既存系統に揃えた。
+- **純ロジックの分離**: `ignoreRuleMatches`/`gatherIgnoreRules` は Foundry 非依存でテスト可（`getEffectiveConditions` は最小モックアクターで woundSource 解決までテスト）。
+- **`gatherPartSlotMods` の入力を actor→実効コンディション行に変更**して、部位スロットもアクセサ経由に一本化（無視が部位にも効く）。
+
+#### 留意点
+
+- ⚠️ `getEffectiveConditions` は prepareDerivedData で 2 回（制御値・部位）呼ばれる＝毎 derive の軽い重複。必要になれば 1 回に集約（現状 YAGNI）。
+- ⚠️ 消費点の網羅はフェーズ13 依存（恐慌/捕縛/狼狽/戦闘不能/邪毒）。実装時にアクセサ経由を守ること。

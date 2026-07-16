@@ -2591,3 +2591,30 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 - カバーの判定は通常の結果カードも出す（カバーの旨は結果カードには明示していない＝通知＋ダメージカードの付け替え表示で担保）。カバー結果カードの再判定は付け替えを再実行しない（`_buildRecheckContext` に covering を含めない＝表示のみ）。
 - 実機確認待ち（CLAUDE.md §2.1・特に「カバー技能をアイテムロール→対象クリック→判定→付け替え」「防御力・受け値がカードの各行に出る」「適用ダイアログが手動/報酬点のみに縮小」の一連）。
+
+### コンディション効果の無視ゲート（`ignore.*`・フェーズ12）
+
+**日付**: 2026-07-16
+**関連実装**: `helpers.mjs`（`parseEffectTargetKey` に `scope:"ignore"` 分岐）、`conditions.mjs`（`ignoreRuleMatches`/`gatherIgnoreRules`/`getEffectiveConditions`＝正規アクセサ・手動フラグ合流・`gatherPartSlotMods` を実効コンディション入力へ変更）、`tnx-check-flow.mjs`（`_gatherConditions` をアクセサ経由の非無視のみに）、`character-base.mjs`（制御値ペナルティ・部位スロットをアクセサ経由に）、`tnx-character-sheet-base.mjs`＋`bad-status-list.hbs`＋`css/tnx2.css`（無視中 BS の取り消し線＋供給元 tooltip・**バッヂのコンテキストメニュー手動トグル**）、`tnx.mjs`（AE キー datalist に `ignore.*`）。正本 [Conditions.md](../01_Wiki/Game_Mechanics/Conditions.md)「効果の無視ゲート」／[Active_Effects.md](../01_Wiki/Game_Mechanics/Active_Effects.md)「無視ゲート」。
+**ステータス**: ✅ 実装完了（全 1303 テスト green・eslint/stylelint 0 error）・実機確認待ち
+
+#### ルール解釈（メカニクス監査・2026-07-16 ユーザー確定）
+
+- 「特定の（あるいは全ての）ダメージや BS の**効果を受けない**」効果の表現。**ダメージ・BS を防ぐ／消すのではなく**、自分が受けているコンディションが与える**具体的な効果（数値ペナルティ・行動制限の両方）を消費段階で無視**する。タグ・BS・負傷は残る（シートにバッヂも出る）。※過程で私（Code）が「行動制限」を BS と別軸に切り出したのは誤り＝重圧・恐慌・捕縛・狼狽も BS。数値/制限で軸を割らない。
+- **指定の粒度は個別・グループ・全ての全域**。「全〈系統〉ダメージの効果を受けない」で無視されるのは**その系統のダメージから生じた効果一式**（負傷自身の数値効果＋付随 BS＋付随戦闘不能）。※途中、ユーザー発言「ダメージ由来の BS」を「BS だけに限る」と誤って排除条件化した＝撤回済み（負傷自身の効果・戦闘不能も含む）。
+
+#### 実装
+
+- キー `ignore.all`／`ignore.bs`[`.<kind>`]／`ignore.damage`[`.<physical|mental|social>`]（マーカー・値不要）。照合 `ignoreRuleMatches`（all/group/kind/damage）。ダメージ由来系統は `woundCategory`（負傷自身）／`woundSource`→元負傷の `woundCategory` で辿る。
+- **正規アクセサ `getEffectiveConditions(actor)`** が各コンディション行に `effectIgnored`/`ignoredBy` を付与。**実効果を読む消費点は必ず本アクセサ経由**（`readFlag` と同じ「必ず経由」規約）。既存消費点＝達成値/電子妨害/重圧ブロック（check-flow）・制御値/部位（character-base）。将来の消費点（恐慌/捕縛/狼狽/戦闘不能/邪毒＝13）も同アクセサ経由で自動ゲート。
+- 表示＝無視中 BS の取り消し線＋供給元 tooltip。トークンのステータスアイコンは対象外（ユーザー確定）。
+- **手動オーバーライド（卓ツール・2026-07-16 ユーザー確定）**: BS バッヂのコンテキストメニュー「効果を無視する／無視を解除する」で `flags…manuallyIgnored` をトグル。`getEffectiveConditions` の**第2ソース**として `effectIgnored` に合流（`manuallyIgnored || ルール一致`）＝消費側の抑止・取り消し線を追加実装なしで共有（tooltip「手動で無視中」）。可否ゲートなし・いつでも（RL/プレイヤーの手動裁定）＝ゲームルールでなく既存の手動修正ツールと同性格。
+
+#### 監査結果 ✅
+
+- ルール解釈は 2026-07-16 のユーザー確定（消費段階の抑止・タグは残す・粒度は個別/グループ/全ての全域・ダメージ由来は一式）に一致。実行時系統（判定バフ/ダメージバフ）と同じく恒常適用パスからは除外。手動オーバーライドはルール由来 AE と同じ経路に合流させ二重実装を避けた。
+
+#### 課題・申し送り
+
+- **消費点の網羅はフェーズ13 依存**: 恐慌（リアクション不可）・捕縛（武器不可）・狼狽（ムーブ不可）・戦闘不能（メインプロセス不可）・邪毒（継続ダメージ）の効果は 13 で消費点が実装される＝そのとき `getEffectiveConditions` 経由で書けば自動でゲートされる（据え置き＝先送りでなく設計上の依存）。
+- 実機確認待ち（CLAUDE.md §2.1・特に「`ignore.bs` 付与で酩酊/衰弱等の数値が効かなくなる」「`ignore.damage.physical` で肉体由来 BS のみ無視」「バッヂは残り取り消し線が出る」）。
