@@ -223,8 +223,16 @@ BS・戦闘不能・負傷を除去する回復・治療系スタイル技能の
 
 重圧（対象能力値の上方判定不可）は従来カードプレイ時（`_execute` の `getCheckBlock`）でしかブロックせず、**能力値判定の起動まではできてしまう**のが誤り。是正:
 
-- **能力値判定**は起動時にブロック。`_activationBlockReason` が `type==="abilityCheck"` かつ対象能力値が重圧なら起動中止。さらにシートで**対象能力値をクリック不可**（`_getAbilitiesData` の `checkBlocked`＝`getCheckBlock`／`tab-abilities.hbs` で `check-blocked` 淡色表示・`data-action` 除去）。制御判定トリガーは残す（重圧は制御可）。
+- **能力値判定**は起動時にブロック。`_activationBlockReason` が `type==="abilityCheck"` かつ対象能力値が重圧なら起動中止。さらにシートで**対象能力値をグレーアウト＋クリック不能**（下記の共通ユーティリティ `applyTriggerDisable`）。制御判定トリガーは残す（重圧は制御可）。
 - **技能判定**の重圧は、使うスート＝能力値が**カードで決まる**ため従来どおりカードプレイ時（`_execute`）でブロック（起動時には確定できない）。
+
+### 使用不可トリガーのグレーアウト（共通ユーティリティ・2026-07-16 ユーザー要望で分離）
+
+「判定トリガーをグレーアウト＋クリック不能にする」機能を再利用可能な単体関数 `applyTriggerDisable(root, selector, evaluate)`（`scripts/module/ui-trigger-disable.mjs`・テスト付き）に分離。`_onRender` から呼び、`evaluate` が無効化理由を返した要素に共通クラス `.tnx-trigger-disabled`（淡色・not-allowed）を付け、`check-trigger`・`data-action` を外してクリック不能にする（tooltip に理由）。
+
+- **技能の使用不可**（造反/人脈消失/口座凍結 等の負傷）: `startSkillCheck` トリガーを、その技能の識別キーが `gatherSkillUseWarnings` に該当すればグレーアウト。複数テンプレート（tab-abilities×2・extra-sheet・tab-combat×3）に散在する技能トリガーを、レンダー後に一括処理（テンプレート個別条件を持たない）。
+- **重圧の能力値**: `startAbilityCheck` トリガーを `getCheckBlock` でグレーアウト（能力値と技能で同じ関数を共有＝「能力値と同様」の見た目に統一）。
+- 機能ブロックは別途 `_activationBlockReason`（open）で担保（グレーアウトは視覚的予告・二重の安全網）。
 
 ### 判定修正のマイナス表記是正（2026-07-16）
 
