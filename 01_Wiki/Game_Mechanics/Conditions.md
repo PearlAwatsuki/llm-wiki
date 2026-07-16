@@ -138,7 +138,7 @@ status id（`CONFIG.statusEffects`）が condition の一意性を担い、`cond
 - **ジョーカー**: 明記なし。ダイアログで (a) 引き直し / (b) 引いた本人がワイルドカードとして**スート＋数字を任意決定**、のいずれかを選べるようにする。
 - **山札が空**のケースは考慮しない。
 - ドローしたカードは**捨て札へ**（消費）。結果は `flags.tokyo-nova-axleration.conditions[<kind>]`（targetAbility ＋ 衰弱は magnitude）へ書き込み、**チャットに記録**（例「衰弱: ♥7 → 生命の制御値 −7」）。
-- **効果決定カードは1枚に一本化（2026-07-12 ユーザー指示）**: 「山札を引く」ボタンのカードと結果のカードを分けず、同一カードの状態領域を `conditionDraw` フラグからライブ描画する（未解決=ボタン／解決後=引いたカード+効果表示に置換。checkRequest・攻撃カードと同型）。結果には引いたカード（スート・数字・ワイルドカード指定）も明示。フラグ更新は非作者なら GM へ委譲（checkModify=自スコープフラグ限定の汎用パッチ委譲を流用）。
+- **効果決定カードは1枚に一本化（2026-07-12 ユーザー指示）**: 「山札を引く」ボタンのカードと結果のカードを分けず、同一カードの状態領域を `conditionDraw` フラグからライブ描画する（未解決=ボタン／解決後=引いたカード+効果表示に置換。checkRequest・攻撃カードと同型）。結果には引いたカード（スート・数字・ワイルドカード指定）も明示。フラグ更新は非作者なら GM へ委譲（`applyMessagePatch`=自スコープフラグ限定の汎用パッチ委譲。2026-07-16 に旧 checkModify/attackUpdate/damageUpdate/usageEffectApplied を messagePatch 1種へ一本化）。
 
 ### 実装メモ（既存インフラ）
 - 山札/捨て札: `TnxActionHandler.getActiveDeck()` / `getActiveDiscardPile()`。スート→能力値: `SUIT_TO_ABILITY`。数値: `getCardCheckValue`。
