@@ -203,7 +203,8 @@ actions: ArrayField(SchemaField({
 ## 使用回数の消費（2026-06-20）
 
 > **11-6 で消費先設定（consumeTargets）に一本化**: 本節の `planUsesConsumption`/`_consumeUses`（参加技能の自動スキャン）は**全廃済み**。全ての消費は用途の消費先設定からのみ発生する（`usage-consumption.mjs`＝`resolveConsumeRowsForActor`→`promptConsumption`→`applyConsumptionPlan`。判定用途は判定実行時・他の用途は使用時・クリック待ち系は発動確定時に適用）。
-> **消費先の種別**: `parent`（親アイテムの使用回数）／`itemUses`（アイテムの使用回数）／`miracleUses`（神業の使用回数）／**`actionRank`（AR・2026-07-12 ユーザー確定）**／**`ammo`（武器の残弾・2026-07-17。負値=回復＝リロード用途の表現）**。
+> **消費先の種別（2026-07-18 再編・本体 `f5292d8`）**: `{type:"item"|"actionRank", itemId, resource:"uses"|"ammo", amount}`。先頭は**「アイテム」「AR」の2択**。`type="item"` は `itemId` 空=**このアイテム自身**（用途の親）・値=同アクター内 Item ID、`resource`=「使用回数」（uses.spent。**神業も同じ uses に一本化**＝特例 `miracleUses` 廃止）/「残弾数」（武器の残弾）。UI は二段選択のブロック（tnx-combo-card 踏襲・資源は選択アイテムの能力で絞る）。旧 type（parent/itemUses/miracleUses/ammo/actionRank）は migrateData で item+resource へ移行。「親アイテム」表記は「このアイテム自身」へ。
+> **残弾（旧記述の訂正・2026-07-18）**: 「任意」モードは廃止（具体的残弾数の無い武器＝FA武器等は**残弾1**）。**残弾の消費・回復は自動では行わず用途の消費（resource="ammo"・負値=回復=リロード）からのみ**。FA ダメージ自動化は廃止＝FA 値は用途のダメージボーナス式で手動参照（本体 `221cc13`）。
 > **既定行の全廃（2026-07-17 ユーザー指示「そもそもいらない」）**: 旧・無条件の「親×1」既定行（11-6 の互換明示化）は全廃。新規用途・自動挿入・migrate のいずれも**既定は空**。「参加技能から自動入力」だけが、使用回数制限（isLimit）を持つ参加技能の行を敷く（親が制限を持つ場合のみ parent 行）。
 > **AR（actionRank）**: 実行アクターの AR（`actionRank.value`）を消費する。対象アイテム選択なし・消費量可変。**カット進行外は AR を消費できないため原則使用不可**（消費要求は進行外でも生きる・支払えない＝残量 0 扱いの原則ブロック。チェックを外せば卓裁定で実行可。**2026-07-12 ユーザー訂正**: Code 当初の「進行外は no-op」は旧パリー自動化の挙動の誤った一般化）。AR 不足も同じ原則ブロック。分身でも本体へ差し替えない（AR は実行アクター自身の戦闘リソース）。**パリー専用の AR>0 検証＋AR−1 自動化（startReaction 内）は廃止**——パリー技能の用途に「AR を消費」を設定して表す（AR 消費の一本化）。
 
@@ -236,11 +237,16 @@ CLAUDE.md §4.3 より:
 - `usage.mjs` のフィールド追加・改名は事前承認を得る
 - `usage-list.hbs`・`TnxUsageSheet` の構造変更は設計議論を経てから
 
-## miracle 連動（既存動作、改変禁止）
+## miracle 連動（2026-07-18 uses 一本化・本体 `f5292d8`）
 
-- style レベル変更 → miracle usageCount 増減 (`preUpdateItem`)
-- style 削除 → 連動 miracle 削除 (`preDeleteItem`)
-- miracle 削除 → usageCount チェックで抑制 (`preDeleteItem`)
+> **神業の使用回数を汎用 uses へ一本化**（ユーザー提案・合意のうえ「改変禁止」を更新）。旧 `usageCount {value(母数)/total(残り)/mod(バフ)}` を廃し、他アイテムと同じ `uses {isLimit, max, spent}` を持つ（残り = max − spent）。migrateData で `max=value+mod`・`spent=max−total`。**この一本化で、旧実装にあった「連動フックは value=母数/total=残り、消費経路は value=残り」という value/total の解釈矛盾（＝用途経由の神業消費が母数を削る潜在バグ）も解消**。
+>
+> - **母数 = uses.max = 連動スタイルの合計レベル（上限3。「母数=スタイルレベルと同一」ユーザー確定）**。万能神業（ファイト！等）による母数増加は **AE で uses.max を増やす**（専用の加算欄は設けない）。
+> - style レベル変更 → 連動 miracle の `uses.max` をスタイル合計レベル（上限3）へ設定・spent はクランプ (`preUpdateItem`)。
+> - style 削除（レベル1）→ 連動 miracle 削除 (`preDeleteItem`)。
+> - miracle 削除 → `uses.max>1` なら削除でなく max−1（多重取得の1つを外す・`preDeleteItem`／コンテキストメニュー）。
+> - 「使用済み(isUsed)」true→false → `spent=0`（残りを満タンへ・`preUpdateItem`）。
+> - 消費は他アイテムと同じ汎用 uses 経路（特例 kind `miracleUses` は撤去）。神業の取得(+1母数)・使用(spent+1)・シート(残り=max−spent の +/-)も uses へ更新。
 
 ## 参照
 
