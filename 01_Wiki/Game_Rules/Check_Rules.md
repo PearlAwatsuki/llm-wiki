@@ -300,6 +300,8 @@ PLが目標値を手入力するフローは採用しない（Foundry VTT のデ
 > - **ベース技能解決の統一と永続化**（本体 `b1f895e`）: `effectiveBaseSkillId(usage,item)` を新設し散在フォールバックを1関数へ集約。`_enforceComboRequirements`/`enforceUsageChainDefaultsOnImport` で**ベースを常に永続化**（アクション/非アクション共通の1経路）。非アクションで指定技能が無ければ親自身・指定技能があれば末端（親をベースにしない）・& グループ曖昧は自動設定しない。非ロックのベース候補に親自身（自己ベース）を含め base=親を明示表示。インポート時は自己ベースを新しい親 id へ張り直す。
 > - **残弾/FA 再設計**（C+D・本体 `221cc13`）: 残弾 mode から「任意」を撤去し `{none,value}` のみ（具体的残弾数の無い武器＝FA武器等は**残弾1**へ移行）。**残弾の消費・回復は自動では行わず用途の消費設定のみ**（consumeNormalAmmo/consumeFaAmmo の自動呼び出しを全廃）。**FA ダメージ自動化を廃止**（ダメージダイアログの FA 選択・FA値自動加算・FA台帳行・残弾消費・faOptions を撤去）——FA 値は用途のダメージボーナス式 `@item.<識別キー>.system.FAValueTotal` で手動加算に一本化（`isFullAuto`/`FAValue` は式参照用に維持）。
 > - **消費モデルの再編**（B・本体 `f5292d8`）: consumeTargets を `{type:"item"|"actionRank", itemId, resource:"uses"|"ammo", amount}` へ。先頭は「アイテム/AR」の2択・アイテムは `itemId` 空=**このアイテム自身**/各アイテム・resource=使用回数/残弾数。UI はブロック化（tnx-combo-card 踏襲・資源は選択アイテムで絞る）。「親アイテム」表記を「このアイテム自身」へ。migrateData で旧 type（parent/itemUses/miracleUses/ammo/actionRank）を item+resource へ移行。
+> - **神業の使用回数UIを他アイテムと同形へ**（本体 `2943d61`）: 神業シートの使用回数を「消費済み/最大値」の数値入力（他アイテムと同形）に。開発向け文言「（母数N）」撤去。消費ブロックの消費数に「消費数」ラベルを付けグリッドへ整列。
+> - **ヴィークル使用の一般化＝「ヴィークル準備時」トグル**（本体 `196b984`・ユーザー確定）: 判定セクションに用途フラグ `requiresVehicle`（ヴィークル準備時）を追加。オンで「使用ヴィークル」欄を表示し、実行時に準備済みヴィークルが無ければ判定不可（旧・タイプ固定 usesVehicle の一般化＝任意の判定用途で使える）。**移動/リアクション（移動妨害）は既定オン**（作成時 usesVehicle(type)・migrate で未設定の該当タイプをオン）。起動ゲート・シート表示・送信を requiresVehicle 駆動へ統一。
 > - 旧 `attack` → check＋damageCategory（2026-07-09）
 > - 旧 `damageBoost`/`damageReduce` → 廃止＝宣言へ変換（2026-07-11・modifyDamage 等で表現）
 > - 旧 `modification`（改造）→ **廃止＝check へ移行**（改造は判定で行う。機能未実装のため modifiableParams はデータ温存のみ・実装フェーズで再設計）
