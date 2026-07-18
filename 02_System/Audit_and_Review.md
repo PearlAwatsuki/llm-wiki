@@ -2789,7 +2789,7 @@ Code の「dealt×vs\* 併記は二重加算」という申し送りに対しユ
 
 - 正本レジストリ `usage-types.mjs`（USAGE_TYPE_DEFS）と対決純ロジック `confrontation-logic.mjs`（判別・合算吸収・選択肢）を新設（テスト16件）。旧 `skillRoles`・正準名ブリッジ・`REACTION_DEFAULT_SKILL`・`attackReactionModes` は全廃し、資格・候補は用途タイプの所持に一本化。
 - **対決判定カード=攻撃カードの一般化**: 永続フラグ名 `attackCheck` は互換のため維持し `isAttack`/`usageType`/`confrontation` を追加。攻撃専用項目（武器・制御値・ダメージボタン・カバー）は isAttack ゲート。対象なしの対決は `openReaction`（カード上の先着リアクション・再判定/事後修正でも保存値で再解決）。移動は対決時=対決判定カードの条件行・非対決時=従来の移動カード（`ctx.movement`）。
-- **移行**: usage の migrateData（攻撃/カバー/回復フラグ→タイプ・isUnopposable→不可行・系統既定の対決行敷設）＋ ready の一回限り正準名移行（ワールド設定ゲート・`usage-type-migration.mjs`）＋インポート時正規化（preCreateItem）。武器区分フラグは outfit-base の migrateData＋分類変更時の preUpdateItem 敷き直し。
+- **移行**: usage の migrateData（攻撃/カバー/回復フラグ→タイプ・isUnopposable→不可行・系統既定の対決行敷設）＋ ready の一回限り正準名移行（ワールド設定ゲート・`usage-type-migration.mjs`）＋インポート時正規化（preCreateItem）。武器区分フラグは outfit-base の migrateData＋分類変更時の preUpdateItem 敷き直し。**是正（2026-07-18・本体 `a5aa574`）**: インポート時正規化（preCreateItem 常設）は撤去——移行済みかを区別せず、辞典が正当に持つ「判定」用途をインポートのたびに付け替えていた（KI-029。ユーザーへの明確な報告なしに正本データへ副作用する設計だった点も含めて是正）。移行は ready の一回限りのみ。
 - 戦闘タブは用途 timing 駆動の用途起動ボタンへ（合成の移動/リロード行を撤去・`_onStartUsageUse`）。用途名は既定空＝実効名は親アイテム名（`usageDisplayName`・placeholder 表示）。
 - テスト 1360 green・eslint/stylelint エラーなし。
 
