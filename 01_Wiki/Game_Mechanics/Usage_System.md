@@ -24,6 +24,7 @@ actions: ArrayField(SchemaField({
     target:        StringField,         // "blank" | "self" | "single" | "team" | ...
     targetOther:   StringField,         // target === "other" の自由入力
     isFixedTarget: BooleanField,        // 変更不可（※）: AE による対象変更を抑止（実機能はフェーズ13）
+    cannotTargetSelf: BooleanField,     // 自身に適用できない（2026-07-18）: 自動セルフ解決を抑止（→対象選択ダイアログ・候補から自分除外）。自分をターゲット中の起動は「ターゲットが間違っています」で中止
     range:        StringField,          // "blank" | "close" | "short" | ... | "weapon"
     rangeMax:     StringField,          // 最長射程（2026-07-16）: "none"=単点。range が物理射程のとき「近～遠」等の幅の上限
     rangeOther:   StringField,
@@ -81,6 +82,8 @@ actions: ArrayField(SchemaField({
 ### タイミング / 対象の "-"（blank）の意味
 
 `timing.value = "blank"` / `target = "blank"` は「指定なし」= **どのタイミング・対象とも組み合わせ可能**を意味する（自由タイミング・自由対象）。空欄でも判定は正常に起動できる。
+
+> **対象欄の実効化（2026-07-18 ユーザー確定・2026-07-19 実装＝本体 `fc95cc8`）**: 従来読まれていなかった「対象」欄が、**対象解決とカード形式の決定表**（対象×対決・`usage-target-plan.mjs`）で挙動を決めるようになった——「-」「解説参照」「その他」＝対象要求なし（対決ありならオープンリアクション）・「自身」＝常時自動セルフ・「単体」＝非対決のみ自動セルフ/対決ありは選択ダイアログ・チーム/範囲等＝対決ありのみダイアログ。旧「対象を参照しないレティクル解決」（回復/修理の「自分を対象に続行」確認・適用効果のノーターゲット確認・攻撃対象ダイアログの「（対象なし）」）は全廃。値が実態とずれている既存用途は設定の見直しが必要。正本は [Combat_Flow.md](../Game_Rules/Combat_Flow.md)「対象解決とカード形式の一般化」。
 
 ### migrateData
 
