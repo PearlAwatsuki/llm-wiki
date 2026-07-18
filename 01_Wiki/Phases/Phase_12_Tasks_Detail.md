@@ -74,6 +74,10 @@
 - **用途シートのレイアウト改修＋判定ボーナス（2026-07-10）**: ユーザー指摘=「判定/ダメージの式の表示が全く無い」「縦積み/グリッドでなく legend で括るのが要点」。①**判定ボーナス**（`usage.checkBonus`・式・全 check 用途）を新設＝達成値へ加算（判定起動で `checkBonusFormula` を ctx へ、`_execute` が `evaluateFormula` で評価し `checkBonus` 合計へ＋内訳「判定ボーナス（用途）」）。命中ボーナスでなく**判定ボーナス**（攻撃に限らず全判定に出るため）。②**用途シートを `<fieldset>`＋`<legend>`（`.tnx-fieldset` 流用）でグループ化**（発動=取得/タイミング/対象射程/目標値対決/対決情報/消費、効果=参加技能/判定/攻撃/効果量/改造/適用効果）。③**式の表示＋干渉できる入力**＝〈判定〉に達成値の構成＋判定ボーナス欄、〈攻撃〉にダメージの構成＋ダメージ修正欄を表示。〈攻撃〉内側は 2 カラムグリッドをやめ**単一カラム縦積み**（`usage-form-section`）。
 - **判定ボーナス/ダメージ修正の「行＋供給元」化（2026-07-10・B案）**: `usage.checkBonus`/`damageBonus`（単一式）→ `checkBonuses`/`damageBonuses`（**`{formula, source}` の配列**・migrateData 移行）。①**式で AE と同じ値を参照可**＝`buildFormulaData` が `getRollData()` の `@system.*`（AE の `system.*` と対応）＋ **`@item.<識別キー>.system.*`（アクターの任意アイテムを識別キーで参照・system 全体。例「選んだ武器の攻撃力」＝`@item.<武器キー>.system.attack.value`）** ＋ `@diff`/`@achievement` を供給。②**供給元（source）＝チャットの帰属表示専用**（式の参照とは独立・識別キー保存で表示は逆引き現在名＝`identification.mjs` へ格上げ）。供給元プルダウン＝**組み合わせスタイル技能（一般技能除外）＋使用武器をグループ表示**・値＝識別キー。③チャット/台帳は「判定ボーナス（供給元名）」等で per-source 表示。UI は複数行（`usage-sheet-bonus-rows.hbs`・submit 再構成＝consumeTargets 同型）。純ロジック `evaluateBonusRows`。テスト 1142 緑・lint/stylelint clean。→ [Check_Rules.md](../Game_Rules/Check_Rules.md)/[Damage_Rules.md](../Game_Rules/Damage_Rules.md)/[Usage_System.md](../Game_Mechanics/Usage_System.md)。→ [Check_Rules.md](../Game_Rules/Check_Rules.md)「技能判定」/[Usage_System.md](../Game_Mechanics/Usage_System.md)「TnxUsageSheet の設計」。
 
+### 12-4 追補: 攻撃の適用効果タイミング2種（2026-07-18 設計・裁定済み・実装指示待ち）
+
+- 攻撃で相手に与える効果には「**命中時点で適用**」と「**1点でもダメージを与えたら適用**」の2種類がある（ユーザー提供）。現行はダメージ適用時の一括付与のみで命中もダメージ量も見ておらず、どちらも不正確＝**KI-027** 起票（回避対象へ付与・最終0でも付与・ダメージカード未使用で到達不能）。裁定4点（「1点でも」=完全な最終適用値／命中時のダメージ影響は AE でなく用途の式で表現／カバー時は効果もダメージもカバー側へ／再判定の覆りは手動復元）と Code 提案の表現（AE 設定の効果ごと「適用タイミング」フラグ＋攻撃フロー二股）はルール正本 [Combat_Flow.md](../Game_Rules/Combat_Flow.md)「攻撃の適用効果のタイミング2種」。調査中に対決（非攻撃）カードの効果ボタン到達不能疑い＝**KI-028** も起票。実装は指示待ち。
+
 ### 12-5: FS判定基幹（判定要求の延長＝設定+開始トリガー・実挙動は13以降）
 ### 12-6: 仕上げ（宣言の棚卸し・テスト・記録・v0.12.0）
 
