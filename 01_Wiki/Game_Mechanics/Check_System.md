@@ -363,14 +363,16 @@ GM がシーンコントロールの「判定要求」ボタンからダイア�
    - results[actorId] が存在する場合 → 結果を注入（ボタンを置き換え）
 
 5. PL が「判定する」クリック → TnxRlRequestApp.onDoCheck(flagData, actorId, messageId):
-   - skillCheck + identificationKey: actor.items から identificationKey 一致の generalSkill を検索
-     - 未所持なら warn して return
-     - 所持なら skillIds=[matchedItem.id], getComboSuits([matchedItem.system]) で validSuits を解決
-     - usesBounty === true なら bountyAvailable = actorBounty
+   - skillCheck + identificationKey: 応答ダイアログ(_promptSkillUse)で選択
+     - 「〈指定技能〉で判定」→ _activateItemCheck(指定技能アイテム)＝技能クリックと同一処理
+       (用途・コンボ・消費・判定ボーナス・適用効果を解決し要求文脈を注入・2026-07-15 一本化)
+     - コンボ候補(KI-025・2026-07-19): 指定技能を参加技能(ベース/組み合わせ)に含む他アイテムの
+       用途を列挙(enumerateRequestComboCandidates・識別キー照合・通常判定で要求を解決できる
+       用途のみ)。選択で _activateItemCheck へ用途 ID 直接指定
+     - 代用判定(2026-07-09): 別技能+手動修正(可否・ペナルティの裁定は卓)。未所持時はこれのみ提示
    - abilityCheck: bountyAvailable = actorBounty（全技能で報酬点使用可）
    - controlCheck: bountyAvailable = 0
-   - skillCheck + その他: bountyAvailable = 0, validSuits = flagSuits
-   - TnxCheckFlow.open(context) で判定開始
+   - skillCheck + その他: bountyAvailable = 0, validSuits = flagSuits → TnxCheckFlow.open を直接開く
 
 6. 判定完了 → TnxSocketHandler → message.update(flags.results) → renderChatMessage 再発火 → 結果表示
 ```
