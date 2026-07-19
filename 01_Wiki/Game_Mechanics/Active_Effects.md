@@ -112,9 +112,11 @@
 |---|---|---|
 | 武器 | `isFullAuto`（フルオート）・`isLaser`（レーザー武器）・`isFleshChange`（生身変更装備） | 攻撃フロー・部位ホスト照合・使用武器表示 |
 | アウトフィット共通 | `isCyber`（サイバーウェア）・`isMutantOrgan`（変異器官）・`isShiki`（式神装備）・`noPrepareRequired`（準備不要）・`isConsumption`（消費アイテム） | ホスト照合・「※」表示・準備ゲート・常備化経験点 |
+| アウトフィット共通（使用不可状態・2026-07-18） | `isMalfunction`（故障）・`isDestroyed`（破壊） | 使用不可ゲート（アイテムロール禁止・使用武器の攻撃不可）・修理対象の列挙・アクターシートの行表示（故障=赤/破壊=グレー） |
 | 技能共通 | `usesBounty`（報酬点使用可）・`suits.spade`／`.heart`／`.diamond`／`.club`（使用スート） | 判定エンジン・判定/攻撃フロー・用途シート |
 
 - **読み手は必ず `readFlag(system, "<フラグ>")`** を経由して実効値を読む（`<フラグ>Total ?? base`）。素の直読みは AE が効かない。
+- **故障/破壊の読み手は `isOutfitMalfunctioning`／`isOutfitDestroyed`／`isOutfitUnusable`（helpers.mjs）を経由**する（readFlag＋**サービス大分類の免疫**が唯一の権威）。サービスのアウトフィットは AE でフラグを立てても実効は常に false（故障も破壊もしない・2026-07-18 ユーザー確定）。付与手段はアイテムシートのヘッダートグル（素値）と本 AE キー（実効上書き）の2系統（[Outfits.md](../Game_Rules/Outfits.md)「故障・破壊」）。
 - **`noPrepareRequired` の順序境界**: アウトフィット集計（`computeOutfitAggregates`＝制御値/CS/危険値）は `_applyEffectBuffs` より前に走るため**base を読む**（AE 反転は乗らない）。実行時ゲート（ダメージ/判定/戦闘表示）は AE 後に走るため実効を読む。
 - **除外＝`isAction`／`noCombo`**（フェーズ12・意図的な非対応）: どちらも「特性」だが**構造的読み手**（用途チェーン設定・辞典構築）がフラグを読んで**永続設定を書き込む**。実行時 AE 上書きと両立させるには「config 書き手は base・実行時解決は実効」の作り分け＝チェーン再解決の設計が要るため、実効読みへの一括掃引が構造的に安全でない。よってレジストリ（`AE_FLAG_PARAMS`）から外す（将来別設計で扱う）。レジストリの正本はコード（`AE_FLAG_PARAMS`）。
 
