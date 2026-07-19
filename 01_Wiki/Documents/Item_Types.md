@@ -33,7 +33,6 @@
 | hide | SchemaField | `{mode: none/value/reference/control, value}` — 隠匿値 |
 | appearancePenalty | SchemaField | `{mode: none/value, value}` — 危険値 |
 | hack | SchemaField | `{mode: none/value, value}` — 電脳制御値 |
-| timing | SchemaField | `{value, actionName, processName, timingOther}` — タイミング単一（6-3 で配列から変更） |
 | exclusive | ArrayField | 専用（フェーズ10-2 で自由記述→**辞典参照の配列** `{type: style/organization, key}` へ。指定のみで enforcement なし） |
 | part | ArrayField | 部位行（フェーズ10-1 で種別ベースへ拡張）: `{kind: none/bodyPart/option/reference/other, value, slots, hostMajor, hostMinor, hostMinorExclude, hostFeature, hostName, refSubKind}`。兄弟フィールド `partRelation`（and/or）・`partOrChoice`（or 時の占有行）・`partOptional`（部位全体に効く任意フラグ・占有非カウント） |
 | uses | SchemaField | `{isLimit, type, max, spent}` — 使用回数（spent=消費済み・D&D 方式） |
@@ -81,7 +80,7 @@
 - template.json 未定義の ★ フィールド 8 個を DataModel で明示定義
 - `RewrittenTarget` / `rewritingMiracleId` — 旧 typo 名（`RewritedTarget` / `RewritingMiracle_ID`）から正規化済み（KI-018/019 解消・参照ゼロのため移行不要）
 - `unique` の initial は `"none"`（template.json の `""` は誤りを修正済み）
-- `timing[]` はアウトフィットの `timing`（単一 SchemaField）と**別物**（styleSkill は複数可の配列）
+- `timing[]` は styleSkill 固有（複数可の配列）。アウトフィットの単一 `timing` は 2026-07-19 に廃止（タイミングは用途側で管理）
 
 ## usage テンプレート
 
