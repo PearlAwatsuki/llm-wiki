@@ -102,12 +102,12 @@ totalValue = growth + Σ(style.value × styleLevel) + mod + effectMod + abilityO
 9. 達成値計算 → チャットに結果カード投稿
 10. ダイアログを閉じると判定キャンセル（`_onClose` → `TnxCheckFlow.cancel()`）
 
-#### RL 主導（判定要求、フェーズ8-5で実装予定）
+#### RL 主導（判定要求、フェーズ8-5で実装）
 
 1. 左サイドバー（GM のみ表示）のボタン → `TnxRlRequestApp` 起動
 2. 対象アクター・判定種別（能力/技能）・能力値 or 技能・目標値を設定
 3. 「要求を送信」→ チャットに判定要求カードを投稿（全員に見える）
-4. 対象プレイヤーがカードの「判定する」ボタンをクリック
+4. 対象アクターの**所有者権限を持つユーザー**がカードの「判定する」ボタンをクリック（2026-07-19: ユーザー選択方式を廃止しアクター登録方式へ）
 5. 上記プレイヤー主導フロー(2〜9)が実行される
 6. 達成値計算 → 要求カードを更新（結果を反映） — socket 送信経由
 
@@ -125,7 +125,10 @@ totalValue = growth + Σ(style.value × styleLevel) + mod + effectMod + abilityO
 
 ## RL 判定要求の対象
 
-複数プレイヤーへ同時送信が基本（Monk's Token Bar 方式）。全員とは限らず選択制。
+複数対象への同時送信が基本（Monk's Token Bar 方式）。全員とは限らず選択制。
+対象は**アクター（キャスト）を登録**する（2026-07-19 ユーザー指示: ユーザー選択方式を廃止。
+「判定する」はそのアクターの所有者権限を持つユーザーが押せる＝接続状況・キャラクター割り当てに
+依存しない）。制御判定要求（controlNegate）も同じ targets 形式（actorId/actorName のみ）に統一。
 
 ## チャット結果の公開範囲
 
@@ -346,11 +349,14 @@ GM がシーンコントロールの「判定要求」ボタンからダイア�
 
 2. ダイアログで入力:
    - 判定種別: skillCheck / abilityCheck / controlCheck
-   - 技能: 一般技能コンペンディウムの identificationKey から選択、または「その他」(自由入力 + スート手動選択)
+   - 技能: 一般技能コンペンディウムの identificationKey から選択、または「その他」(自由入力 + スート手動選択)。
+     プルダウンは**分類グループ(optgroup)×正規ソート順**＝シートの技能リストと同じ並び
+     (無条件取得技能→製作→芸術→操縦→社会→コネ・2026-07-19 ユーザー指示)
    - 能力値: abilityCheck/controlCheck 時は理性/感情/生命/外界を選択
    - 目標値: number-input-spinner + 非公開フラグ(targetValueHidden)
    - 説明文: textarea (省略可)
-   - 対象プレイヤー: 接続中の非 GM かつキャラクター所持ユーザーのチェックボックス
+   - 対象アクター: ワールドのキャストのチェックボックス(2026-07-19 ユーザー指示で
+     「接続中ユーザーの選択」から変更。接続状況・キャラクター割り当てに依存しない)
 
 3. 送信 → TnxRlRequestApp._onSubmit():
    - skillLabel, validSuits, targetValue, targets を組み立てる
@@ -358,8 +364,8 @@ GM がシーンコントロールの「判定要求」ボタンからダイア�
 
 4. 全クライアントが ChatMessage を受信 → renderChatMessage フック:
    - targetValueHidden かつ非 GM → 目標値を「（非公開）」表示
-   - 対象の PL (game.user.id === userId) または GM → 「判定する」ボタンを注入
-   - それ以外の PL → 「待機中…」を注入
+   - 対象アクターの**所有者権限を持つユーザー**(isOwner=GM 含む) → 「判定する」ボタンを注入
+   - それ以外 → 「待機中…」を注入
    - results[actorId] が存在する場合 → 結果を注入（ボタンを置き換え）
 
 5. PL が「判定する」クリック → TnxRlRequestApp.onDoCheck(flagData, actorId, messageId):
@@ -389,7 +395,7 @@ GM がシーンコントロールの「判定要求」ボタンからダイア�
     targetValue:       number | null,
     targetValueHidden: boolean,
     description:       string,
-    targets: [{ userId, actorId, actorName, userName }],
+    targets: [{ actorId, actorName }],  // 2026-07-19: userId/userName を撤去(ボタンは所有者権限で判定)
     results: {
         [actorId]: {
             achievement: number | null,

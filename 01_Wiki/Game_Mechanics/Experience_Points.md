@@ -96,7 +96,9 @@ totalControl = controlGrowth + Σ(styleControl × level) + controlMod + outfitCo
 
 | ID | 内容 | 担当 |
 |---|---|---|
-| KI-008 | 一括更新時の updateCastExp 競合リスク | 表出後に対処 |
+| KI-008 | 一括更新時の updateCastExp 競合リスク | **解消（2026-07-19・本体 `659a2df`）** |
+
+KI-008 の是正: `updateCastExp` は同一アクターへの並行呼び出しを 1 本に合流する（実行中に来た呼び出しは「完了後にもう 1 回」へ畳む＝毎回の全量再計算なので最後の 1 回が最新を反映）。計算・書き込みロジック（`_recalcCastExp`）は不変＝EXP 同期機構の設計（権威は User flag・ドキュメント跨ぎの同期）はそのまま。ユーザー言明（2026-07-19）: 自動インポート（基本技能セットアップ）では経験点は消費されないため、当該タイミングでの値ずれは元々起こり得ない——合流は冗長書き込みの排除としての整理。詳細は [Resolved_Issues.md](../Issues/Resolved_Issues.md) の KI-008。
 
 ## 参照
 
