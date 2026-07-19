@@ -372,10 +372,12 @@ GM がシーンコントロールの「判定要求」ボタンからダイア�
    - skillCheck + identificationKey: 応答ダイアログ(_promptSkillUse)は二段階(2026-07-19 ユーザー指示)
      - 第1段: 「〈指定技能〉で判定」/「代用判定」/「キャンセル」
      - 第2段(「〈指定技能〉で判定」時): **用途名のプルダウン**(_promptUsageChoice)。中身は
-       指定技能自身の実行対象用途+コンボ候補(KI-025=指定技能を参加技能に含む他アイテムの用途・
-       enumerateRequestComboCandidates・識別キー照合・通常判定で要求を解決できる用途のみ)の統合
-       (buildRequestUsageChoices)。**1件なら第2段を出さず自動起動**・0件は解説カード(従来挙動)。
-       選択で _activateItemCheck へ用途 ID 直接指定(消費・判定ボーナス・適用効果は共通前段で解決)
+       指定技能自身の用途+コンボ候補(KI-025=指定技能を参加技能に含む他アイテムの用途・
+       enumerateRequestComboCandidates・識別キー照合)の統合(buildRequestUsageChoices)で、
+       **どちらも「判定」タイプ限定**(2026-07-19 ユーザー裁定。判定タイプ内でも固定値・NPC取得・
+       バフ宣言フラグは要求カードに結果を返せないため除外)。**1件なら第2段を出さず自動起動**・
+       0件は警告して中止。選択で _activateItemCheck へ用途 ID 直接指定
+       (消費・判定ボーナス・適用効果は共通前段で解決)
      - 代用判定(2026-07-09): 別技能+手動修正(可否・ペナルティの裁定は卓)。未所持時はこれのみ提示
    - abilityCheck: bountyAvailable = actorBounty（全技能で報酬点使用可）
    - controlCheck: bountyAvailable = 0
