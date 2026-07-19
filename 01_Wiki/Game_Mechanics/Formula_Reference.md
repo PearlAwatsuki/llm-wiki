@@ -125,7 +125,7 @@
 | `@item.<key>.system.attack.total`                      | **攻撃力の実効値**（`.value` は素値・`.damageType` は種別 S/P/I/X） |
 | `@item.<key>.system.guardValue.total`                  | 受け値                                                 |
 | `@item.<key>.system.FAValue`                           | フルオート値（`.isFullAuto` が真のとき有効）                       |
-| `@item.<key>.system.ammo.mode` / `.value` / `.current` | 残弾（mode=-/value/arbitrary・current=現在残弾）             |
+| `@item.<key>.system.uses.max` / `.spent`               | 使用回数（射撃武器の弾数もここ＝装弾数/撃った数。残弾は 2026-07-19 に廃止）   |
 | `@item.<key>.system.range.min` / `.max`                | 射程                                                  |
 
 ### 防具（armor）・義体（cyborg）・ヴィークル（vehicle）
