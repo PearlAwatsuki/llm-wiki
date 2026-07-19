@@ -2833,14 +2833,14 @@ Code の「dealt×vs\* 併記は二重加算」という申し送りに対しユ
 - **故障/破壊は使用不可状態**（ユーザー確定）: どちらも受けたアウトフィットを使用不可にする。**故障**は対応する〈製作〉での修理が可能・**破壊**は基本アクト終了まで直らない。どちらもアクト間に持ち越さない（消費アイテムと同じ）。**自動リセット機構は将来フェーズへ送り、今回はフラグと付与手段（手動トグル/AE）＋修理のみ**（ユーザー指示「自動リセット機構は作るが先フェーズに送る。先にフラグと与える方法だけ作る」）。
 - **サービス大分類は免疫**（ユーザー確定）: 大分類 `service` のアウトフィットは故障も破壊もされない。実効フラグを常に false に落とし、トグルも出さない。
 - **サービス/バックグラウンドの準備固定**（ユーザー確定）: 小分類 `background` は必ず準備・携帯され未準備にできない。`isPrepared`/`isCarrying` を派生で true 固定し携帯/準備トグルを両シートで非表示。`isPartless`（部位なし=準備不可）より優先。
-- **修理の対象判定＝用途のホワイトリスト**（ユーザー選択「用途にホワイトリスト」）: 修理用途は `repairableCategories`（小分類キー）に合致する対象所持の故障アウトフィットのみ列挙し、判定成功で1つの故障を解除する。破壊は修理不可。
+- **修理の対象判定＝用途のホワイトリスト**（ユーザー選択「用途にホワイトリスト」）: 修理用途は `repairableCategories`（小分類キーまたは大分類キー。大分類キー=その大分類の全小分類＝2026-07-19 ユーザー指示で追加）に合致する対象所持の故障アウトフィットのみ列挙し、判定成功で1つの故障を解除する。破壊は修理不可。
 - **ロール禁止の範囲＝武器を使う攻撃も禁止**（ユーザー選択）: 故障/破壊アウトフィット自身のロールに加え、その武器を「使用武器」に持つ攻撃判定も不可（useAttack が弾く）。
 
 #### 設計レビュー
 
 - **故障/破壊は AE フラグ機構へ相乗り**: `isMalfunction`/`isDestroyed` を `AE_FLAG_PARAMS` に登録し、実効読みは既存 `readFlag`。照合は helpers.mjs の純関数 `isOutfitServiceImmune`/`isOutfitMalfunctioning`/`isOutfitDestroyed`/`isOutfitUnusable` に集約（サービス免疫はこの4関数が唯一の権威。prepareDerivedData の実効 false 化は表示一貫性のための belt-and-suspenders＝AE が後段で上書きしても helper 側で免疫が保証される）。読み手（アクターシート行・ロール禁止・攻撃武器・修理列挙）は全てこのヘルパー経由。
 - **修理は治療/回復フローの平行実装**: `repair-flow.mjs`（useRepair→対象解決→選択→buildUsageCheckContext→TnxCheckFlow.open）＋完了継続 `CONTINUATIONS.repair`（rerunOnSuccessOnly・再判定に引き継ぎ）＋`repairApply` ソケット（treatmentApply と同型の GM 委譲）。起動は唯一の起動関数 `_activateItemCheck` の修理ゲート（治療ゲートの直後）から。既存前例（recovery-flow の選択ダイアログ・target-resolution・postConditionOutcome・socket 委譲）を踏襲し新機構を作らない。
-- **用途シート UI は同シートの前例踏襲**: `repairableCategories` の設定は回復の除外タグ（選択済みリスト＋追加セレクト）と同型。追加は大分類 optgroup＋小分類 option の1セレクト（サービス除外）。
+- **用途シート UI は同シートの前例踏襲**: `repairableCategories` の設定は回復の除外タグ（選択済みリスト＋追加セレクト）と同型。追加は大分類 optgroup＋小分類 option の1セレクト（サービス除外）。**2026-07-19 拡張**: 各 optgroup 先頭に「（大分類全体）」option（値=大分類キー）を追加し、大分類・小分類キーを同一配列に混在保存（スキーマ変更なし。照合は minor/major 両対応・大小のキー名前空間は不衝突＝outfit-categories にテストで固定。回復の「（グループ全体）」と同型の前例踏襲）。
 - **アクターシート表示**: 行ビルダで実効判定し `brokenClass`（destroyed=グレー優先/malfunction=赤）＋`hidePrepareToggles`（background）を付与。CSS は outfits タブにスコープ。
 - テスト 1391 green（helpers の isOutfit* 4関数・outfit-base の派生 免疫/準備固定・用途タイプ17種）・eslint 0 error・stylelint clean。
 
