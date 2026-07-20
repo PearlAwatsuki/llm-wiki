@@ -19,6 +19,7 @@ actions: ArrayField(SchemaField({
         processName: StringField,       // timing.value === "process" の場合のサブ選択肢
         timingOther: StringField,       // timing.value === "other" の場合の自由入力
     }),
+    hideInCombatTab: BooleanField,      // 戦闘タブに表示しない（2026-07-20）: 戦闘タブ「タイミングごとの使用技能・アウトフィット」の再表示から除外する。表示のみの設定で、起動・判定・タイミングの意味には一切影響しない
 
     // 対象・射程・目標値（スタイル技能と同形の flat フィールド。発動タブで設定）
     target:        StringField,         // "blank" | "self" | "single" | "team" | ...
