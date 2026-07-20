@@ -100,6 +100,8 @@
 | [Phase_9_Tasks_Detail.md](Phases/Phase_9_Tasks_Detail.md) | フェーズ9 完了記録（ActiveEffect / 派生値計算） |
 | [Phase_10_Tasks_Detail.md](Phases/Phase_10_Tasks_Detail.md) | フェーズ10 完了記録（既存シート関連のやり残し総仕上げ） |
 | [Phase_11_Tasks_Detail.md](Phases/Phase_11_Tasks_Detail.md) | フェーズ11 — guest / troop / extra シート（進行中。現在フェーズの正本は Roadmap） |
+| [Phase_12_Tasks_Detail.md](Phases/Phase_12_Tasks_Detail.md) | フェーズ12 — 攻撃判定 / ダメージ算出 / FS判定基幹（進行中） |
+| [Phase_12_Implementation_Plan.md](Phases/Phase_12_Implementation_Plan.md) | フェーズ12 残作業の実装計画（T1〜T11・作業順序と依存） |
 
 ## 関連
 
