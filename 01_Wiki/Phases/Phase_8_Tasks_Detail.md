@@ -163,6 +163,7 @@ class TnxCheckEngine {
 - [x] キャストシート: 能力値クリック → `TnxCheckFlow.open`（abilityCheck モード。対応スート1択）
 - [x] キャストシート: 制御値クリック → `TnxCheckFlow.open`（controlCheck モード。対応スート1択）
 - [x] アクトシート: infoItem skill 行のハンマーボタン → `TnxCheckFlow.open`（TN=tn、技能名=name テキスト、validSuits=全スート）
+  - ※ **`skillIds` は空**（技能アイテムを解決せず技能名は表示ラベルのみ）。したがってこれは**情報収集判定の完成ではなく、TN 付きでダイアログを開く配線**にとどまる（2026-07-20 追記 → [Check_System](../Game_Mechanics/Check_System.md)「未実装の項目」）
 - [x] 判定結果 → `templates/chat/check-result.hbs` でチャット投稿（8-3 で実装済み）
 
 ---
@@ -233,7 +234,8 @@ class TnxCheckEngine {
 
 ## 完了条件
 
-- 情報収集判定・RL 要求判定が実機で動作する
+- ~~情報収集判定~~・RL 要求判定が実機で動作する
+  - **2026-07-20 訂正**: 情報収集について実際に満たしたのは「アクトシートの技能行から TN 付きで判定ダイアログが開く」ところまでで、**情報収集判定そのものは動作していない**（技能解決なし・PL 導線なし・結果反映なし）。この完了条件が達成扱いのまま残っていたことが、以降「情報収集判定は実装済み」と参照され続けた原因。詳細 → [Check_System](../Game_Mechanics/Check_System.md)「未実装の項目」
 - 技能組み合わせ設定が usage タブから行える（KI-002 解決）
 - socket 経由で RL 要求カードが判定結果で更新される（KI-006 解決）
 - 全既存テスト + 新規判定エンジンテストがグリーン
