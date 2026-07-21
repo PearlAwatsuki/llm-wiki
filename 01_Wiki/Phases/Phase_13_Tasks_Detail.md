@@ -50,9 +50,15 @@ FVTT デフォルトのコンバットトラッカーを上書きし、TNX の**
 
 本計画のレビュー確定・llm-wiki 記録（本ページ・Combat_Flow「カット境界とシーンの関係」）。設計レビュー/メカニクス監査の起票は各実装サブフェーズで行う。
 
-### 13-2: `TnxCombat`/`TnxCombatant` サブクラス＋CONFIG登録＋シード統合
+### 13-2: `TnxCombat`/`TnxCombatant` サブクラス＋CONFIG登録＋シード集約（2026-07-21 ✅ 実装済・実機確認は13-4以降）
 
-カット進行の「器」を作る（データ土台・登録・既存シードの一本化）。プロセス自動遷移や UI はまだ載せない。手番順の純ロジック（CSカレント降順・同値時の優先順位）を切り出しテスト。詳細仕様は着手前にチャットで提示→承認→実装。
+カット進行の「器」＝クラス新設・`CONFIG.Combat/Combatant.documentClass` 登録・カット開始シードのロジック集約・純ロジック（手番順/シード算出）。プロセス自動遷移・UI・CS/AR 自動記帳は載せない。
+
+- 純ロジック（TDD）: `combat-turn-order.mjs`（`resolveTurnOrder`＝CSカレント降順＋同値時①CSベース②種別③ユーザー順・`nextActiveMain`＝CSカレント最大かつAR≥1）／`combat-seed-logic.mjs`（`buildCombatSeedUpdate`）。
+- **エキストラは手番を持たない**（2026-07-21 ユーザー裁定）＝手番順・次の手番から種別で除外（→ Combat_Flow §3）。当初「原文に無いので最下位に仮置き」は誤りとして是正。
+- サブクラス: `scripts/combat/tnx-combat.mjs`（flag 状態 getter＋シード static）・`tnx-combatant.mjs`（最小）。`scripts/tnx.mjs` で登録＋シードのフックを static へ委譲（挙動不変）。`eslint.config.js` に `Combat`/`Combatant` を追加。
+- **シード統合の範囲を一部 13-3 へ**: ロジックは `TnxCombat` へ集約したが、トリガーは既存フックのまま（挙動不変・ゼロ回帰）。ライフサイクル（`startCombat`/`_onEnter`）への完全移行は CS/AR 自動記帳とまとめて 13-3。
+- 検証: テスト 1682 green・eslint 0 error。実機確認はトラッカー UI が入る 13-4 以降（ユーザー了承）。
 
 ### 13-3: プロセス状態機械＋CS/AR自動記帳
 
