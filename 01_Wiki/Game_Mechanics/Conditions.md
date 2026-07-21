@@ -249,4 +249,4 @@ BS・戦闘不能・負傷を除去する回復・治療系スタイル技能の
 
 - 次シーン発火（`pendingScene` の解除）＝シーン進行 13／時間管理 15。
 - 報酬点は技能判定と同時消費のみ（[Bounty_Points.md](../Game_Rules/Bounty_Points.md)）＝判定時ゲートで足りる（他経路なし）。
-- 実機確認待ち（CLAUDE.md §2.1）。正本: [Damage_Rules.md](../Game_Rules/Damage_Rules.md) 各負傷。
+- 実機確認済み（2026-07-21・v0.12.0）。正本: [Damage_Rules.md](../Game_Rules/Damage_Rules.md) 各負傷。

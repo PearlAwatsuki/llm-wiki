@@ -3302,7 +3302,7 @@ armor / cyborg / tap / vehicle / ianus / weapon / housing-area / residence)、
 
 **日付**: 2026-07-16
 **レビュー対象**: `conditions.mjs`（`getEffectiveConditions`＝正規アクセサ・`ignoreRuleMatches`/`gatherIgnoreRules`）、`helpers.mjs`（`parseEffectTargetKey`）、`tnx-check-flow.mjs`／`character-base.mjs`（消費点）、`tnx-character-sheet-base.mjs`／`bad-status-list.hbs`／`css`／`tnx.mjs`
-**ステータス**: レビュー済(問題なし)・本体未コミット（実機確認待ち）
+**ステータス**: ✅ 実装完了（本体反映済み）・実機確認済み（2026-07-21・v0.12.0）
 
 #### 設計判断（ユーザーとの対話で確定）
 
@@ -3326,7 +3326,7 @@ armor / cyborg / tap / vehicle / ianus / weapon / housing-area / residence)、
 
 **日付**: 2026-07-20
 **レビュー対象**: `tnx-character-sheet-base.mjs`（`_prepareCombatData` のタイミング分類）、`usage.mjs`（`hideInCombatTab`）、`usage-sheet.hbs`、`tnx-usage-sheet.mjs`（`_onSubmit`）
-**ステータス**: ✅ 実装完了（テスト green 1497・eslint 0 error）・**実機確認待ち**。分類の全数確認は実ソースの `classify` を抜き出して選択肢の正本（`getSkillOptions()`）を全キー流して実施済み
+**ステータス**: ✅ 実装完了（テスト green 1497・eslint 0 error）・**実機確認済み（2026-07-21・v0.12.0）**。分類の全数確認は実ソースの `classify` を抜き出して選択肢の正本（`getSkillOptions()`）を全キー流して実施済み
 
 #### 設計判断
 

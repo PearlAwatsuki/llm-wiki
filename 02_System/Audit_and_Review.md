@@ -1571,7 +1571,7 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 **日付**: 2026-07-10
 **関連実装**: `scripts/data/item/helpers.mjs`（`parseEffectTargetKey` に group 解析・`checkChangeMatches` の照合）、`scripts/module/tnx-check-flow.mjs`（`_computeCheckBonus` の criteria）。正本 [Active_Effects.md](../01_Wiki/Game_Mechanics/Active_Effects.md)「判定バフ」・[Formula_Reference.md](../01_Wiki/Game_Mechanics/Formula_Reference.md)
-**ステータス**: ✅ 実装完了（本体 `68b0d3f`・全テスト green 1147・lint 0 error）・実機確認待ち
+**ステータス**: ✅ 実装完了（本体 `68b0d3f`・全テスト green 1147・lint 0 error）・実機確認済み（2026-07-21・v0.12.0）
 
 #### ルール解釈（2026-07-10 言語化）
 
@@ -1592,7 +1592,7 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 **日付**: 2026-07-10
 **関連実装**: `scripts/data/item/helpers.mjs`（`parseEffectTargetKey` の damageVs・`damageVsChangeMatches`/`gatherDamageVsSources`/`collectActorEffectBuffs`）、`scripts/data/actor/common/character-base.mjs`（`_applyEffectBuffs` の除外）、`scripts/module/damage-flow.mjs`（`collectDamageVsBonuses` と台帳合算）。正本 [Active_Effects.md](../01_Wiki/Game_Mechanics/Active_Effects.md) §1-2・[Formula_Reference.md](../01_Wiki/Game_Mechanics/Formula_Reference.md)
-**ステータス**: ✅ 実装完了（本体 `a76c7fe`・全テスト green 1152・lint 0 error）・実機確認待ち
+**ステータス**: ✅ 実装完了（本体 `a76c7fe`・全テスト green 1152・lint 0 error）・実機確認済み（2026-07-21・v0.12.0）
 
 #### ルール解釈（2026-07-10 言語化）
 
@@ -1617,7 +1617,7 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 **日付**: 2026-07-10
 **関連実装**: `scripts/module/tnx-formula.mjs`（`buildFormulaData` の target 引数・`buildTargetData`・`evaluateBonusRows`）、`scripts/data/item/helpers.mjs`（`targetStyleWorksKeys`）、`scripts/module/damage-flow.mjs`（対象解決と配線）。正本 [Formula_Reference.md](../01_Wiki/Game_Mechanics/Formula_Reference.md)「@target.*」
-**ステータス**: ✅ 実装完了（本体 `f66db00`・全テスト green 1155・lint 0 error）・実機確認待ち
+**ステータス**: ✅ 実装完了（本体 `f66db00`・全テスト green 1155・lint 0 error）・実機確認済み（2026-07-21・v0.12.0）
 
 #### ルール解釈（2026-07-10 言語化）
 
@@ -1638,7 +1638,7 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 **日付**: 2026-07-10
 **関連実装**: `usage.mjs`（`checkBonusSelf`/`damageBonusSelf`・`effects` に `itemId`）、`tnx-formula.mjs`（`evaluateSelfBonus`・`evaluateBonusRows` の bearer）、`tnx-check-flow`/`attack-flow`/`damage-flow`/`tnx-character-sheet-base`（`sourceItemId` 配線・`@item.self`）、`tnx-usage-sheet.mjs`＋`usage-sheet.hbs`（専用欄・グループ化した効果選択）、`tnx-item-sheet.mjs`（供給元アイテム上で有効化）。正本 [Usage_System.md](../01_Wiki/Game_Mechanics/Usage_System.md)・[Formula_Reference.md](../01_Wiki/Game_Mechanics/Formula_Reference.md)
-**ステータス**: ✅ 実装完了（本体 `705a6b4`・全テスト green 1160・lint 0 error）・実機確認待ち
+**ステータス**: ✅ 実装完了（本体 `705a6b4`・全テスト green 1160・lint 0 error）・実機確認済み（2026-07-21・v0.12.0）
 
 #### ルール解釈（2026-07-10 言語化）
 
@@ -1659,7 +1659,7 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 **日付**: 2026-07-10
 **関連実装**: `scripts/module/attack-flow-logic.mjs`（`resolveOpposed`）。正本 [Check_Rules.md](../01_Wiki/Game_Rules/Check_Rules.md)「差分値」③対決
-**ステータス**: ✅ 修正完了（全テスト green 1161・lint 0 error）・実機確認待ち
+**ステータス**: ✅ 修正完了（全テスト green 1161・lint 0 error）・実機確認済み（2026-07-21・v0.12.0）
 
 #### ルール解釈（2026-07-10 ユーザー指摘）
 
@@ -1678,7 +1678,7 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 **日付**: 2026-07-10
 **関連実装**: `scripts/module/attack-flow.mjs`（`startReaction` の dodge 分岐・`promptVehicleDodgeFallback`）。正本 [Usage_System.md](../01_Wiki/Game_Mechanics/Usage_System.md)「ヴィークルの操縦」・[Outfits.md](../01_Wiki/Game_Rules/Outfits.md)・[Damage_Rules.md](../01_Wiki/Game_Rules/Damage_Rules.md)「ドッジ」
-**ステータス**: ✅ 実装完了（本体 `340ac6e`・全テスト green 1161・lint 0 error）・実機確認待ち
+**ステータス**: ✅ 実装完了（本体 `340ac6e`・全テスト green 1161・lint 0 error）・実機確認済み（2026-07-21・v0.12.0）
 
 #### ルール解釈（2026-07-10 ユーザー確定）
 
@@ -1699,7 +1699,7 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 **日付**: 2026-07-10
 **関連実装**: `scripts/module/usage-effects.mjs`（新）・`tnx-socket-handler`（`usageEffectApplied`）・`tnx.mjs`（描画フック）・`tnx-check-flow`/`attack-flow`（ctx/ペイロード→カードフラグ `usageEffects`）・`tnx-character-sheet-base`/`tnx-item-sheet`（使用時の捕捉）・`css/tnx2.css`。正本 [Usage_System.md](../01_Wiki/Game_Mechanics/Usage_System.md)・[Combat_Flow.md](../01_Wiki/Game_Rules/Combat_Flow.md)
-**ステータス**: ✅ 実装完了（本体 `e6b92e2`・全テスト green 1165・lint 0 error）・実機確認待ち
+**ステータス**: ✅ 実装完了（本体 `e6b92e2`・全テスト green 1165・lint 0 error）・実機確認済み（2026-07-21・v0.12.0）
 
 #### ルール解釈（2026-07-10 ユーザー確定）
 
@@ -1726,7 +1726,7 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 **日付**: 2026-07-10（同日中に2度の再設計＝下記経緯）
 **関連実装**: `scripts/data/item/common/usage.mjs`（用途フィールド `ignoreComboSkills`＝辞典識別キーの配列）、`scripts/module/skill-chain-resolution.mjs`（`resolveUsageSkills` 第4引数 `ignoreComboKeys`）、`scripts/module/tnx-usage-sheet.mjs`（設定 UI・追加判定・auto-fill 反映）、`templates/app/usage-sheet-combo.hbs`。正本 [Usage_System.md](../01_Wiki/Game_Mechanics/Usage_System.md)「組み合わせ解決」
-**ステータス**: ✅ 実装完了（本体 `c79e55f`→再設計 `c4611e3`・全テスト green 1169・lint 0 error）・実機確認待ち
+**ステータス**: ✅ 実装完了（本体 `c79e55f`→再設計 `c4611e3`・全テスト green 1169・lint 0 error）・実機確認済み（2026-07-21・v0.12.0）
 
 #### ルール解釈（2026-07-10 ユーザー確定・複数往復で確定）
 
@@ -1750,7 +1750,7 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 **日付**: 2026-07-10
 **関連実装**: `scripts/module/tnx-check-engine.mjs`（純関数 `comboUsesBounty`）、`tnx-character-sheet-base`（能力値判定・通常判定）、`tnx-rl-request-app`・`attack-flow`（攻撃/リアクション）・`npc-acquisition`・`treatment-flow`・`vehicle-move`。正本 [Bounty_Points.md](../01_Wiki/Game_Rules/Bounty_Points.md)「判定フローとの連携」
-**ステータス**: ✅ 修正完了（本体 `47fe6ba`＋`592214f`・全テスト green 1171・lint 0 error）・実機確認待ち
+**ステータス**: ✅ 修正完了（本体 `47fe6ba`＋`592214f`・全テスト green 1171・lint 0 error）・実機確認済み（2026-07-21・v0.12.0）
 
 #### ルール解釈（2026-07-10 ユーザー確定・2点）
 
@@ -1771,7 +1771,7 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 **日付**: 2026-07-11
 **関連実装**: `scripts/module/tnx-check-flow.mjs`（`_buildRecheckContext`/`startRecheck`/`renderRecheckButton`）、`attack-flow.mjs`（`postAttackCard` の recheckCtx 保存）、`tnx.mjs`（描画フック）、`check-result.hbs`/`attack-card.hbs`（再判定バッジ）、`css/tnx2.css`。正本 [Check_Rules.md](../01_Wiki/Game_Rules/Check_Rules.md)「再判定」
-**ステータス**: ✅ 実装完了（本体 `d409992`＋`fbfbb75`・全テスト green 1171・lint 0 error）・実機確認待ち
+**ステータス**: ✅ 実装完了（本体 `d409992`＋`fbfbb75`・全テスト green 1171・lint 0 error）・実機確認済み（2026-07-21・v0.12.0）
 
 #### ルール解釈（2026-07-11 ユーザー確定・訂正1回）
 
@@ -1794,7 +1794,7 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 **日付**: 2026-07-11
 **関連実装**: `usage.mjs`（`grantRecheck`）、`tnx-check-flow.mjs`（`_buildRecheckContext` の常時保存化・`startRecheckGrant`/`_onGrantAchievementClick`・`startRecheck` の `mergeSkill`/`consumeUses`・`renderRecheckButton` の達成値バインド）、`tnx-character-sheet-base`（起動分岐）、`usage-sheet.hbs`＋`tnx-usage-sheet`（チェックボックス・保存）、`css/tnx2.css`。正本 [Check_Rules.md](../01_Wiki/Game_Rules/Check_Rules.md)「再判定の付与」
-**ステータス**: ✅ 実装完了（本体 `4c9ade1`・全テスト green 1173・lint 0 error）・実機確認待ち
+**ステータス**: ✅ 実装完了（本体 `4c9ade1`・全テスト green 1173・lint 0 error）・実機確認済み（2026-07-21・v0.12.0）
 
 #### ルール解釈（2026-07-11 ユーザー確定）
 
@@ -1816,7 +1816,7 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 **日付**: 2026-07-11
 **関連実装**: `usage.mjs`（`modifyCheck`）、`tnx-check-flow.mjs`（クリック待ち機構の汎用化 `startAchievementAction(kind)`・`_applyCheckModify`・`checkMods` ライブ描画）、`tnx-socket-handler.mjs`（`checkModify` 委譲）、`tnx-character-sheet-base`（起動分岐統合）、`usage-sheet.hbs`＋`tnx-usage-sheet`（チェックボックス・保存）。正本 [Check_Rules.md](../01_Wiki/Game_Rules/Check_Rules.md)「判定の事後修正」
-**ステータス**: ✅ 実装完了（本体 `dd15abe`・全テスト green 1174・lint 0 error）・実機確認待ち
+**ステータス**: ✅ 実装完了（本体 `dd15abe`・全テスト green 1174・lint 0 error）・実機確認済み（2026-07-21・v0.12.0）
 
 #### ルール解釈（2026-07-11 ユーザー確定）
 
@@ -1838,7 +1838,7 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 **日付**: 2026-07-11
 **関連実装**: `usage.mjs`（`canStun`）、`usage-sheet.hbs`＋`tnx-usage-sheet`（「スタン可能（精神攻撃では説得）」トグル・保存）、`attack-flow`（ペイロード）、`damage-flow`（ロールダイアログのチェック撤去・軽減確定後の選択ダイアログ・適用時に `stun` をフラグへ）。正本 [Damage_Rules.md](../01_Wiki/Game_Rules/Damage_Rules.md)「スタン攻撃」「説得」
-**ステータス**: ✅ 実装完了（本体 `856e31b`・全テスト green 1176・lint 0 error）・実機確認待ち
+**ステータス**: ✅ 実装完了（本体 `856e31b`・全テスト green 1176・lint 0 error）・実機確認済み（2026-07-21・v0.12.0）
 
 #### ルール解釈（2026-07-11 ユーザー確定）
 
@@ -1860,7 +1860,7 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 **日付**: 2026-07-11
 **関連実装**: `usage.mjs`（型域・`formula` フィールド削除・migrateData で旧タイプ→declaration）、`damage-flow.mjs`（boost/reduce 機構の全撤去＝候補収集・選択・消費・台帳行・`collectDamageUsages`/`usageEffectDisplay`/`planFromRows`）、`tnx-usage-sheet`＋`usage-sheet.hbs`（USAGE_TYPES・効果量 fieldset 削除）、ダイアログ2種。正本 [Damage_Rules.md](../01_Wiki/Game_Rules/Damage_Rules.md)・[Check_Rules.md](../01_Wiki/Game_Rules/Check_Rules.md)「用途タイプ」
-**ステータス**: ✅ 実装完了（本体 `a85d093`・全テスト green 1177・lint 0 error）・実機確認待ち
+**ステータス**: ✅ 実装完了（本体 `a85d093`・全テスト green 1177・lint 0 error）・実機確認済み（2026-07-21・v0.12.0）
 
 #### ルール解釈（2026-07-11 ユーザー確定）
 
@@ -1882,7 +1882,7 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 **日付**: 2026-07-11
 **関連実装**: `usage.mjs`（`boostDamage` フラグ）、`usage-sheet.hbs`＋`tnx-usage-sheet`（〈攻撃〉の isAttack 横トグル・排他・ダメージ増加（式）＝`damageBonusSelf` 流用）、`damage-flow.mjs`（`useDamageBoost`＝pending 登録/トグル・カードプレイ時に評価/合算/消費・台帳「ダメージ増加（技能名）」・`boosts` フラグ復帰）、`tnx-character-sheet-base`/`tnx-item-sheet`（アイテムロール経路）。正本 [Damage_Rules.md](../01_Wiki/Game_Rules/Damage_Rules.md)「ダメージ増加技能」
-**ステータス**: ✅ 実装完了（本体 `56c2347`・全テスト green 1178・lint 0 error）・実機確認待ち
+**ステータス**: ✅ 実装完了（本体 `56c2347`・全テスト green 1178・lint 0 error）・実機確認済み（2026-07-21・v0.12.0）
 
 #### ルール解釈・設計指針（2026-07-11 ユーザー確定）
 
@@ -1905,7 +1905,7 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 **日付**: 2026-07-11
 **関連実装**: `usage.mjs`（`modifyDamage` フラグ・migrateData で `boostDamage`→`modifyDamage` 変換）、`usage-sheet.hbs`＋`tnx-usage-sheet`（攻撃モードラジオ「ダメージを修正」・ダメージ修正（式）＝`damageBonusSelf` 流用）、`tnx-check-flow.mjs`（クリック待ち kind="modifyDamage" 追加・`peekAchievementAction` 新設・達成値クリック側は modifyDamage を無視）、`damage-flow.mjs`（`handleDamageModifyClick`＝攻撃側合計クリックで適用・フラグ `mods`・台帳「事後修正」行。旧 `useDamageBoost`/`pendingBoosts`/`boosts` 全撤去）、`tnx-character-sheet-base`/`tnx-item-sheet`（アイテムロール経路をクリック待ち系へ統合）。正本 [Damage_Rules.md](../01_Wiki/Game_Rules/Damage_Rules.md)「ダメージ修正技能」
-**ステータス**: ✅ 実装完了（本体 `d2b13a8`・全テスト green 1185・lint 0 error）・実機確認待ち
+**ステータス**: ✅ 実装完了（本体 `d2b13a8`・全テスト green 1185・lint 0 error）・実機確認済み（2026-07-21・v0.12.0）
 
 #### ルール解釈（メカニクス監査）
 
@@ -1930,7 +1930,7 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 **日付**: 2026-07-12
 **関連実装**: `tnx-usage-sheet.mjs`＋`usage-sheet.hbs`（宣言ビューの〈判定〉〈ダメージ〉fieldset・チェックボックス独立・submit の declaration ブランチ＝OFF 側の式クリア/フラグ変更で再描画）、`tnx-character-sheet-base.mjs`（技能クリックの実行対象に修正フラグ付き宣言を追加・クリック待ち分岐を check/declaration に拡張）、`tnx-item-sheet.mjs`（クリック待ち系分岐をフラグゲートに統一・攻撃より先＝アクターシートと同順）、`usage.mjs`（コメントのみ・スキーマ変更なし）。正本 [Check_Rules.md](../01_Wiki/Game_Rules/Check_Rules.md)「判定の事後修正」・[Damage_Rules.md](../01_Wiki/Game_Rules/Damage_Rules.md)「ダメージ修正技能」
-**ステータス**: ✅ 実装完了（本体 `d7e4876`・全テスト green 1185・lint 0 error）・実機確認待ち
+**ステータス**: ✅ 実装完了（本体 `d7e4876`・全テスト green 1185・lint 0 error）・実機確認済み（2026-07-21・v0.12.0）
 
 #### ルール解釈（メカニクス監査）
 
@@ -1955,7 +1955,7 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 **日付**: 2026-07-12
 **関連実装**: `usage-consumption.mjs`（種別 `actionRank`＝kind "ar"・`resolveConsumeRows` に actionRank ctx・`applyConsumptionPlan` にアクター更新・ダイアログ文言「AR を消費×N」）、`tnx-usage-sheet.mjs`＋`usage-sheet.hbs`（消費種別に「AR（アクションランク）」追加・対象アイテム選択なし=noTarget・種別変更で再描画）、`attack-flow.mjs`（startReaction のパリー AR>0 検証＋AR−1 即時適用を撤去）。正本 [Combat_Flow.md](../01_Wiki/Game_Rules/Combat_Flow.md)「アクションランク」・[Damage_Rules.md](../01_Wiki/Game_Rules/Damage_Rules.md)「パリー」
-**ステータス**: ✅ 実装完了（本体 `545ec86`＋カット進行外の訂正 `785b321`・全テスト green 1190・lint 0 error）・実機確認待ち
+**ステータス**: ✅ 実装完了（本体 `545ec86`＋カット進行外の訂正 `785b321`・全テスト green 1190・lint 0 error）・実機確認済み（2026-07-21・v0.12.0）
 
 #### ルール解釈（メカニクス監査）
 
@@ -1980,7 +1980,7 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 **日付**: 2026-07-12
 **関連実装**: `tnx-check-flow.mjs`（`_trySuitChange`＝スート不一致の置換・`_chooseSuit` 汎用化・クリック待ち kind="suitChange"・結果表示 suitChangedDisplay・再判定スナップショットに allowSuitChange）、`usage.mjs`（`allowSuitChange`/`grantSuitChange`）、`helpers.mjs`（`check.suitChange` パース scope="suitChange"・`actorHasSuitChangeBuff`）、`character-base.mjs`（値バフ適用から suitChange 除外）、`tnx-usage-sheet`＋`usage-sheet.hbs`（判定モードラジオ「スートを変更」・通常モード「スート変更可能」・宣言チェックボックス）、`attack-flow`/`npc-acquisition`（ctx 伝搬・攻撃カードにもスート変更行）。正本 [Check_Rules.md](../01_Wiki/Game_Rules/Check_Rules.md)「スートの変更」・[Active_Effects.md](../01_Wiki/Game_Mechanics/Active_Effects.md)
-**ステータス**: ✅ 実装完了（本体 `bddf224`・全テスト green 1192・lint 0 error）・実機確認待ち
+**ステータス**: ✅ 実装完了（本体 `bddf224`・全テスト green 1192・lint 0 error）・実機確認済み（2026-07-21・v0.12.0）
 
 #### ルール解釈（メカニクス監査）
 
@@ -2007,7 +2007,7 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 **日付**: 2026-07-12
 **関連実装**: ①`tnx-usage-sheet.mjs`（`resolveWeaponRangeValue`・`deriveUsageAutoFill` の射程解決＝本体 `ea4dbe7`） ②`condition-resolution.mjs`＋`condition-prompt.hbs`＋`tnx.mjs`（`conditionDraw` フラグ・`renderConditionDrawCard`＝本体 `1cf7d59`）。正本 [Usage_System.md](../01_Wiki/Game_Mechanics/Usage_System.md)「発動パラメータの自動入力」・[Conditions.md](../01_Wiki/Game_Mechanics/Conditions.md)「カード決定型 BS のドロー機構」
-**ステータス**: ✅ 実装完了（全テスト green 1192・lint 0 error）・実機確認待ち
+**ステータス**: ✅ 実装完了（全テスト green 1192・lint 0 error）・実機確認済み（2026-07-21・v0.12.0）
 
 #### ルール解釈（メカニクス監査）
 
@@ -2029,7 +2029,7 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 **日付**: 2026-07-12
 **関連実装**: `conditions.mjs`（`dominated` 定義・`applyDamageTagMods` 純関数）、`helpers.mjs`（`damage.replaceTag/addTag` パース scope="damageTag"・`gatherDamageTagMods`）、`character-base.mjs`（値バフ適用から除外）、`tnx.mjs`（inflicts カスケードで負傷由来のみ適用）、`treatment-flow.mjs`（上書き由来の支配=目標値20）。正本 [Damage_Rules.md](../01_Wiki/Game_Rules/Damage_Rules.md)「特殊タグ［支配］」・[Conditions.md](../01_Wiki/Game_Mechanics/Conditions.md)・[Active_Effects.md](../01_Wiki/Game_Mechanics/Active_Effects.md)
-**ステータス**: ✅ 実装完了（本体 `552688c`・全テスト green 1200・lint 0 error）・実機確認待ち
+**ステータス**: ✅ 実装完了（本体 `552688c`・全テスト green 1200・lint 0 error）・実機確認済み（2026-07-21・v0.12.0）
 
 #### ルール解釈（メカニクス監査・ユーザー裁定 verbatim ベース）
 
@@ -2055,7 +2055,7 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 **日付**: 2026-07-13
 **関連実装**: `helpers.mjs`（`check.all`＝scope "anyCheck"・`checkChangeMatches` が技能/能力値判定に合致）、`character-base.mjs`（値バフ適用から除外）。正本 [Active_Effects.md](../01_Wiki/Game_Mechanics/Active_Effects.md)
-**ステータス**: ✅ 実装完了（本体 `1a04e40`・全テスト green 1202・lint 0 error）・実機確認待ち
+**ステータス**: ✅ 実装完了（本体 `1a04e40`・全テスト green 1202・lint 0 error）・実機確認済み（2026-07-21・v0.12.0）
 
 #### 監査・レビュー
 
@@ -2069,7 +2069,7 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 **日付**: 2026-07-13
 **関連実装**: `recovery-flow.mjs`（新規＝対象解決・回復対象選択・宣言即除去/判定完了継続 `ctx.recovery`）、`usage.mjs`（recovery/recoveryTargets/recoveryExcludes/recoveryAll/recoveryCount/recoveryTargetFormula）、`conditions.mjs`（純関数 `recoveryKindMatches`/`recoveryKindExcluded`）、`tnx-check-flow.mjs`（完了継続・再判定除外）、`tnx-usage-sheet`＋`usage-sheet.hbs`（〈回復〉fieldset）、導線（sheet-base/item-sheet）。正本 [Conditions.md](../01_Wiki/Game_Mechanics/Conditions.md)「回復・治療系スタイル技能」・[Damage_Rules.md](../01_Wiki/Game_Rules/Damage_Rules.md)「治療」
-**ステータス**: ✅ 実装完了（本体 `a0cbe7b`・全テスト green 1207・lint 0 error）・実機確認待ち
+**ステータス**: ✅ 実装完了（本体 `a0cbe7b`・全テスト green 1207・lint 0 error）・実機確認済み（2026-07-21・v0.12.0）
 
 #### ルール解釈（メカニクス監査・ユーザー裁定）
 
@@ -2096,7 +2096,7 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 **日付**: 2026-07-13
 **関連実装**: `usage-target-value.mjs`（新規・`resolveUsageTargetValue`）、`tnx-character-sheet-base`（用途判定への目標値配線）、`recovery-flow`/`usage.mjs`（recoveryTargetFormula 廃止・migrate 移送）、`tnx-usage-sheet`＋`usage-sheet.hbs`（解説参照でも自由記入欄・deriveWeaponRangeLive・stopPropagation×5）。本体 `80c2619`。正本 [Check_Rules.md](../01_Wiki/Game_Rules/Check_Rules.md)「用途の目標値の扱い」
-**ステータス**: ✅ 実装完了（全テスト green 1213・lint 0 error）・実機確認待ち
+**ステータス**: ✅ 実装完了（全テスト green 1213・lint 0 error）・実機確認済み（2026-07-21・v0.12.0）
 
 #### 経緯・監査
 
@@ -2115,7 +2115,7 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 **日付**: 2026-07-13
 **関連実装**: `attack-weapons.mjs`（新規・`resolveAttackWeapons`/`attackWeaponDisplayName`/`resolveAttackRangeValue`＝テスト付き）、`attack-flow.mjs`（攻撃力合算・FA・残弾消費）、`tnx-usage-sheet`＋`usage-sheet.hbs`（一本目の常時表示・追加候補からシート武器除外）、`character-base.mjs`（スキーマコメントの旧設計上書き）。本体 `9c35314`。正本 [Usage_System.md](../01_Wiki/Game_Mechanics/Usage_System.md)「攻撃の使用武器の解決」
-**ステータス**: ✅ 実装完了（全テスト green 1217・lint 0 error）・実機確認待ち
+**ステータス**: ✅ 実装完了（全テスト green 1217・lint 0 error）・実機確認済み（2026-07-21・v0.12.0）
 
 #### 経緯・監査（ユーザー指摘＝Code の誤モデル）
 
@@ -2133,7 +2133,7 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 **日付**: 2026-07-13
 **関連実装**: `usage.mjs`（npcAcquire フラグ・migrateData: modification→check／npcAcquire→フラグ+タイプ振り分け）、`tnx-usage-sheet`＋`usage-sheet.hbs`（USAGE_TYPES 2択・〈NPC取得〉fieldset を効果タブへ移設・OFF リセット・改造 UI 撤去）、`tnx-character-sheet-base`/`tnx-item-sheet`（フラグゲート・作成2択）、`npc-acquisition.mjs`（変更なし=モード駆動のまま）。本体 `a70a875`。正本 [Check_Rules.md](../01_Wiki/Game_Rules/Check_Rules.md)「用途タイプ」
-**ステータス**: ✅ 実装完了（全テスト green 1220・lint 0 error）・実機確認待ち
+**ステータス**: ✅ 実装完了（全テスト green 1220・lint 0 error）・実機確認済み（2026-07-21・v0.12.0）
 
 #### 監査（ユーザー確定）
 
@@ -2157,7 +2157,7 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 **日付**: 2026-07-13
 **関連実装**: `helpers.mjs`（`check.cardValue` パース scope="cardValue"・`actorCardValueOverride`＝A〜K→生数字・`resolveItemTotalPath("attack.damageType")`＝total なし直接パス）、`character-base.mjs`（**文字列上書きレーン**＝数値評価を通さず置換・先勝ち・値バフ除外に cardValue 追加）、`tnx-check-flow.mjs`（手札/山札の数字を上書きして以降の規約に流す・結果カード「数字上書き（元→後）」行）、`tnx.mjs`（AE 設定シートの値入力を選択式化＝check.cardValue は A〜K・*.attack.damageType は S/P/I/X・キー変更に追従）。本体 `031227b`。正本 [Active_Effects.md](../01_Wiki/Game_Mechanics/Active_Effects.md)
-**ステータス**: ✅ 実装完了（全テスト green 1224・lint 0 error）・実機確認待ち
+**ステータス**: ✅ 実装完了（全テスト green 1224・lint 0 error）・実機確認済み（2026-07-21・v0.12.0）
 
 #### 監査（ユーザー確定）
 
@@ -2187,7 +2187,7 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 **日付**: 2026-07-13
 **関連実装**: `helpers.mjs`（`resolveItemTotalPath` のフルパス正規化・`attack.damageTypeTotal` 着地・`collectTransferredItemEffects`）、`character-base.mjs`（文字列上書き=常に OVERRIDE・`baseAttack.damageTypeTotal` 既定+scope "baseAttackType"）、消費側（attack-flow/戦闘タブ/用途シート=実効値優先）、`effects-sheet-mixin`＋`active-effects-list.hbs`（転送セクション）。本体 `6f3c8f2`。正本 [Active_Effects.md](../01_Wiki/Game_Mechanics/Active_Effects.md)
-**ステータス**: ✅ 実装完了（全テスト green 1227・lint 0 error）・実機確認待ち
+**ステータス**: ✅ 実装完了（全テスト green 1227・lint 0 error）・実機確認済み（2026-07-21・v0.12.0）
 
 #### 経緯（ユーザー指摘3件・いずれも Code の実装不備）
 
@@ -2205,7 +2205,7 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 **日付**: 2026-07-13
 **関連実装**: `active-effects-list.hbs`＋`helpers.mjs`（転送行=通常の効果行と同型・キー羅列と読み取り専用を撤去）、`effects-sheet-mixin`（resolveEffect が供給元=アクター側も解決→転送行から編集/切替/削除が供給元に効く）、`character-base.mjs`（文字列上書きは effect.apply を経由せず直接代入=スキーマ外フィールドのコアキャスト経路を回避）。本体は次コミット。
-**ステータス**: ✅ 実装完了（全テスト green 1227・lint 0 error）・実機確認待ち
+**ステータス**: ✅ 実装完了（全テスト green 1227・lint 0 error）・実機確認済み（2026-07-21・v0.12.0）
 
 #### 経緯（ユーザー指摘）
 
@@ -2217,7 +2217,7 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 **日付**: 2026-07-13
 **関連実装**: `helpers.mjs`（`itemChangeTargets`/`buildTransferredEffectData`＝テスト付き）、`tnx.mjs`（materializeItemTransfers＝効果の作成/更新・アイテム追加で実体化）、`character-base.mjs`（skill/category/parent の遠隔適用を廃止）、仮想「転送された効果」セクション削除。本体 `ea3b565`。正本 [Active_Effects.md](../01_Wiki/Game_Mechanics/Active_Effects.md)
-**ステータス**: ✅ 実装完了（全テスト green 1230・lint 0 error）・実機確認待ち
+**ステータス**: ✅ 実装完了（全テスト green 1230・lint 0 error）・実機確認済み（2026-07-21・v0.12.0）
 
 #### 経緯（ユーザー裁定）
 
@@ -2235,7 +2235,7 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 **日付**: 2026-07-12
 **関連実装**: `tnx-character-sheet-base.mjs`（アウトフィットタブの武器「攻」表示・コンバイン合成の chosenSys("attack") 表示）、`tnx-outfit-sheet.mjs`（説明タブの攻撃力サマリ fmt・`_attackLabel`）——いずれも `damageTypeTotal || damageType`＋`total ?? value` の実効値優先へ。設定欄（outfit-sheet.hbs の `system.attack.damageType` セレクト等）は素値のまま＝仕様。本体 `dbdc6f3`。
-**ステータス**: ✅ 実装完了（全テスト green 1236・lint 0 error）・実機確認待ち
+**ステータス**: ✅ 実装完了（全テスト green 1236・lint 0 error）・実機確認済み（2026-07-21・v0.12.0）
 
 #### 経緯（ユーザー指摘）
 
@@ -2251,7 +2251,7 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 **日付**: 2026-07-12
 **関連実装**: `tnx.mjs`（`materializeItemTransfers`＝既存コピーを供給元の現在値で上書き・狙い外れで除去／`removeItemTransferCopies`＋`deleteActiveEffect`/`deleteItem` フック＝供給元の削除でコピー除去／updateActiveEffect の発火条件に name/img 追加）、`helpers.mjs`（doc コメントの無同期記述を現行モデルへ更新）。本体 `9a1c44a`。正本 [Active_Effects.md](../01_Wiki/Game_Mechanics/Active_Effects.md)
-**ステータス**: ✅ 実装完了（全テスト green 1236・lint 0 error）・実機確認待ち
+**ステータス**: ✅ 実装完了（全テスト green 1236・lint 0 error）・実機確認済み（2026-07-21・v0.12.0）
 
 #### 経緯（ユーザー指摘）
 
@@ -2269,7 +2269,7 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 **日付**: 2026-07-13
 **関連実装**: `helpers.mjs`（parseEffectTargetKey v3＝素のパラメータキー・self/parent/system.skill 綴り廃止・疑似分類 generalSkill/styleSkill／effectAutoApplies／analyzeGrantLanding／itemGrantCandidates／rewriteGrantChangesForItem／buildTransferredEffectData の素キー書き換え・準備先モード・effectId/stackable 引き継ぎ）、`character-base.mjs`（値バフ収集・状態ペナルティ収集にゲート配線・parent スコープ撤去）、`tnx.mjs`（materializeItemTransfers のゲート/準備先分岐・updateItem フック新設＝装着/分類/識別キー変更で再転送・AE 設定シートへの注入=transfer ラベル差し替え「効果を対象に自動適用」＋「準備先（親アイテム）に適用」＋「付与先」）、`usage-effects.mjs`（付与先分岐＝自分向け即時付与・アイテム着地の選択付与・置き換えリフレッシュ・grantedFrom）、`effects-sheet-mixin.mjs`＋`active-effects-list.hbs`（「使用時付与用」セクション）、`outfit-categories.mjs`（OUTFIT_TYPES 導出）。本体 `fb2c582`＋是正 `6dd7b07`。正本 [Active_Effects.md](../01_Wiki/Game_Mechanics/Active_Effects.md)（v3 注記）・[Usage_System.md](../01_Wiki/Game_Mechanics/Usage_System.md)「対象への付与」
-**ステータス**: ✅ 実装完了（全テスト green 1251・lint 0 error）。**注入 UI（保存方式是正込み・transfer→準備先→保存の一連と保存後の転送発火）は実機確認済み（2026-07-13 ユーザー確認）**・付与フロー（選択ダイアログ・対象/自分付与・ダメージ連動）は実機確認継続
+**ステータス**: ✅ 実装完了（全テスト green 1251・lint 0 error）。**注入 UI（保存方式是正込み・transfer→準備先→保存の一連と保存後の転送発火）は実機確認済み（2026-07-13 ユーザー確認）**・付与フロー（選択ダイアログ・対象/自分付与・ダメージ連動）は実機確認済み（2026-07-21・v0.12.0）
 
 #### ルール解釈（メカニクス監査）
 
@@ -2285,7 +2285,7 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 - **transfer の再利用**: 死んでいたネイティブ transfer を「効果を対象に自動適用」ゲートへ昇格（ユーザー提案）。新フラグを増やさず、Foundry ユーザーの既知 UI の意味を自然に拡張。ゲートは effectAutoApplies 一箇所に集約し、収集系（collectActorEffectBuffs／_applyEffectBuffs／状態ペナルティ）が共用。実体化済みインスタンス（transferredFrom/grantedFrom）は常に生きる＝コピーへの transfer=true 付与を避け、コアの applyActiveEffects がアクターへ生パスを書く汚染を防いだ。
 - **キーの役割の一本化**: キー＝「どのパラメータ＋絞り込み」、AE 設定＝「どこに乗るか」（自動適用・準備先・付与先）。self/parent/system.skill の廃止で綴りは死にキー化（黙って別解釈に化けない）。式の `@item.self`/`@item.parent` は「値を引いてくる」参照のため残す（ユーザー確定・キーとは別物）。
 - **転送トリガーの穴を同時に閉塞**: 従来は効果の作成/更新とアイテム追加のみで、装着（parentItemId）・分類・識別キーの変更で再転送されなかった。updateItem フックを追加し準備先転送（準備で転送・解除で除去）とともに解決。
-- **課題・申し送り**: 注入 UI は保存方式是正（追補）を経て実機確認済み。選択ダイアログ・付与フロー（対象/自分・ダメージ連動）は実機確認継続。付与コピーの失効は当面手動（持続時間は時間管理フェーズ）。transferredSourceName の即時性など既存の申し送りは従来どおり。
+- **課題・申し送り**: 注入 UI は保存方式是正（追補）を経て実機確認済み。選択ダイアログ・付与フロー（対象/自分・ダメージ連動）は実機確認済み（2026-07-21・v0.12.0）。付与コピーの失効は当面手動（持続時間は時間管理フェーズ）。transferredSourceName の即時性など既存の申し送りは従来どおり。
 
 #### 追補（2026-07-13・注入 UI の保存方式是正）
 
@@ -2303,7 +2303,7 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 **日付**: 2026-07-13
 **関連実装**: `usage-sheet.hbs`（宣言〈判定〉fieldset に「再判定を付与」チェックボックス追加＝判定を修正の上・独立）、`tnx-usage-sheet.mjs`（declaration ブランチの保存・式欄なし＝再描画不要）、`tnx-check-flow.mjs`（クリック待ち状態に `merge` 追加・開始メッセージの組み合わせ有無分岐・クリック発動で宣言は `mergeSkill: null`）、`tnx-character-sheet-base.mjs`（技能クリックの実行対象フィルタに grantRecheck 宣言を追加・merge 引き渡し）、`tnx-item-sheet.mjs`（merge 引き渡し）。スキーマ変更なし。正本 [Check_Rules.md](../01_Wiki/Game_Rules/Check_Rules.md)「再判定の付与」
-**ステータス**: ✅ 実装完了（全テスト green 1251・lint 0 error）・実機確認待ち
+**ステータス**: ✅ 実装完了（全テスト green 1251・lint 0 error）・実機確認済み（2026-07-21・v0.12.0）
 
 #### ルール解釈（メカニクス監査）
 
@@ -2357,7 +2357,7 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 **日付**: 2026-07-14
 **関連実装**: `tnx-check-flow.mjs`（`recheckBlockReason`＝一度だけ/タイミングゲート・`startRecheck` に `recheckMessageId`・`_applyRecheckReplacement`＝置き換え着地・`_renderResultContent` 抽出・`_onGrantAchievementClick` のモード外=allowRecheck 直接入口・`_applyCheckModify` の manual 変種・`manualEditAchievement`・全幅ボタン廃止＋`tnx-recheck-ready` 常設装飾）、`attack-flow.mjs`（`buildAttackCardContent` 抽出）、`attack-flow-logic.mjs`（純関数 `resolveAttackRecheckState`＋テスト5件）、`damage-flow.mjs`（`manualEditDamage`）、`tnx.mjs`（`getChatMessageContextOptions` フック＝GM 限定メニュー3項目）、`tnx-socket-handler.mjs`（checkModify に content 受理を追加）、`tnx2.css`。正本 [Check_Rules.md](../01_Wiki/Game_Rules/Check_Rules.md)「再判定」「特殊処理の置き場」
-**ステータス**: ✅ 実装完了（全テスト green 1256・lint/stylelint 0 error）・実機確認待ち
+**ステータス**: ✅ 実装完了（全テスト green 1256・lint/stylelint 0 error）・実機確認済み（2026-07-21・v0.12.0）
 
 #### ルール解釈（メカニクス監査・すべて 2026-07-14 ユーザー確定）
 
@@ -2385,7 +2385,7 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 **日付**: 2026-07-14
 **関連実装**: `tnx-dialog.mjs`（AmountInputDialog に `allowOverride`＝上書きチェック・`okLabel`・共有 `spinnerDialogActions`＝step 後に input 発火）、`tnx-check-flow.mjs`（`_applyCheckModify` の上書き対応＝差分正規化＋`overrideTo` 行・`manualEditAchievement` を加減算既定＋上書きチェックへ・`setManualMod`）、`damage-flow.mjs`（同・ロール/軽減ダイアログへ actions 配線）、`tnx-check-dialog.mjs`＋`check-dialog.hbs`（状況修正スピナー常設）、`tnx-check-engine.mjs`（`calcControlCheck` に `manualMod`＝制御値へ加算・テスト2件）、`check-result.hbs`（制御判定の「修正（手動）」行）、`tnx-rl-request-app.mjs`/`treatment-flow.mjs`（代用ダイアログの手動修正欄スピナー化）、テンプレート3種スピナー化。本体 `095b280`。正本 [Check_Rules.md](../01_Wiki/Game_Rules/Check_Rules.md)
-**ステータス**: ✅ 実装完了（全テスト green 1258・lint/stylelint 0 error）・実機確認待ち
+**ステータス**: ✅ 実装完了（全テスト green 1258・lint/stylelint 0 error）・実機確認済み（2026-07-21・v0.12.0）
 
 #### ルール解釈（メカニクス監査・2026-07-14 ユーザー確定）
 
@@ -2410,7 +2410,7 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 **日付**: 2026-07-14
 **関連実装**: `helpers.mjs`（`parseEffectTargetKey` に `itemName`/`partSlot`/`partAdd` スコープ・`AE_FLAG_PARAMS`/`flagTotalPath`/`readFlag`/`computeFlagEffectiveValues`/`parseBooleanFlagValue`・`resolveItemTotalPath` のフラグ正規化・転送書き換えの name/part 対応）、`character-base.mjs`（`_applyEffectBuffs` に真偽上書き/名前装飾/部位追加/部位デルタの処理・`partSlotsEffective` 派生）、`part-helpers.mjs`（`buildEffectivePartSlots`・キー照合の `computePartOccupancy`・`formatPartDesignation` 追加併記・表示逆引き群）、`part-slot-preset-app.mjs`（部位キー列・既定ラベル→キー対応表・`assignPartSlotKeys`/`migratePartSlotKeys`）、`skill-base.mjs`/`outfit-base.mjs`（フラグ実効値派生・`partAdded`）、`active-effect.mjs`（`TokyoNovaActiveEffect`＝Actor への `name` 適用抑止）、読み手掃引（check-engine/check-flow/attack-flow/attack-weapons/damage-logic/cast-sheet/character-sheet/outfit-sheet/tnx.mjs の実効読み化）、名前入力欄8シートの `sourceName` 化、AE 設定シートの値選択/datalist 注入。テスト26件追加。正本 [Active_Effects.md](../01_Wiki/Game_Mechanics/Active_Effects.md) §2.3c–2.3e。
-**ステータス**: ✅ 実装完了（全テスト green 1284・eslint/stylelint 0 error）・実機確認待ち
+**ステータス**: ✅ 実装完了（全テスト green 1284・eslint/stylelint 0 error）・実機確認済み（2026-07-21・v0.12.0）
 
 #### ルール解釈（メカニクス監査・2026-07-14 ユーザー確定）
 
@@ -2432,13 +2432,13 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 - **`noPrepareRequired` の順序境界**: アウトフィット集計（制御値/CS/危険値）は `_applyEffectBuffs` より前に走るため base を読む（AE 反転が乗らない）。実行時ゲートは実効を読む。全経路で完全一致にするには集計をフラグ AE 適用後へ動かす設計が要る（現状は許容の記録）。
 - **`isAction`/`noCombo` の将来対応**: config 書き手（base）と実行時解決（実効）の作り分け＝チェーン再解決の設計が前提。
-- **実機確認待ち**: Foundry 実走での名前装飾の重ね掛け・部位追加の占有表示・フラグ反転の各読み手反映（CLAUDE.md §2.1 によりユーザーが確認）。
+- **実機確認済み（2026-07-21・v0.12.0）**: Foundry 実走での名前装飾の重ね掛け・部位追加の占有表示・フラグ反転の各読み手反映（CLAUDE.md §2.1 によりユーザーが確認）。
 
 ### スタン攻撃・説得の本体メカニクス（宣言→算出段階キャップ・メカニクス監査＋設計レビュー）（フェーズ12 補）
 
 **日付**: 2026-07-15
 **関連実装**: `damage-logic.mjs`（`computeDamage` を「攻撃側合計を10上限にしてから軽減」へ是正・`attack` を返す）、`tnx-check-flow.mjs`（`setStunDeclared`）、`tnx-check-dialog.mjs`＋`check-dialog.hbs`（攻撃の判定に既定オフの宣言トグル）、`attack-flow.mjs`（攻撃ペイロードに `stunDeclared`）、`damage-flow.mjs`（宣言フラグ受け取り・台帳の10上限表示・軽減ダイアログの再確認廃止）、`usage-sheet.hbs`＋`tnx-usage-sheet.mjs`（`canStun` を物理攻撃限定の能力ゲートに）、`damage-mitigation-dialog.hbs`（宣言表示）、`css/tnx2.css`。computeDamage テストに順番固定ケース追加。正本 [Damage_Rules.md](../01_Wiki/Game_Rules/Damage_Rules.md)「スタン攻撃」「説得」。
-**ステータス**: ✅ 実装完了（全テスト green 1285・eslint/stylelint 0 error）・実機確認待ち。**10 上限の位置のみ 2026-07-16 ユーザー裁定で要是正（恒久軽減後＝算出の一番最後・KI-024）**
+**ステータス**: ✅ 実装完了（全テスト green 1285・eslint/stylelint 0 error）・実機確認済み（2026-07-21・v0.12.0）。**10 上限の位置のみ 2026-07-16 ユーザー裁定で要是正（恒久軽減後＝算出の一番最後・KI-024）**
 
 #### ルール解釈（メカニクス監査・2026-07-14〜15 ユーザー確定・正本=スキルディクショナリ「攻撃とダメージのフローチャート」）
 
@@ -2462,7 +2462,7 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 
 - **単体※の選び直し**: 複数対象一括を実装した後（下の 2026-07-15 追補）も、スタン／説得の単体※は**先頭の命中対象で成立**させている。複数ターゲット時に「効果等で変更不可の単体」をユーザーへ明示選択させる UI は未実装（現状は先頭固定で満たす）。
 - **再判定時の宣言引き継ぎ**: recheck スナップショットに stunDeclared を含めるかは未対応（edge case）。
-- **実機確認待ち**: 判定ダイアログのトグル→攻撃カード→ダメージカードの 10 表示→適用の一連（CLAUDE.md §2.1 によりユーザーが確認）。
+- **実機確認済み（2026-07-21・v0.12.0）**: 判定ダイアログのトグル→攻撃カード→ダメージカードの 10 表示→適用の一連（CLAUDE.md §2.1 によりユーザーが確認）。
 
 #### 追補（2026-07-15 同セッションの是正・拡張）
 
@@ -2480,13 +2480,13 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 - **対象依存値の近似**: 攻撃側合計に効く `@target.*`・対象バフ AE は共有のため**先頭の命中対象で近似**（`hitTargets[0]`）。単体※のスタン／説得も先頭対象で成立。
 - **再判定（置き換え着地）の配列化＝統合欠落の是正**: 配列化で攻撃フラグの `state/resolution/targetValue/targetUuid` を各 `targets[i]` へ移したため、旧・単体前提の再判定分岐（トップレベル単体フィールドを読み書き）が機能しなくなっていた（テスト・lint は緑でも実経路が壊れる＝[[feedback_verify_integration_not_just_params]] の類型）。是正: `attack-flow.rebuildRecheckedTargets` が**共有達成値の再ロールを対象リスト全体へ再解決**（リアクションのやり直しはしない＝保存済み相手値で成否・差分を再導出。純判定は既存 `resolveAttackRecheckState`）。仕切り直し（pending 復帰）対象は対決系保存値を初期化し**新スートの制御値を取り直す**。上位状態も fumble/miss/open/active へ導き直す。加えて、リアクションが**別カードのスナップショット**になった帰結として、`refreshReactionCardsAfterRecheck` が**未解決リアクションカードの達成値/スート/本文を追従**（全体失敗＝ファンブル/スート不一致に転じたらリアクション余地なしとして未解決カードを削除）。再判定の実行者は攻撃者（＝各カードの author）か GM のため更新権限がある。
 - **既知の小限界**: 複数ターゲット時に「効果等で変更不可の単体」を明示選択させる UI は未実装（スタン/説得は先頭固定）。`@target.*`/対象バフは先頭命中対象で近似（対象ごとに異なる対象依存ダメージ修正は未対応）。
-- 検証: `npm test` 全 1285 通過・`npm run lint`（eslint）0 error・`npm run lint:css`（stylelint）clean。`rebuildRecheckedTargets` は Foundry 結合（`fromUuid`）のため慣行どおり単体テスト対象外（純判定 `resolveAttackRecheckState` は既存テストで担保）。**実機確認待ち**（CLAUDE.md §2.1）。
+- 検証: `npm test` 全 1285 通過・`npm run lint`（eslint）0 error・`npm run lint:css`（stylelint）clean。`rebuildRecheckedTargets` は Foundry 結合（`fromUuid`）のため慣行どおり単体テスト対象外（純判定 `resolveAttackRecheckState` は既存テストで担保）。**実機確認済み（2026-07-21・v0.12.0）**（CLAUDE.md §2.1）。
 - **UI 調整（実機フィードバック・2026-07-15）**: ①個別リアクションカードの状態領域 `.tnx-reaction-status` に余白が無く、解決後の目標値/差分行・成否バナーが無余白だった → 解決後は目標値/差分を `cr-calc-section` へ足し成否は `cr-result` フルバナー（check-result と同型）、未解決の注記/ボタンは内側余白の `.tnx-reaction-actions` ラッパへ。②ダメージカードの合計値が狭いカードで縦折り返し → `.cr-total-num` を `white-space:nowrap; flex-shrink:0`、対象名込みの長いラベルは `.cr-total-row .cr-calc-label` を `min-width:0; overflow-wrap:anywhere` で折り返し側へ。③「効果を適用済み」等の `・` 連結名は、名前自体が `・`（例「カブキ・トループ」）を含むと区切り不明 → 各名を `「」` で囲う（`usage-effects`・`damage-flow` の対象名/効果名・警告文。既存 `npc-acquisition` の `map(i => \`「${i.name}」\`)` 様式に統一）。
 
 #### 追補（2026-07-15 達成値の下限・技能起動の単一関数集約）
 
 - **達成値の 0 下限**（ルール）: ユーザー確定「判定結果はマイナスにならない」。AE ペナルティ等で計算途中は負でも最終達成値は 0 まで戻す。`calcSkillCheck`（基本計算）と `_applyCheckModify` の `newAch`（事後修正／GM 手動）の両方を `Math.max(0, …)`。GM 手動ツールは使用自体を制限しないが結果値は下限に従う。制御判定は達成値を持たないため対象外。テスト追加（`tnx-check-engine.test.mjs`・大ペナルティ／負の能力値実効値で 0）。正本＝[[Check_Rules]]「達成値の下限」。
-- **技能起動の単一関数集約**（アーキテクチャ・設計レビュー／ユーザー確定「技能の起動は必ず一つの関数だけ・新しい起動関数を作らない・入口は多くてよいが実体は 1 つ」）: 従来は起動が 5 箇所に分散し、シートクリック以外（リアクション/治療/操縦移動/判定要求）は**用途処理の一部を手組みして迂回**していた（適用効果・不備検知・複数用途選択の欠落、操縦移動と判定要求に至っては**用途を一切見ない単一技能**）。→ `TnxCharacterSheetBase._activateItemCheck(actor, item, extraOpen)` を**唯一の起動関数**とし、`_onStartSkillCheck` は DOM から `(actor,item)` を解決して呼ぶ薄い入口に。**4 迂回箇所（`startReaction`／`startTreatment`／`startVehicleMove`／`onDoCheck` の技能判定分岐）は各自の追加文脈（`reaction`/`treatment`/`movement`/`requestMessageId`・目標値上書き・代用）だけを `extraOpen` に載せてこの 1 関数を呼ぶ**形へ置換（`extraOpen` は通常判定の `open` へ最後に合流し既定を上書き）。**帰結＝これらも用途のコンボ・消費・判定ボーナス・適用効果を通す**＝挙動がシートクリックと完全一致（操縦移動・判定要求は従来の単一技能から挙動変更）。**設計原則: 組み合わせ（コンボ）の可否は（RL を含む）ユーザーのみが決定権を持ち、システム側は一切制限しない**（ユーザー確定）。対象外＝能力値/制御判定・シナリオ情報収集（技能名のみで技能アイテムを起動しない）・再判定の再入（保存済み ctx の再実行）。付随して起動集約で死んだ手組みロジック（`treatment-flow.resolveCheckSkillSet`・各所の未使用 import）を除去。技能選択ダイアログのラベルを 1 行（「〈モード〉に使用する技能を選択」）に短縮し、ラベルは全幅・プルダウンは `max-width` で据え置き（`.tnx-select-dialog`）。検証＝全 1286 テスト green・eslint/stylelint 0 error。**実機確認待ち**（CLAUDE.md §2.1・特にリアクション/治療/操縦移動/判定要求の一連が正規フローで走ること）。
+- **技能起動の単一関数集約**（アーキテクチャ・設計レビュー／ユーザー確定「技能の起動は必ず一つの関数だけ・新しい起動関数を作らない・入口は多くてよいが実体は 1 つ」）: 従来は起動が 5 箇所に分散し、シートクリック以外（リアクション/治療/操縦移動/判定要求）は**用途処理の一部を手組みして迂回**していた（適用効果・不備検知・複数用途選択の欠落、操縦移動と判定要求に至っては**用途を一切見ない単一技能**）。→ `TnxCharacterSheetBase._activateItemCheck(actor, item, extraOpen)` を**唯一の起動関数**とし、`_onStartSkillCheck` は DOM から `(actor,item)` を解決して呼ぶ薄い入口に。**4 迂回箇所（`startReaction`／`startTreatment`／`startVehicleMove`／`onDoCheck` の技能判定分岐）は各自の追加文脈（`reaction`/`treatment`/`movement`/`requestMessageId`・目標値上書き・代用）だけを `extraOpen` に載せてこの 1 関数を呼ぶ**形へ置換（`extraOpen` は通常判定の `open` へ最後に合流し既定を上書き）。**帰結＝これらも用途のコンボ・消費・判定ボーナス・適用効果を通す**＝挙動がシートクリックと完全一致（操縦移動・判定要求は従来の単一技能から挙動変更）。**設計原則: 組み合わせ（コンボ）の可否は（RL を含む）ユーザーのみが決定権を持ち、システム側は一切制限しない**（ユーザー確定）。対象外＝能力値/制御判定・シナリオ情報収集（技能名のみで技能アイテムを起動しない）・再判定の再入（保存済み ctx の再実行）。付随して起動集約で死んだ手組みロジック（`treatment-flow.resolveCheckSkillSet`・各所の未使用 import）を除去。技能選択ダイアログのラベルを 1 行（「〈モード〉に使用する技能を選択」）に短縮し、ラベルは全幅・プルダウンは `max-width` で据え置き（`.tnx-select-dialog`）。検証＝全 1286 テスト green・eslint/stylelint 0 error。**実機確認済み（2026-07-21・v0.12.0）**（CLAUDE.md §2.1・特にリアクション/治療/操縦移動/判定要求の一連が正規フローで走ること）。
 
 #### 追補（2026-07-15 リアクション成否表記・BS バッジ表示・捕縛の対象武器機構・計算行の折り返し）
 
@@ -2494,7 +2494,7 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 - **BS バッジに効果値/対象を表示**（状態タブ・正本 [[Bad_Status]] の表記に従う）: 従来バッジは名前＋アイコンのみ。→ `readConditions` から `_bsValueSuffix` で表記を作り名前に付す。**表記は wiki 正本どおり**＝邪毒/電子妨害は名前に数字直付け（`[BS：邪毒n]`/`[BS：電子妨害n]`）、衰弱は `（-n）`・スート引き版は `（能力値の制御値 -n）`、重圧は `（能力値）`（`[BS：重圧(生命)]`）、萎縮/憎悪は `（対象名）`、捕縛は `（武器名/生身）`。**効果や名前で値が決まるもの（酩酊(大/小)・恐慌 等）は表示しない**。カードで決まるもの（重圧の指定なし・衰弱のスート引き）は**ドロー結果が `conditions[kind]` に保存済み**のため再描画で自然に表示される。**戒め＝表記を設計する前に必ず Bad_Status.md を引く**（「強度2」という語を wiki 記載 `[BS：電子妨害n]` を読まずにでっち上げ強叱責・[[feedback_consult_wiki_before_asking]]）。
 - **捕縛の対象武器指定機構を新設**: 従来は効果設定の生キー手入力欄のみで指定機構として機能せず。→ 効果設定シート詳細タブに `対象武器` プルダウン（対象アクターの `type:"weapon"`＋**生身**）。保持は `targetWeapon`＝**アイテム ID・空=生身**（攻撃の `attackItemId` と同型）。`readConditions` に `targetWeapon` を追加。
 - **計算行のラベル折り返し是正**（リアクションカードの「攻撃」が縦に割れる）: `.cr-calc-label` を `flex-shrink:0; white-space:nowrap`（短いラベルは折り返さず値側を折り返す）。合計行だけは例外（対象名込みの長ラベルを折り返す）＝`.cr-total-row .cr-calc-label` に `white-space:normal; flex-shrink:1` を上書き。
-- 検証＝全 1286 テスト green・eslint/stylelint 0 error。**実機確認待ち**。
+- 検証＝全 1286 テスト green・eslint/stylelint 0 error。**実機確認済み（2026-07-21・v0.12.0）**。
 
 #### 追補（2026-07-15 BS効果の任意編集ダイアログ・NPC取得の再判定＝表示のみ）
 
@@ -2510,9 +2510,9 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
   - **リアクションの再判定＝プレイヤー導線も付与（是正）**: フック順 `renderReactionCard`→`renderRecheckButton` を利用し、`renderReactionCard` の解決表示で**リアクション達成値を「達成値」総計行**として描く（`renderRecheckButton` がこの行を再判定/修正の対象に拾う＝プレイヤーの達成値クリックが効く・GMメニューも併用）。「リアクションしない」は checkRecheck 非保存＝再判定なし（カード未プレイのため）。
   - **リアクションの適用効果＝保持（是正）**: リアクションカードに `usageEffects` を保存し `renderUsageEffectButton` が「効果を適用」ボタンを出す（`attackCheck` フラグ非保持のため発火）。
   - **統一起動の同種取りこぼし＝操縦移動も是正**: 専用カードを出すフロー（攻撃・操縦移動・リアクション）は統一起動 `_activateItemCheck` が用意する `usageEffects` を専用カードへ載せる必要がある。攻撃は既に対応済み、**操縦移動も `postMovementCard` が `usageEffects` を保存**するよう是正（リアクションと同型）。通常結果カードを使うフロー（治療/回復/NPC取得/controlNegate/RL要求）は元々 `usageEffects`＋再判定が結果カードに乗るため対応不要。
-  - 検証＝全 1286 テスト green・eslint/stylelint 0 error。**実機確認待ち**。
+  - 検証＝全 1286 テスト green・eslint/stylelint 0 error。**実機確認済み（2026-07-21・v0.12.0）**。
 
-- **BS バッジの効果値表示＝名前と値を分離＋長い値は縮小して収める（2026-07-15 是正・ユーザー指摘「衰弱の効果値が長すぎて表示しきれない」）**: バッジ本文を `名前`＋`値`の別要素に分離（`.tnx-bs-label`＝内容幅／`.tnx-bs-value` を `.tnx-bs-value-wrap` 内）。値は**既存の `.squeeze-text`（`_applyTextSqueezing` の scaleX 縮小・ResizeObserver 再計測）**で残り幅に収める（衰弱「（生命の制御値 -3）」等の長い効果値対応）。検証＝stylelint 0 error。**実機確認待ち**。
+- **BS バッジの効果値表示＝名前と値を分離＋長い値は縮小して収める（2026-07-15 是正・ユーザー指摘「衰弱の効果値が長すぎて表示しきれない」）**: バッジ本文を `名前`＋`値`の別要素に分離（`.tnx-bs-label`＝内容幅／`.tnx-bs-value` を `.tnx-bs-value-wrap` 内）。値は**既存の `.squeeze-text`（`_applyTextSqueezing` の scaleX 縮小・ResizeObserver 再計測）**で残り幅に収める（衰弱「（生命の制御値 -3）」等の長い効果値対応）。検証＝stylelint 0 error。**実機確認済み（2026-07-21・v0.12.0）**。
 
 - **達成値21固定＝完全固定の徹底（2026-07-15 ユーザー確定）**: A の 21固定は engine 段階（`calcSkillCheck` FIXED_21）で報酬点・能力値・判定バフ/ボーナス・状況修正を無視済みだが、通常経路の事後修正が抜けていた。→ `_applyCheckModify` に `checkF.result.fixedAt21` ガードを追加し、**用途「判定を修正」＝通常経路は 21固定でブロック**。**GM メニュー「達成値を修正（手動）」＝管理者権限の最終裁定（`manual`）だけは通す**（ユーザー確定）。正本＝[[Check_Rules]]「Aの達成値21固定」。
 
@@ -2521,7 +2521,7 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
   - **`openMitigationDialog` を対象ごとの攻撃側合計へ**: `resolvedTargets` に `mods` を取り込み、各対象の `targetRaw = 共有raw + その対象の modsSum` でプレビュー/適用（`computeDamage` の `damageCard` を per-target 化）。
   - **カードに対象ごとの「適用予定ダメージ」を表示**（`targetPlannedPreview`＝共有攻撃側合計＋その対象の防御側修正−自動軽減・手動軽減は適用ダイアログで最終調整のため予定表示）。適用済み表示に「ダメージ修正（防御側）」行を追加。
   - **適用ボタンのアクセスを RL と攻撃者に**（`canApply = isGM || attacker.isOwner`。各自が算出後〜適用前の増減を切り終えたら RL/攻撃者が押して全対象へ一括適用）。
-  - ※スタン上限は攻撃側合計（共有・攻撃側）にかかったまま。防御側 modifyDamage は攻撃側合計側（cap 前）に乗る＝現行メカニクスを踏襲（スタン時は上限で吸収され得る＝既存の性質）。検証＝全 1286 テスト green・eslint/stylelint 0 error。**実機確認待ち**。**この per-target 土台の上に「別種類として適用」（当初目的）を載せる**のが次段。
+  - ※スタン上限は攻撃側合計（共有・攻撃側）にかかったまま。防御側 modifyDamage は攻撃側合計側（cap 前）に乗る＝現行メカニクスを踏襲（スタン時は上限で吸収され得る＝既存の性質）。検証＝全 1286 テスト green・eslint/stylelint 0 error。**実機確認済み（2026-07-21・v0.12.0）**。**この per-target 土台の上に「別種類として適用」（当初目的）を載せる**のが次段。
 
 #### 追補（2026-07-15 リアクションの追加挙動＝範囲攻撃へのリアクション/攻撃を失敗させる・全公開・攻撃者へのAE）
 
@@ -2535,15 +2535,15 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 - **リアクションの適用効果は攻撃者へ**: リアクションの対象は「なし」のため、用途に付与先「対象」の AE があれば**攻撃者**へ返す。`prepareUsageEffectPayload` に `targetOverride` を追加し、`_activateItemCheck` がリアクション時に攻撃カードの `attackerUuid` から攻撃者を解決して渡す（対象確認ダイアログを挟まない・空配列＝攻撃者未解決時は対象なし）。付与先「自分」は従来どおりリアクター自身へ即時。
 - **監査結果 ✅**: 範囲攻撃へのリアクション/攻撃を失敗させるの区別・全員回避の帰結・公開範囲・AE の攻撃者返しはすべてユーザー確定に一致。用語は在ゲーム呼称のみ（`areaCover` は内部識別値でありユーザー可視文字列に出さない・表示は「範囲攻撃へのリアクション」＝[[feedback_no_dev_terms_in_ui]]）。
 - **課題・申し送り**: ①非 GM・非攻撃者のリアクターが範囲/失敗を発火した場合、他対象カードの削除権限が無く**カードが残る**（inert・ガードで無害）＝掃除の GM 委譲は未実装。②「リアクション」セクションの**技能特性に応じた表示切替は後続**（当面は全用途表示）。③範囲攻撃へのリアクションで既に解決済みだった対象（先に被弾/回避）も miss へ上書きする（＝全員回避の確定挙動・ユーザー意図どおり）。
-- 検証＝全 1286 テスト green・eslint/stylelint 0 error（変更ファイルに新規警告なし）。**実機確認待ち**（CLAUDE.md §2.1）。
+- 検証＝全 1286 テスト green・eslint/stylelint 0 error（変更ファイルに新規警告なし）。**実機確認済み（2026-07-21・v0.12.0）**（CLAUDE.md §2.1）。
 
-**リアクター解決を「誰がクリックしたか」へ変更（2026-07-15 ユーザー確定・実機フィードバック）**: 実機で「別キャラで肩代わりしたのに対象キャラのリアクションになる」と指摘。原因＝`resolveReactor` が `controlled[0]?.actor ?? game.user.character`（選択トークン優先）で、攻撃対象のトークンが選択されたままだと対象を拾っていた（＋リアクションカードが対象の発話者・名前のまま＝見た目も対象）。**ユーザー裁定「カードが誰の名前で作られたかではなく、誰がクリックしたかで判断する方式に変更すべき」**。→ ①`resolveReactor` を **`game.user.character ?? controlled[0]?.actor`** に是正（クリックしたユーザーの割り当てキャラを最優先・GM 等の未割り当てのみ選択トークンへフォールバック）。②解決後のリアクションカードに **`reactorName`**（＝クリックしたユーザーのキャラ名）を保存し、`renderReactionCard` の解決表示に「リアクション: 「名前」（ドッジ 等）」として明示（対象と別人＝肩代わりが一目で分かる）。「リアクションしない」も対象＝リアクター名を保存。検証＝全 1286 テスト green・eslint/stylelint 0 error。**実機確認待ち**（この後 2026-07-16 に実機確認済みとユーザー報告）。**申し送り**＝1 ユーザーが複数キャラを所有し割り当てキャラ以外で肩代わりしたい場合は、そのキャラを割り当てるか（未割り当て前提の）トークン選択が要る（明示ピッカーは今回不採用＝「クリックしたユーザーで判断」の決定的方式をユーザーが選択）。
+**リアクター解決を「誰がクリックしたか」へ変更（2026-07-15 ユーザー確定・実機フィードバック）**: 実機で「別キャラで肩代わりしたのに対象キャラのリアクションになる」と指摘。原因＝`resolveReactor` が `controlled[0]?.actor ?? game.user.character`（選択トークン優先）で、攻撃対象のトークンが選択されたままだと対象を拾っていた（＋リアクションカードが対象の発話者・名前のまま＝見た目も対象）。**ユーザー裁定「カードが誰の名前で作られたかではなく、誰がクリックしたかで判断する方式に変更すべき」**。→ ①`resolveReactor` を **`game.user.character ?? controlled[0]?.actor`** に是正（クリックしたユーザーの割り当てキャラを最優先・GM 等の未割り当てのみ選択トークンへフォールバック）。②解決後のリアクションカードに **`reactorName`**（＝クリックしたユーザーのキャラ名）を保存し、`renderReactionCard` の解決表示に「リアクション: 「名前」（ドッジ 等）」として明示（対象と別人＝肩代わりが一目で分かる）。「リアクションしない」も対象＝リアクター名を保存。検証＝全 1286 テスト green・eslint/stylelint 0 error。**実機確認済み（2026-07-21・v0.12.0）**（この後 2026-07-16 に実機確認済みとユーザー報告）。**申し送り**＝1 ユーザーが複数キャラを所有し割り当てキャラ以外で肩代わりしたい場合は、そのキャラを割り当てるか（未割り当て前提の）トークン選択が要る（明示ピッカーは今回不採用＝「クリックしたユーザーで判断」の決定的方式をユーザーが選択）。
 
 ### 別のダメージとして適用（当初目的・per-target 土台の上に実装）（フェーズ12 補）
 
 **日付**: 2026-07-16
 **関連実装**: `damage-flow.mjs`（`openMitigationDialog` に `applyCategory` 引数・`renderDamageCard` に展開式ボタン群・適用済み表示に差し替え系統の明示）、`css/tnx2.css`（`.tnx-damage-altapply`/`.tnx-damage-altnote`）。正本 [Damage_Rules.md](../01_Wiki/Game_Rules/Damage_Rules.md)「別のダメージとして適用」。
-**ステータス**: ✅ 実装完了（全 1286 テスト green・eslint/stylelint 0 error）・実機確認待ち
+**ステータス**: ✅ 実装完了（全 1286 テスト green・eslint/stylelint 0 error）・実機確認済み（2026-07-21・v0.12.0）
 
 #### ルール解釈（メカニクス監査・2026-07-16 ユーザー確定＝AskUserQuestion で 3 点確定）
 
@@ -2565,13 +2565,13 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 #### 課題・申し送り
 
 - 別系統として適用したときのスタン10上限・説得の扱いは上記の保守的解釈（10上限は保持・説得は元系統精神のみ）。別系統適用と説得/スタンの組み合わせに固有ルールがあれば要追補。
-- 実機確認待ち（CLAUDE.md §2.1）。
+- 実機確認済み（2026-07-21・v0.12.0）（CLAUDE.md §2.1）。
 
 ### ダメージ算出の是正（防御力・受け値を算出で確定）＋カバー（フェーズ12 補）
 
 **日付**: 2026-07-16
 **関連実装**: `damage-flow.mjs`（`targetPlannedPreview` を防御力/受け値に分離・`renderDamageCard` の行を最終ダメージ表示＋カバー表示/クリック・`openMitigationDialog` を縮小＝防御力/受け値固定＋手動軽減/社会報酬点のみ・`handleCoveringClick`/`completeCoveringFromCheck` 新設）、`usage.mjs`（`covering` フラグ）、`usage-sheet.hbs`＋`tnx-usage-sheet.mjs`（カバー トグル＋保存）、`tnx-check-flow.mjs`（`covering` クリック待ち種別＋完了ディスパッチ）、`tnx-character-sheet-base.mjs`（`_activateItemCheck` にカバー待ち受け分岐＋再入時の用途プリセレクト）、`css/tnx2.css`。正本 [Damage_Rules.md](../01_Wiki/Game_Rules/Damage_Rules.md)「算出の適用順序（表示）」「カバー」。
-**ステータス**: ✅ 実装完了（全 1286 テスト green・eslint/stylelint 0 error）・実機確認待ち
+**ステータス**: ✅ 実装完了（全 1286 テスト green・eslint/stylelint 0 error）・実機確認済み（2026-07-21・v0.12.0）
 
 #### ルール解釈（メカニクス監査・2026-07-16 ユーザー確定）
 
@@ -2592,11 +2592,11 @@ isGhost 時の CS 無効化・住居の isCarrying 非表示・hide "control" �
 #### 課題・申し送り
 
 - カバーの判定は通常の結果カードも出す（カバーの旨は結果カードには明示していない＝通知＋ダメージカードの付け替え表示で担保）。カバー結果カードの再判定は付け替えを再実行しない（`_buildRecheckContext` に covering を含めない＝表示のみ）。
-- 実機確認待ち（CLAUDE.md §2.1・特に「カバー技能をアイテムロール→対象クリック→判定→付け替え」「防御力・受け値がカードの各行に出る」「適用ダイアログが手動/報酬点のみに縮小」の一連）。
+- 実機確認済み（2026-07-21・v0.12.0）（CLAUDE.md §2.1・特に「カバー技能をアイテムロール→対象クリック→判定→付け替え」「防御力・受け値がカードの各行に出る」「適用ダイアログが手動/報酬点のみに縮小」の一連）。
 
 #### 追補（2026-07-16 ユーザー指摘：防御力の合算源＝戦闘タブの合計に一本化）
 
-Part A で防御力が各キャラ行の最終ダメージに載るようになった結果、「適切な防御力が引かれていない」とユーザー指摘。原因＝ダメージ算出の `aggregateDefence` は **armor/cyborg のみ**を合算しており、**搭乗中ヴィークルの防御力が抜けていた**（一方 戦闘タブの合計 `combatDefenceTotal` は armor/cyborg/**vehicle** を合算＝両者が乖離していた・[[feedback_trace_data_path_before_presentation]]）。ユーザー確定「適用されるべき防御力は戦闘タブに表示されている全防御力の合計」。→ ①`aggregateDefence` に **vehicle** を追加（`usable` 判定・`S_total??S_defence` の読みは元々同一なので、これで戦闘タブ合計と一致）。②**シートの `combatDefenceTotal` をインライン計算から `aggregateDefence(items)` 呼び出しに一本化**（同じ合算を2箇所で持たない＝将来の乖離防止）。Part A/カバーの軽減はこの `aggregateDefence` を通るため両方が是正される。テスト追加（ヴィークル防御力の合算）。全 1321 テスト green。**実機確認待ち**。
+Part A で防御力が各キャラ行の最終ダメージに載るようになった結果、「適切な防御力が引かれていない」とユーザー指摘。原因＝ダメージ算出の `aggregateDefence` は **armor/cyborg のみ**を合算しており、**搭乗中ヴィークルの防御力が抜けていた**（一方 戦闘タブの合計 `combatDefenceTotal` は armor/cyborg/**vehicle** を合算＝両者が乖離していた・[[feedback_trace_data_path_before_presentation]]）。ユーザー確定「適用されるべき防御力は戦闘タブに表示されている全防御力の合計」。→ ①`aggregateDefence` に **vehicle** を追加（`usable` 判定・`S_total??S_defence` の読みは元々同一なので、これで戦闘タブ合計と一致）。②**シートの `combatDefenceTotal` をインライン計算から `aggregateDefence(items)` 呼び出しに一本化**（同じ合算を2箇所で持たない＝将来の乖離防止）。Part A/カバーの軽減はこの `aggregateDefence` を通るため両方が是正される。テスト追加（ヴィークル防御力の合算）。全 1321 テスト green。**実機確認済み（2026-07-21・v0.12.0）**。
 
 #### 追補（2026-07-16 ユーザー指摘：表示のはみ出し・冗長の撤廃／[[feedback_self_review_ui_output]] 起票）
 
@@ -2605,13 +2605,13 @@ Part A で防御力が各キャラ行の最終ダメージに載るようにな�
 - **カバーの二重表示を解消**＝`buildDamageTargets` はカバーされた元対象をダメージカードに**載せない**（カバーした側の行だけ）。ダメージカードは被弾者のみ＝「対象N体」も正しい。被弾しない事実は攻撃カードの「〜がカバー」で分かる。
 - **リアクションしない**＝「制御値」と成否だけ（「（リアクションしない）」を繰り返さない）。カード解決の実行者名は**肩代わり（reactor≠target）時のみ**添える。verdict は「被弾」（「（攻撃命中）」を削る）。
 - **無意味な「」を撤廃**（カバー行/注記/攻撃カードのカバー表記の入れ子「」を除去）。**ただし ・区切りの対象一覧は「」を残す**（名前が ・ を含む場合の区切り＝以前のユーザー要望）。
-- 全 1321 テスト green・eslint/stylelint 0 error。**実機確認待ち**。
+- 全 1321 テスト green・eslint/stylelint 0 error。**実機確認済み（2026-07-21・v0.12.0）**。
 
 ### コンディション効果の無視ゲート（`ignore.*`・フェーズ12）
 
 **日付**: 2026-07-16
 **関連実装**: `helpers.mjs`（`parseEffectTargetKey` に `scope:"ignore"` 分岐）、`conditions.mjs`（`ignoreRuleMatches`/`gatherIgnoreRules`/`getEffectiveConditions`＝正規アクセサ・手動フラグ合流・`gatherPartSlotMods` を実効コンディション入力へ変更）、`tnx-check-flow.mjs`（`_gatherConditions` をアクセサ経由の非無視のみに）、`character-base.mjs`（制御値ペナルティ・部位スロットをアクセサ経由に）、`tnx-character-sheet-base.mjs`＋`bad-status-list.hbs`＋`css/tnx2.css`（無視中 BS の取り消し線＋供給元 tooltip・**バッヂのコンテキストメニュー手動トグル**）、`tnx.mjs`（AE キー datalist に `ignore.*`）。正本 [Conditions.md](../01_Wiki/Game_Mechanics/Conditions.md)「効果の無視ゲート」／[Active_Effects.md](../01_Wiki/Game_Mechanics/Active_Effects.md)「無視ゲート」。
-**ステータス**: ✅ 実装完了（全 1303 テスト green・eslint/stylelint 0 error）・実機確認待ち
+**ステータス**: ✅ 実装完了（全 1303 テスト green・eslint/stylelint 0 error）・実機確認済み（2026-07-21・v0.12.0）
 
 #### ルール解釈（メカニクス監査・2026-07-16 ユーザー確定）
 
@@ -2632,14 +2632,14 @@ Part A で防御力が各キャラ行の最終ダメージに載るようにな�
 #### 課題・申し送り
 
 - **消費点の網羅はフェーズ13 依存**: 恐慌（リアクション不可）・捕縛（武器不可）・狼狽（ムーブ不可）・戦闘不能（メインプロセス不可）・邪毒（継続ダメージ）の効果は 13 で消費点が実装される＝そのとき `getEffectiveConditions` 経由で書けば自動でゲートされる（据え置き＝先送りでなく設計上の依存）。
-- 実機確認待ち（CLAUDE.md §2.1・特に「`ignore.bs` 付与で酩酊/衰弱等の数値が効かなくなる」「`ignore.damage.physical` で肉体由来 BS のみ無視」「バッヂは残り取り消し線が出る」）。
+- 実機確認済み（2026-07-21・v0.12.0）（CLAUDE.md §2.1・特に「`ignore.bs` 付与で酩酊/衰弱等の数値が効かなくなる」「`ignore.damage.physical` で肉体由来 BS のみ無視」「バッヂは残り取り消し線が出る」）。
 
 ### 負傷そのものの直接効果（特定技能ペナルティ／使用不可／報酬点不可）
 
 **日付**: 2026-07-16
 **関連実装**: `damage-chart.mjs`（7 負傷 def に `skillPenalty`/`skillBlock`/`bountyBlock`/`sceneDeferred`・ヘッダ更新）、`conditions.mjs`（`gatherConditionCheckSources` に skillPenalty＋pendingScene 除外・新 `gatherSkillUseWarnings`/`hasBountyBlock`・`readConditions` に `targetSkill`/`pendingScene`）、`tnx-check-flow.mjs`（`skillKeys` を ctx へ・`open` の `_activationBlockReason` で②使用不可＋重圧・能力値判定を起動ブロック）、`tnx-character-sheet-base.mjs`（`bountyBlocked` で `bountyAvailable=0`・`_getAbilitiesData` の `checkBlocked` で重圧の能力値をクリック不可）、`condition-resolution.mjs`＋`tnx.mjs` フック（社会/コネ選択は `promptWoundSkillSelection` を **`createActiveEffect` フック**で実行＝付与経路を問わない・ドロー受付と同じ場所。休眠は `readConditions` が `def.sceneDeferred` から導出）、`tnx.mjs`＋`check-result.hbs`（`signed` ヘルパーでマイナス修正表記是正）、**`ui-trigger-disable.mjs`（新規・テスト付き）＝グレーアウト＋クリック不能の共通ユーティリティ `applyTriggerDisable`**・`_onRender` で技能(使用不可)＋能力値(重圧)トリガーに適用・`css/tnx2.css` の `.tnx-trigger-disabled`。正本 [Conditions.md](../01_Wiki/Game_Mechanics/Conditions.md)「負傷そのものの直接効果」。
 - **2026-07-16 是正（ユーザー指摘）**: 選択ダイアログ・休眠を当初 `applyDamageChartResult`（ダメージ適用経路のみ）に置いたため、トークンのステータス効果トグルでの付与で出なかった。ドロー（衰弱/重圧）が経路を問わないフックで走るのに合わせ、選択をフックへ移設・休眠は def 導出に変更（付与経路を問わず機能）。
-**ステータス**: ✅ 実装完了（全 1320 テスト green・eslint 0 error）・実機確認待ち
+**ステータス**: ✅ 実装完了（全 1320 テスト green・eslint 0 error）・実機確認済み（2026-07-21・v0.12.0）
 
 #### ルール解釈（メカニクス監査・2026-07-16 ユーザー確定）
 
@@ -2663,7 +2663,7 @@ Part A で防御力が各キャラ行の最終ダメージに載るようにな�
 #### 課題・申し送り
 
 - 次シーン発火（`pendingScene` 解除）＝シーン進行 13／時間管理 15。
-- 実機確認待ち（CLAUDE.md §2.1・特に「〈知覚〉判定でチャート内訳に眼部損傷 −5 が **-5** 表記で出る」「使用不可技能の判定は起動時に警告＋ブロック（開かない）」「重圧の能力値がクリック不可・能力値判定が起動しない（制御判定は可）」「口座凍結中は報酬点ダイアログが出ない」「造反付与時に社会選択ダイアログが出る」「信用失墜など次シーンものは付与直後は効果 off・バッヂのみ」）。
+- 実機確認済み（2026-07-21・v0.12.0）（CLAUDE.md §2.1・特に「〈知覚〉判定でチャート内訳に眼部損傷 −5 が **-5** 表記で出る」「使用不可技能の判定は起動時に警告＋ブロック（開かない）」「重圧の能力値がクリック不可・能力値判定が起動しない（制御判定は可）」「口座凍結中は報酬点ダイアログが出ない」「造反付与時に社会選択ダイアログが出る」「信用失墜など次シーンものは付与直後は効果 off・バッヂのみ」）。
 
 ### 用途シート・効果リストの軽微修正＋射程の幅（rangeMax）（フェーズ12 補）
 
@@ -2682,7 +2682,7 @@ Part A で防御力が各キャラ行の最終ダメージに載るようにな�
 - ③ `resolveAttackRangeSpan` は純関数＋テスト。既存の単一値解決 `resolveAttackRangeValue` は span の上限へ委譲し**挙動不変**（一致性テストで固定）。物理射程以外へ変更時の `rangeMax` リセット・幅セレクトの出し入れは明示再描画（submitOnChange は再描画しない）。
 - **経緯（再発防止）**: ②の比較対象を用途シート内の2箇所だけから「下置きが慣例」と誤って一般化し、ユーザーの2度の指摘で是正。教訓＝**「同様のセクション」は表面（行＋追加ボタン）でなく構造の所有関係（fieldset=行集合か・fieldset 内サブフィールドか）で括り、システム全体を全数確認してから規約を主張する**。
 
-**ステータス**: ✅ 実装完了（1332 テスト green・eslint 0 error・stylelint clean）・実機確認待ち
+**ステータス**: ✅ 実装完了（1332 テスト green・eslint 0 error・stylelint clean）・実機確認済み（2026-07-21・v0.12.0）
 
 ### 参照整合性監査と判定起動系の一本化（フェーズ12 補・2026-07-16）
 
@@ -2709,7 +2709,7 @@ Part A で防御力が各キャラ行の最終ダメージに載るようにな�
 - **メッセージ更新委譲 `TnxSocketHandler.applyMessagePatch`＋ソケット `messagePatch` 1種**: 「GM/作者は直接 update・他は委譲」の複製5箇所（攻撃/ダメージ/リアクションカード・事後修正/再判定置き換え・BSドロー・効果適用済み）を統合。旧 attackUpdate/damageUpdate/usageEffectApplied/checkModify 廃止（受理は自スコープ flags＋content のみ＝旧 checkModify の検証を維持）。
 - **ターゲット解決 `target-resolution.mjs`**: 攻撃（全ターゲット→未選択はトークン選択＋レティクル付与）・回復（1体→自分確認）・適用効果（全件→自分確認）の3実装を部品化（挙動不変。tnx-dialog はモジュールレベルで foundry を参照するため動的 import＝テスト独立を維持）。
 
-**ステータス**: ✅ 実装完了（全 1342 テスト green・eslint 0 error）・実機確認待ち（特に「スタン宣言・防御力持ち対象で対象行に『スタン（10上限）』が出て最終値が 10 を超えない」「口座凍結中は情報収集判定でも報酬点ダイアログが出ない」「アイテムシートの使用ボタンから攻撃/判定が技能クリックと同挙動」）
+**ステータス**: ✅ 実装完了（全 1342 テスト green・eslint 0 error）・実機確認済み（2026-07-21・v0.12.0）（特に「スタン宣言・防御力持ち対象で対象行に『スタン（10上限）』が出て最終値が 10 を超えない」「口座凍結中は情報収集判定でも報酬点ダイアログが出ない」「アイテムシートの使用ボタンから攻撃/判定が技能クリックと同挙動」）
 
 ### 社会ダメージの報酬点軽減＝リアクション成立ゲート＋クリック方式（フェーズ12 補・2026-07-17）
 
@@ -2733,15 +2733,15 @@ Part A で防御力が各キャラ行の最終ダメージに載るようにな�
 #### 課題・申し送り
 
 - ~~**判定での報酬点使用（bountyUsed）は自動減算されていない**（手動記帳前提の現状実装）。軽減側だけ自動減算になったため、判定側も揃えるかは**ユーザー確認待ち**~~ → **解消（2026-07-17 ユーザー裁定「当たり前ですが、自動減算してください」・本体 `ce4fb35`）**: 判定側も使用確定時に `system.bounty` から自動減算。未実装だった経緯（フェーズ8 のエンジン先行実装で記帳側が落ち、「減算する」という仕様行がどこにも無いまま、以後の監査が可否・量のみ検査して約10フェーズ残存）は [Bounty_Points.md](../01_Wiki/Game_Rules/Bounty_Points.md)「消費の記帳」に記録。
-- 実機確認待ち: 「社会攻撃でリアクション成立の対象行だけ数字がクリック可能」「クリック→報酬点入力→所持報酬点が減り行内訳に『報酬点 −N』」「適用ダイアログに報酬点欄が出ない」「口座凍結中は警告」「**判定で報酬点を使うと所持報酬点が減る**」。
+- 実機確認済み（2026-07-21・v0.12.0）: 「社会攻撃でリアクション成立の対象行だけ数字がクリック可能」「クリック→報酬点入力→所持報酬点が減り行内訳に『報酬点 −N』」「適用ダイアログに報酬点欄が出ない」「口座凍結中は警告」「**判定で報酬点を使うと所持報酬点が減る**」。
 
-**ステータス**: ✅ 実装完了（全 1342 テスト green・eslint 0 error）・実機確認待ち
+**ステータス**: ✅ 実装完了（全 1342 テスト green・eslint 0 error）・実機確認済み（2026-07-21・v0.12.0）
 
 ### 受けるダメージ軽減 AE（damage.taken / damage.fromStyle / damage.fromWorks）（フェーズ12 補）
 
 **日付**: 2026-07-17
 **関連実装**: `scripts/data/item/helpers.mjs`（`parseEffectTargetKey` に damageTaken/damageFrom スコープ・`damageTakenChangeMatches`／`gatherDamageTakenSources`・`_gatherBonusSources` に採用方向 pick=min）、`scripts/data/actor/common/character-base.mjs`（恒常適用パスの除外セットへ追加）、`scripts/module/damage-flow.mjs`（`collectDamageTakenRows`＝対象行プレビュー `targetPlannedPreview`・適用ダイアログの恒久軽減へ合流・内訳表示・適用済み表示の新形式=内訳文字列保存）、`scripts/tnx.mjs`（AE 設定 datalist に dealt/taken 固定キー）。テスト: `tests/data/item/helpers.test.mjs`（TDD・RED→GREEN で追加）。キー正本は [Active_Effects.md](../01_Wiki/Game_Mechanics/Active_Effects.md) §2.8。
-**ステータス**: ✅ 実装完了（全 1346 テスト green・eslint 0 error）・実機確認待ち
+**ステータス**: ✅ 実装完了（全 1346 テスト green・eslint 0 error）・実機確認済み（2026-07-21・v0.12.0）
 
 #### ルール解釈（メカニクス監査）
 
@@ -2762,7 +2762,7 @@ Part A で防御力が各キャラ行の最終ダメージに載るようにな�
 #### 課題・申し送り
 
 - ~~**攻撃側 `dealt`＋`vs*` の別走査**: 併記すると二重加算になりうる（一般原則と不整合の疑い）~~ → **撤回（同日是正・下の追補）**: 行はすべて効果の内容として適用されるため、併記で両方効くのは正しい挙動。二重加算という指摘自体が Code の誤りだった。
-- 実機確認待ち（CLAUDE.md §2.1）: 対象行の「効果名 −N」内訳・スタン 10 上限との順序（軽減後キャップ）・fromStyle/fromWorks の照合・適用ダイアログの「軽減（算出済み）」表示。
+- 実機確認済み（2026-07-21・v0.12.0）（CLAUDE.md §2.1）: 対象行の「効果名 −N」内訳・スタン 10 上限との順序（軽減後キャップ）・fromStyle/fromWorks の照合・適用ダイアログの「軽減（算出済み）」表示。
 
 #### 是正追補（2026-07-17 同日・重複適用の一般原則の誤りを是正）
 
@@ -2795,7 +2795,7 @@ Code の「dealt×vs\* 併記は二重加算」という申し送りに対しユ
 
 #### 課題・申し送り
 
-- **実機確認待ち**（CLAUDE.md §2.1）: 用途シートの対決行カスケード・攻撃/移動/離脱の対決フロー一巡・オープンリアクション・正準名移行の実データ適用・残弾リロード用途。
+- **実機確認済み（2026-07-21・v0.12.0）**（CLAUDE.md §2.1）: 用途シートの対決行カスケード・攻撃/移動/離脱の対決フロー一巡・オープンリアクション・正準名移行の実データ適用・残弾リロード用途。
 - 旧チャットカード（confrontation を持たない攻撃カード）の未解決リアクションカードはボタンが「リアクションしない」のみになる（過渡・チャットは使い捨てのため許容）。
 - 白兵/射撃の migrate 既定は「白兵」（旧攻撃用途は区分を持たないため）。射撃技能の攻撃用途は手動で「射撃攻撃」へ切り替えが必要。
 - KI-025（判定要求のコンボ用途選択）は本再編後に対応予定（起票済み）。
@@ -2822,7 +2822,7 @@ Code の「dealt×vs\* 併記は二重加算」という申し送りに対しユ
 
 #### 課題・申し送り
 
-- **実機確認待ち**: 神業の**スタイルレベル→母数(uses.max)連動**と**ファイト！等 AE による uses.max 増加が消費の実効 max に反映されること**（連動フックは書き換え済み・母数バフの AE 経路は要実機確認）。物理攻撃の残弾が用途消費のみで増減すること（自動消費撤去後）。消費ブロックの item→resource 二段連動（資源候補の絞り込み）の操作感。
+- **実機確認済み（2026-07-21・v0.12.0）**: 神業の**スタイルレベル→母数(uses.max)連動**と**ファイト！等 AE による uses.max 増加が消費の実効 max に反映されること**（連動フックは書き換え済み・母数バフの AE 経路は要実機確認）。物理攻撃の残弾が用途消費のみで増減すること（自動消費撤去後）。消費ブロックの item→resource 二段連動（資源候補の絞り込み）の操作感。
 - 既存の攻撃用途は残弾消費行を設定するまで残弾を消費しない（ご指示どおりの挙動）。
 
 
@@ -2847,7 +2847,7 @@ Code の「dealt×vs\* 併記は二重加算」という申し送りに対しユ
 #### 課題・申し送り
 
 - **アクト終了時の自動リセット（故障/破壊の一括解除）は未実装**（将来フェーズ・ユーザー指示で先送り）。現状は手動オフ運用（消費アイテムの個数リセットも同様に未自動）。
-- **実機確認待ち**: 修理用途の一巡（〈製作〉に修理用途＋分類ホワイトリスト→故障アウトフィット選択→判定成功で赤取消線が消える）・AE による故障/破壊の付与と実効反映・攻撃武器の故障ブロック・バックグラウンドの準備固定＋トグル非表示。
+- **実機確認済み（2026-07-21・v0.12.0）**: 修理用途の一巡（〈製作〉に修理用途＋分類ホワイトリスト→故障アウトフィット選択→判定成功で赤取消線が消える）・AE による故障/破壊の付与と実効反映・攻撃武器の故障ブロック・バックグラウンドの準備固定＋トグル非表示。
 
 
 ### 2026-07-18 治療の用途一本化（治療メニューの照合化・目標値の設定化・代用判定廃止）
@@ -2884,7 +2884,7 @@ Code の「dealt×vs\* 併記は二重加算」という申し送りに対しユ
 
 #### 課題・申し送り
 
-- **実機確認待ち**: 治療メニュー一巡（治療者選択→通常負傷→`@condition.woundValue` 式・戦闘不能タグ/負傷行どちらのクリックでも同じ用途・社会負傷→専用技能なしで中止）・宣言形治療用途のメニュー起動・非所有患者の GM 委譲除去・**手動付与の負傷でのチャート値導出**・**負傷バッジのチャート値表示**。
+- **実機確認済み（2026-07-21・v0.12.0）**: 治療メニュー一巡（治療者選択→通常負傷→`@condition.woundValue` 式・戦闘不能タグ/負傷行どちらのクリックでも同じ用途・社会負傷→専用技能なしで中止）・宣言形治療用途のメニュー起動・非所有患者の GM 委譲除去・**手動付与の負傷でのチャート値導出**・**負傷バッジのチャート値表示**。
 - **既存データへの影響**: 治療用途を持たないキャラクターは治療メニューから治療できなくなる（代用判定廃止の帰結＝ユーザー確定）。〈医療〉等の技能に治療用途（通常ダメージ用/気絶・失神用/仮死・昏睡・支配用）の設定が必要。
 - 旧チャットカードに保存済みの `treatment` 継続スナップショットは、再判定時に除去を再実行しない（結果表示のみ・過去メッセージに限る影響）。
 
@@ -2910,7 +2910,7 @@ Code の「dealt×vs\* 併記は二重加算」という申し送りに対しユ
 
 #### 課題・申し送り
 
-- **実機確認待ち**: 非対決攻撃の命中時即時付与／対決攻撃のリアクション解決時付与（肩代わりリアクション=権限なしの GM 委譲含む）／再判定 miss→hit の自動付与・hit→miss の手動復元運用／ダメージ≥1 ゲート（全対象 0 の不付与表示）／カバー時のカバー側付与／対象なし攻撃の手動フォールバック／非攻撃対決の解決後ボタン（KI-028）／AE 設定の適用タイミング欄と付与先の表示連動。
+- **実機確認済み（2026-07-21・v0.12.0）**: 非対決攻撃の命中時即時付与／対決攻撃のリアクション解決時付与（肩代わりリアクション=権限なしの GM 委譲含む）／再判定 miss→hit の自動付与・hit→miss の手動復元運用／ダメージ≥1 ゲート（全対象 0 の不付与表示）／カバー時のカバー側付与／対象なし攻撃の手動フォールバック／非攻撃対決の解決後ボタン（KI-028）／AE 設定の適用タイミング欄と付与先の表示連動。
 - 命中時付与の記録（hitGranted）は**表示用**であり再付与の判定には使わない（遷移トリガーが正）。多クライアント同時解決でノートの名前記録が競合しうるが表示のみ＝実害なし。
 
 #### 是正（同日・実機報告「命中時効果もダメージ適用時に適用されている／勝手に自動適用にするな」）
@@ -2929,7 +2929,7 @@ Code の「dealt×vs\* 併記は二重加算」という申し送りに対しユ
 
 #### 課題・申し送り（最終）
 
-- **実機確認待ち**: 攻撃用途シートの2リスト設定（追加/解除・両リスト重複）・攻撃カードのボタン（全対象解決後表示・カバー宣言後の付け替え適用・適用済みノート）・ダメージカードのボタン（ダメージ適用と独立・対象なし攻撃のフォールバック）・除外チェックボックスダイアログ（2体以上・全除外=キャンセル）・非攻撃対決カードの解決後ボタン（KI-028）。
+- **実機確認済み（2026-07-21・v0.12.0）**: 攻撃用途シートの2リスト設定（追加/解除・両リスト重複）・攻撃カードのボタン（全対象解決後表示・カバー宣言後の付け替え適用・適用済みノート）・ダメージカードのボタン（ダメージ適用と独立・対象なし攻撃のフォールバック）・除外チェックボックスダイアログ（2体以上・全除外=キャンセル）・非攻撃対決カードの解決後ボタン（KI-028）。
 - 旧カード（`1ac4a08` 以前の攻撃/ダメージカード）のペイロードは timing 無し=ダメージ時バケットに落ちる——ダメージカードのボタンで従来どおり適用可能（表示・挙動の互換は保存）。
 - `grantTiming` フラグが残った AE は読まれない（死フラグ・無害）。
 
@@ -2952,7 +2952,7 @@ Code の「dealt×vs\* 併記は二重加算」という申し送りに対しユ
 - **データ**: `targets[].reactions[]`＋`selfDecision`（旧形式は `seedLegacyTarget` で読み替え・表示互換維持）・`openReactions[]`（旧 `openReaction` は表示互換のみ）。シークレットカード＝whisper(GM＋本人)→解決時に `whisper: []` で公開（messagePatch の許可リストへ whisper を追加）。
 - **入口の一本化**: 対象行クリック（カバー待ち受けが最優先→リアクション）・本人/代理の判別とリアクター決定は `resolveUserIdentityActor`（選択中所有→割り当て）の一関数。技能起動は従来どおり唯一の `_activateItemCheck` に reaction 文脈を注入。
 - **再判定/事後修正**: 合成対象は保存済み要素で再合成（`rebuildRecheckedTargets`）・リアクション個別は messageId 一致の要素置き換え（`CONTINUATIONS.reaction`）。
-- 懸念（申し送り）: 実機未確認一式は Phase_12 の 12-4x を参照。攻撃カードの事後修正（達成値クリック）は従来どおり解決済み対象の再解決を行わない（既存挙動の保存・複数対象の modify 再解決は将来課題）。
+- 懸念（申し送り）: 実機確認一式は Phase_12 の 12-4x を参照（2026-07-21 完了）。攻撃カードの事後修正（達成値クリック）は従来どおり解決済み対象の再解決を行わない（既存挙動の保存・複数対象の modify 再解決は将来課題）。
 
 #### 是正（2026-07-19 ユーザー指摘3件・本体 `3248934`）
 
@@ -2975,7 +2975,7 @@ Code の「dealt×vs\* 併記は二重加算」という申し送りに対しユ
 - `planUsageTargets` から invalid モードを削除（none/targets/autoSelf/dialog の4値へ）。対象「自身」は常に autoSelf（値の意味どおり）。明示ターゲットは group を問わず targets。
 - 共通ヘルパー `resolveTargetedOrSelf`（target-resolution.mjs）を新設し、修理（useRepair）と治療/回復（resolveRecoveryPatient）の対象解決を一本化。未ターゲット時の自分解決はレティクルを付与（「対象は常に明示」原則は維持）。「〜対象がターゲットされていません」警告2種と「ターゲットが間違っています」を撤廃。
 - 決定表のその他の挙動（対象なし群の対象要求なし・未ターゲット時ダイアログ・オープンリアクション・カード形式）は不変＝攻撃・移動・離脱のフローに影響しない。
-- テスト 1452 green（usage-target-plan の invalid 期待を裁定どおり更新）・eslint 0 error。実機確認待ち: 修理の自己/味方修理一巡・治療の同型・対象「自身」用途の読み替え。
+- テスト 1452 green（usage-target-plan の invalid 期待を裁定どおり更新）・eslint 0 error。実機確認済み（2026-07-21・v0.12.0）: 修理の自己/味方修理一巡・治療の同型・対象「自身」用途の読み替え。
 
 ### 2026-07-19 用途の「解説参照」完全廃止＝「その他」への自動解決（KI-033・本体 `7d90fec`）
 
@@ -2992,7 +2992,7 @@ Code の「dealt×vs\* 併記は二重加算」という申し送りに対しユ
 - タイミング導出は「最初の非 blank」→「最初の実値、無ければフォールバック」へ変更（従来は解説参照/その他も先頭なら写していた＝目標値の「最初の非 blank 型」も同様に是正）。サブ選択（アクション/プロセス種別）の解説参照も「その他」へ変換。
 - インポート正規化は `enforceUsageChainDefaultsOnImport` の先頭パスに追加（チェーン解決の早期 return より前・正規化のみでも書き込み）。createItem フックの適用条件を「generalSkill/styleSkill または actions を持つアイテム」へ拡大——**常設経路でのデータ書き換えだが、用途の「解説参照」は裁定上いかなる時も不正な値のため冪等正規化が成立**（KI-029 の「現行データと旧データを区別できない正規化」とは異なる。設計承認済み・2026-07-19）。
 - 用途シートは選択肢撤去＋表示時に旧値を「その他」へ吸収（deepClone に対する正規化＝次のフォーム保存で着地。データを黙って書かない）。
-- テスト 1486 green（+44）・eslint 0 error（警告は既存分のみ）。実機確認待ち: 自動入力・辞典インポート・用途シート表示の一巡。
+- テスト 1486 green（+44）・eslint 0 error（警告は既存分のみ）。実機確認済み（2026-07-21・v0.12.0）: 自動入力・辞典インポート・用途シート表示の一巡。
 
 ### 2026-07-19 判定要求のコンボ用途候補列挙（KI-025・本体 `af12d7b`）
 
@@ -3008,7 +3008,7 @@ Code の「dealt×vs\* 併記は二重加算」という申し送りに対しユ
 - 起動は唯一の起動関数 `_activateItemCheck` へ usageId 直接指定で委譲（新しい起動関数を作らない規範を維持）。要求文脈・目標値・代用修正の注入は従来の extra 合流のまま。
 - `_activateItemCheck` の実行対象用途フィルタを `usableUsagesOf`（usage-types・テスト付き）へ抽出し、技能クリックと将来の列挙系で規則を共有（インライン重複の解消）。→ **2026-07-19 に `usableUsagesOf` ごと廃止**（候補は全用途・共有も解消済み＝判定要求は `canAnswerCheckRequest`）。
 - 応答ダイアログは既存の縦積みボタン形式を拡張（指定技能→コンボ候補→代用判定→キャンセル）。候補ラベルは「用途名（親名）」に統一（親名は itemDisplayName＝技能は〈〉整形）・指定技能ボタンも 〈〉 整形へ是正。
-- テスト 1486 green・eslint 0 error。実機確認待ち: 要求→コンボ候補選択→判定→要求カードへの結果反映の一巡。
+- テスト 1486 green・eslint 0 error。実機確認済み（2026-07-21・v0.12.0）: 要求→コンボ候補選択→判定→要求カードへの結果反映の一巡。
 - **UI 改=二段階化（同日ユーザー指示・本体 `5b5c8ad`）**: ボタン列挙は候補が多いとあふれるため、第1段を「〈技能名〉で判定／代用判定」の 2 択へ戻し、第2段に**用途名のプルダウン**（`_promptUsageChoice`・中身=指定技能自身の用途+コンボ候補の統合 `buildRequestUsageChoices`＝純関数/テスト付き）を挟む。**1 件は自動起動**。第2段経由は自技能の用途も usageId 直接指定になり、要求文脈での汎用用途ピッカーは通らない（1 件自動選択も従来ピッカーと同じ）。代用判定フローは `_promptSubstitution` へ分離（挙動不変）。テスト 1497 green。
 - **「判定」タイプ限定（同日ユーザー裁定・本体 `fa8d40a`）**: 判定要求から起動できる用途を「判定」タイプに限定（`canAnswerCheckRequest` を type==="check" ベースへ簡素化・指定技能自身の用途にも適用=当初は技能クリックの実行対象規則そのままで無フィルタだった）。上記「候補の範囲（Code 設計・裁定余地あり）」の項はこの裁定で置き換え——リアクション・移動等の行動種別タイプも列挙しない（各自のフローから起動するもの）。判定タイプ内の除外（固定値・NPC取得・バフ宣言フラグ=要求カードに結果を返せない）は維持。0 件は警告して中止（アイテム起動へ落とすと判定以外の用途ピッカーが開いて限定と矛盾）。テスト期待を更新し 1497 green。
 - **用途名ラベルの是正（同日ユーザー指摘・本体 `adcd7cf`）**: 上記の「親名は itemDisplayName＝技能は〈〉整形」は**誤適用**だった——用途の実効名「タイプ名（親アイテム名）」（2026-07-17 確定）の親名は**素の名前**が正（「判定（知覚）」）。既存の usageDisplayName 呼び出し箇所（用途シート placeholder/題名・用途一覧・戦闘タブ・攻撃カード・汎用用途ピッカー）は全て素の item.name を渡しており、〈〉付きは今回の新規 2 箇所だけの逸脱だった。原因は①技能名〈〉の一般則を実効名の細則に持ち込んだ（細則優越の判断ミス）②`_promptCheckUsage` 内の実装と食い違う古いコメント（「呼び出し側で〈〉整形済み」）を実態未確認のまま先例として採用。ラベルを素の親名へ是正し、当該コメントも実装どおりに訂正。第1段ボタン「〈技能名〉で判定」は技能名単体表示のため〈〉のまま（一般則の適用範囲）。テスト 1497 green。
@@ -3024,7 +3024,7 @@ Code の「dealt×vs\* 併記は二重加算」という申し送りに対しユ
 #### 設計レビュー
 
 - `updateCastExp` を合流ゲート化: 同一アクター（uuid キー）の実行中はフラグ `rerun` に畳み、完了後にもう 1 回だけ再実行（毎回の全量再計算のため最後の 1 回が最新状態を反映＝取りこぼしなし）。計算・書き込み本体は `_recalcCastExp` へ改名のみ。
-- 実行中→完了→trailing 1 回の最大 2 走で N 並列呼び出しを吸収（updateUsageActions の直列キューと類似だが、こちらは「最新全量が 1 回走れば十分」のため合流方式）。実機確認待ち: 一括インポート一巡。
+- 実行中→完了→trailing 1 回の最大 2 走で N 並列呼び出しを吸収（updateUsageActions の直列キューと類似だが、こちらは「最新全量が 1 回走れば十分」のため合流方式）。実機確認済み（2026-07-21・v0.12.0）: 一括インポート一巡。
 
 ### 2026-07-19 判定要求のアクター登録化＋技能プルダウンの正規順・分類グループ統一（本体 `585a1aa`/`4313515`）
 
@@ -3041,7 +3041,7 @@ Code の「dealt×vs\* 併記は二重加算」という申し送りに対しユ
 - アクター所持系: `orderSkills`（skill-select）を「一般→スタイル・①手動 sort=シートの並び ②正規順 ③名前(ja)」へ拡張し、用途シートのベース技能/組み合わせ候補の名前順ソートを置換（リアクション/代用判定の既存利用箇所は挙動不変＝手動 sort が最優先のまま）。
 - 判定要求のグループ化は `loadGroupedGeneralSkillChoices`（純粋部 `groupGeneralSkillEntries`・テスト付き）＋ optgroup。旧 `_loadCompendiumSkills`（独自キャッシュ・名前順）は削除し loadSkillEntries へ一本化。
 - ダイアログの対象一覧はキャスト全員（名前順・22px サムネイル・`rl-actor-img`＝旧ユーザー色ドット/ユーザー名表示の CSS は撤去）。チャットカードの `data-user-id` 撤去（旧カードは actorId で互換動作）。
-- テスト 1495 green（+9: skill-select/グループ化・カスケード小分類の期待を新順序へ更新）・eslint 0 error・stylelint clean。実機確認待ち: 要求送信→所有者ボタン→結果反映・プルダウン並び（要求/用途シート/カスケード/ヴィークル操縦）。
+- テスト 1495 green（+9: skill-select/グループ化・カスケード小分類の期待を新順序へ更新）・eslint 0 error・stylelint clean。実機確認済み（2026-07-21・v0.12.0）: 要求送信→所有者ボタン→結果反映・プルダウン並び（要求/用途シート/カスケード/ヴィークル操縦）。
 
 ### 2026-07-19 残弾の廃止＝弾数の使用回数への一本化
 
@@ -3063,7 +3063,7 @@ Code の「dealt×vs\* 併記は二重加算」という申し送りに対しユ
 
 #### 課題・申し送り
 
-- **実機確認待ち**: 射撃武器の使用回数によるリロード用途の一巡（消費→空→回復）。消費先ブロックが二段になった後のレイアウト（グリッドは2列のため、アイテム行は [種別][対象] / [消費数] の2行になり右下に空セルが出る）。
+- **実機確認済み（2026-07-21・v0.12.0）**: 射撃武器の使用回数によるリロード用途の一巡（消費→空→回復）。消費先ブロックが二段になった後のレイアウト（グリッドは2列のため、アイテム行は [種別][対象] / [消費数] の2行になり右下に空セルが出る）。
 - 既存の武器は使用回数を設定するまで**弾数無制限**として振る舞う（破棄裁定どおりの挙動）。装弾数とリロード用途の消費行はユーザーが入力し直す。
 
 ### 2026-07-19 アウトフィットのタイミング廃止＋アイテムロール候補の無選別化
@@ -3082,7 +3082,7 @@ Code の「dealt×vs\* 併記は二重加算」という申し送りに対しユ
 
 #### 課題・申し送り
 
-- **実機確認待ち**: アウトフィットのクリック→用途ピッカー→宣言用途の実行。用途シートのタイミング欄が消えたアウトフィットシートの見た目。
+- **実機確認済み（2026-07-21・v0.12.0）**: アウトフィットのクリック→用途ピッカー→宣言用途の実行。用途シートのタイミング欄が消えたアウトフィットシートの見た目。
 - 判定用途と宣言用途を併せ持つ技能は、これまで判定が自動起動していたのがピッカー経由になる（クリックが1回増える）。ユーザー了承済みのトレードオフ。
 
 ### 2026-07-19 残弾の再導入（使用回数と共存する別資源へ・同日の一本化を撤回）
@@ -3108,7 +3108,7 @@ Code の「dealt×vs\* 併記は二重加算」という申し送りに対しユ
 
 #### 課題・申し送り
 
-- **実機確認待ち**: 射撃武器で「残弾×1」と「使用回数×1」を同時に消費する用途の一巡（消費確認ダイアログで片方だけ外せること・適用後の両カウンターの値）。リロード用途（マイナー＋残弾へのマイナス消費）。武器シートの残弾欄の見た目。
+- **実機確認済み（2026-07-21・v0.12.0）**: 射撃武器で「残弾×1」と「使用回数×1」を同時に消費する用途の一巡（消費確認ダイアログで片方だけ外せること・適用後の両カウンターの値）。リロード用途（マイナー＋残弾へのマイナス消費）。武器シートの残弾欄の見た目。
 - 一本化時に破棄した旧 ammo データと `resource="ammo"` の消費行は**復元しない**（破棄裁定が有効）。装弾数とリロード用途の消費行はユーザーが入力し直す。
 - 往復について: 廃止（`f9a9a09`）→再導入（本エントリ）と同日に往復させた。原因は Code が**共存の可能性を確認せずに廃止設計を確定させた**こと。廃止前の設計提示時に「使用回数制限つきの能力と残弾が共存する武器はあるか」を問うべきだった。
 
@@ -3128,7 +3128,7 @@ Code の「dealt×vs\* 併記は二重加算」という申し送りに対しユ
 
 #### 課題・申し送り
 
-- **実機確認待ち**: 残弾のみを持つ武器で消費先に「残弾」を選べること（本エントリの是正点）。消費アイテムの個数を消費する用途の一巡（0 でのブロック・補充）。
+- **実機確認済み（2026-07-21・v0.12.0）**: 残弾のみを持つ武器で消費先に「残弾」を選べること（本エントリの是正点）。消費アイテムの個数を消費する用途の一巡（0 でのブロック・補充）。
 
 ### 2026-07-20 フェーズ12-5 FS判定基幹の設計確定（実装未着手）
 
@@ -3242,7 +3242,7 @@ Code の「dealt×vs\* 併記は二重加算」という申し送りに対しユ
 
 #### 課題・申し送り
 
-- **実機確認待ち**: シーンコントロール「ダメージ付与」の一巡（未ターゲット時の警告・系統別・台帳の行と攻撃側合計・軽減ダイアログ・チャート適用）。社会で報酬点軽減が起動しないこと。トループ/エキストラへの付与。
+- **実機確認済み（2026-07-21・v0.12.0）**: シーンコントロール「ダメージ付与」の一巡（未ターゲット時の警告・系統別・台帳の行と攻撃側合計・軽減ダイアログ・チャート適用）。社会で報酬点軽減が起動しないこと。トループ/エキストラへの付与。
 
 ### 2026-07-20 RL 任意の状態・効果付与の実装（T2・本体 `1b58549`）
 
@@ -3263,7 +3263,7 @@ Code の「dealt×vs\* 併記は二重加算」という申し送りに対しユ
 #### 課題・申し送り
 
 - **要確認**: 負傷を RL 付与の対象から除いた判断（上記）。RL が負傷を直接与えたい場面があるなら再考する。
-- **実機確認待ち**: 状態付与の一巡（衰弱・重圧でカード決定ドローのプロンプトが出ること・カスケードを持つ状態・非重複の状態を重ねたとき）。効果複製の一巡（供給元プルダウン→効果プルダウンの連動・複数対象への付与・供給元アイテムを削除してもコピーが残ること）。
+- **実機確認済み（2026-07-21・v0.12.0）**: 状態付与の一巡（衰弱・重圧でカード決定ドローのプロンプトが出ること・カスケードを持つ状態・非重複の状態を重ねたとき）。効果複製の一巡（供給元プルダウン→効果プルダウンの連動・複数対象への付与・供給元アイテムを削除してもコピーが残ること）。
 
 ### 2026-07-20 報酬点の配布カードの実装（T3・本体 `f614b39`）
 
@@ -3284,7 +3284,7 @@ Code の「dealt×vs\* 併記は二重加算」という申し送りに対しユ
 #### 課題・申し送り
 
 - **要確認**: 没収の下限（有効報酬点0で止まる）。
-- **実機確認待ち**: 配布カードの一巡（対象所有者だけにボタンが出ること・受け取りで `system.bounty` が増減しシートの表示が変わること・受け取り済みのライブ書き換えが全クライアントに乗ること・負数配布の文言・所持を超える没収が0で止まること）。
+- **実機確認済み（2026-07-21・v0.12.0）**: 配布カードの一巡（対象所有者だけにボタンが出ること・受け取りで `system.bounty` が増減しシートの表示が変わること・受け取り済みのライブ書き換えが全クライアントに乗ること・負数配布の文言・所持を超える没収が0で止まること）。
 
 ### 2026-07-20 FS判定基幹の実装（T4〜T9・本体 `a01efa2` / `434cd6b` / `0d76b0f` / `21e5c69` / `d21a53f` / `78ea97d` / `b73857c`）
 
@@ -3310,7 +3310,7 @@ Code の「dealt×vs\* 併記は二重加算」という申し送りに対しユ
 
 #### 課題・申し送り
 
-- **実機確認待ち**（FS判定 一式）: FS判定シートの作成と編集（敗北条件の種別切り替え・判定行の追加/削除/並び替え・進行修正の参照元→パラメータ連動）。パネルの一巡（未起動時の文言・読み込み元プルダウンからの起動・ゲージと閾値マーカー・進行値/カットの増減・有効行の切り替わり・達成/敗北の確定と結果カード）。進行判定/支援判定の要求カード（宛先の単一/複数・目標値が有効行に追随すること）。アクトシートの判定要求タブとプリセット読み込み（判定要求・報酬点の両方）。
+- **実機確認済み（2026-07-21・v0.12.0）**（FS判定 一式）: FS判定シートの作成と編集（敗北条件の種別切り替え・判定行の追加/削除/並び替え・進行修正の参照元→パラメータ連動）。パネルの一巡（未起動時の文言・読み込み元プルダウンからの起動・ゲージと閾値マーカー・進行値/カットの増減・有効行の切り替わり・達成/敗北の確定と結果カード）。進行判定/支援判定の要求カード（宛先の単一/複数・目標値が有効行に追随すること）。アクトシートの判定要求タブとプリセット読み込み（判定要求・報酬点の両方）。
 - **フェーズ13 へ**: 進行値の自動加算（`floor(@diff/10) + 進行修正`）・支援判定の AR 消費と +1・宛先の自動絞り込み（AR 残量／手番判別）・`progressMod.source === "outfit"` の実解決・カット進行と `cut` の連動。
 
 ### 2026-07-20 宣言（declaration）の実行時棚卸し（T10・コード変更なし）
@@ -3351,7 +3351,7 @@ Code の「dealt×vs\* 併記は二重加算」という申し送りに対しユ
 #### 課題・申し送り
 
 - **FS判定の進行判定/支援判定の要求は今回の統一に含めていない**。宛先がルールで決まる（進行判定＝メインプロセスの手番1名／支援判定＝参加者全員）ため、自由に対象を組み立てる形式とは意味が違うと判断した。揃えるべきかは要判断。
-- **実機確認継続**: 対象選択の一巡（4ボタンの収集・重複の畳み込み・グリップ並び替え・除去・すべて外す・狭いダイアログでの収まり）。用途シート／アウトフィットシートのダメージ種別表示。RL ダメージ付与の種別と台帳の種別行。
+- **実機確認済み（2026-07-21・v0.12.0）**: 対象選択の一巡（4ボタンの収集・重複の畳み込み・グリップ並び替え・除去・すべて外す・狭いダイアログでの収まり）。用途シート／アウトフィットシートのダメージ種別表示。RL ダメージ付与の種別と台帳の種別行。
 
 ### 2026-07-21 効果の付与が実質できなかった問題の是正（付与元の拡大＋事前設定）
 
@@ -3375,7 +3375,7 @@ Code の「dealt×vs\* 併記は二重加算」という申し送りに対しユ
 
 #### 課題・申し送り
 
-- **実機未確認**（一式）。特に: 効果の「組む」で標準シートが開き、送信→閉じるでプリセット/その場作成に反映されるか。下書きアイテムがディレクトリに出ないか。アクター所持アイテムの効果が付与元に並ぶか（世界が大きいと一覧が長くなる可能性）。
+- **実機確認済み（2026-07-21・v0.12.0）**（一式）。特に: 効果の「組む」で標準シートが開き、送信→閉じるでプリセット/その場作成に反映されるか。下書きアイテムがディレクトリに出ないか。アクター所持アイテムの効果が付与元に並ぶか（世界が大きいと一覧が長くなる可能性）。
 - **効果を1つも変更せず「更新」を押して閉じた場合**、Foundry が差分なしで更新を発火しないため取り消し扱いになる。結果は「変更なし」で一致するため実害は無いが、新規作成では「未作成」のままとなる。
 
 ### 2026-07-21 効果プリセットの表示是正（用語・寸法・体裁）と hidden 不発の発見
@@ -3425,6 +3425,6 @@ Code の「dealt×vs\* 併記は二重加算」という申し送りに対しユ
 
 #### 課題・申し送り
 
-- **実機未確認**（一式）。特に: 作成ボタンからシートが作れるか、エディタの保存と再描画、起動フォームの読み込みと開始、複数指定技能の要求と応答。
+- **実機確認済み（2026-07-21・v0.12.0）**（一式）。特に: 作成ボタンからシートが作れるか、エディタの保存と再描画、起動フォームの読み込みと開始、複数指定技能の要求と応答。
 - **判定行の技能は単数のまま**。シートの「技能」列も自由記入欄なので複数を許すべきかは未確認（支援判定と同じ論法が成り立つ）。**決めずに残す。**
 - FS判定の進行/支援判定の宛先選択は、他の4ダイアログで統一した対象選択部品を使っていない（宛先がルールで決まるため別扱いとした 2026-07-21 の判断のまま）。

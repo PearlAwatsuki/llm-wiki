@@ -1,5 +1,7 @@
 # フェーズ12 残作業 実装計画（2026-07-20 策定）
 
+> ✅ **完了（2026-07-21・v0.12.0）**。本計画の T1〜T11 は実装・実機確認とも消化済み。以降は履歴として保持する。現況は [Phase_12_Tasks_Detail.md](Phase_12_Tasks_Detail.md) と [Roadmap.md](../../02_System/Roadmap.md) を正とする。
+
 設計正本 → [Focus_System_Mechanics.md](../Game_Mechanics/Focus_System_Mechanics.md)、ルール正本 → [Focus_System.md](../Game_Rules/Focus_System.md) / [Damage_Rules.md](../Game_Rules/Damage_Rules.md) / [Bounty_Points.md](../Game_Rules/Bounty_Points.md) / [Active_Effects.md](../Game_Mechanics/Active_Effects.md)。
 
 **ゴール**: フェーズ12 を完了し v0.12.0 に到達する。残りは「RL 任意付与（3件）」「FS判定基幹（6件）」「仕上げ（2件）」＋実機確認2件。
