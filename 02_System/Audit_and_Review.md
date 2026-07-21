@@ -3451,3 +3451,26 @@ Code の「dealt×vs\* 併記は二重加算」という申し送りに対しユ
 
 - **実機確認は未実施**。トラッカー UI が入る 13-4 以降でないと目視できないため、それまではロジックの正しさをテストで担保する（ユーザー了承 2026-07-21）。CONFIG 登録・シード回帰の実機スモークは後続で。
 - シードのライフサイクル移行・プロセス状態機械・CS/AR 自動記帳・`_sortCombatants` 適用・手番判定の写像（combatant→素データ）は 13-3/13-4。
+
+### 2026-07-22 フェーズ13-3 プロセス状態機械＋CS/AR 自動記帳＋CSカレントの凍結モデル改修
+
+**2026-07-22** / **関連実装** `scripts/module/combat-progression.mjs`・`scripts/combat/tnx-combat.mjs`・`scripts/tnx.mjs`・`scripts/data/actor/common/character-base.mjs`・`attributes.mjs` / **ステータス**: 実装済（トラッカー UI＝13-4・実機確認は 13-4 以降）
+
+#### メカニクス監査
+
+- プロセス進行（戦闘準備→セットアップ→(イニシアチブ→メイン)×n→クリンナップ）を状態機械で表現。遷移は RL 操作、記帳（CS/AR）は自動（承認済み方針）。
+- 記帳（Combat_Flow §4-6）: セットアップ開始で `current←CS実効値`・AR←付与値／セットアップ末で `current←valueTotal+currentBuff`（確定）／メジャー後 AR−1・CSカレント0／待機 CSカレント1／イニシアチブ行動不能 AR−1／クリンナップ AR 全回復。
+- **CSカレントの「一度計算して凍結」モデル（2026-07-21〜22 ユーザー確定）**: CSカレント＝CS＋CSカレントへの AE を決定時（セットアップ末）に一度計算して保存値へ焼き込み、以後再計算しない。**メジャー後0/待機1 は AE でも変更されない（ハード）**。CS を変える効果は次セットアップの再計算まで CSカレントに反映されない。→ Combat_Flow「CSカレントの一度計算して凍結モデル」。
+- エキストラは手番を持たない（13-2 裁定）を手番順・次の手番から除外済み。
+
+#### 設計レビュー
+
+- 純ロジック（TDD）`combat-progression.mjs`（遷移妥当性・AR−1・各記帳の更新オブジェクト・セットアップ末確定 `buildSetupConfirmUpdate`）。`TnxCombat` は薄い駆動メソッド（GM ガード・純ロジックを適用）。`combatStart→enterSetup` 配線でシードをライフサイクル統合（13-2 で 13-3 送りにした分を完了）。
+- **CS 派生の改修（§4.3・ユーザー承認）**: CSカレントへの AE の着地先を実効 `currentTotal` から蓄積用の派生値 `currentBuff` へ変更（`_resolveBuffApplications` の cs.current マップ）。`currentTotal = current`（凍結）。決定時に `current ← valueTotal + currentBuff` を焼き込む。ユーザーが「AE は CSカレントに乗るが、CSベース/CS/CSカレントは一度だけ計算して再計算条件まで再計算しない」と明示したため、旧「決定値＋修正値（ライブ）」を CSカレントについて精密化。当初 Code は「cs.current の AE 廃止」「value 層へ移す」を提案したが、いずれもユーザーが否定（AE は CSカレントに乗る／前段階ではない）→ 現形に確定。
+- 検証: cs.current の AE が currentBuff に着地し currentTotal に乗らないことを `_applyEffectBuffs` 実走テストで裏取り。テスト 1696 green・eslint 0 error。**トラッカー UI が無いため実機確認は 13-4 以降**（ユーザー了承）。
+
+#### 課題・申し送り
+
+- RL 操作メソッド（enterInitiative/assignMain/endMain/declareWait/declareCantAct/enterCleanup）の UI 起動＝13-4。手番順の `_sortCombatants` 適用・現在プロセス表示も 13-4。
+- 実機確認（カット開始→各プロセス→記帳→凍結の一巡・setup バフの焼き込み・メジャー後0のハード）は 13-4 UI 後。
+- 待機/行動不能/カット終了など RL 裁定箇所は強制しない（表示・補助に留める）。

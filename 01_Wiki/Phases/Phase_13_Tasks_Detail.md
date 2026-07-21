@@ -60,9 +60,12 @@ FVTT デフォルトのコンバットトラッカーを上書きし、TNX の**
 - **シード統合の範囲を一部 13-3 へ**: ロジックは `TnxCombat` へ集約したが、トリガーは既存フックのまま（挙動不変・ゼロ回帰）。ライフサイクル（`startCombat`/`_onEnter`）への完全移行は CS/AR 自動記帳とまとめて 13-3。
 - 検証: テスト 1682 green・eslint 0 error。実機確認はトラッカー UI が入る 13-4 以降（ユーザー了承）。
 
-### 13-3: プロセス状態機械＋CS/AR自動記帳
+### 13-3: プロセス状態機械＋CS/AR自動記帳（2026-07-22 ✅ エンジン実装済・UI＝13-4・実機確認は13-4以降）
 
-セットアップ/イニシアチブ/メイン/クリンナップの遷移。CSカレント（カット開始でCS実効値／セットアップ末確定／メジャー後0／待機1）と AR（メジャー−1／行動不能−1／クリンナップ全回復）の自動記帳。
+- 純ロジック（TDD）`combat-progression.mjs`：`isValidProcessTransition`・`arDecrement`・記帳算出（`buildEndMainUpdate`/`buildCantActUpdate`/`buildWaitUpdate`/`buildCleanupUpdate`/`buildSetupConfirmUpdate`）。
+- `TnxCombat` 駆動メソッド：`enterSetup`（各カット開始＝CSカレント←CS・AR←付与値）／`enterInitiative`（セットアップ末確定＝`current←valueTotal+currentBuff` 焼き込み）／`assignMain`／`endMain({didMajor})`（AR−1・CSカレント0）／`declareWait`（CSカレント1）／`declareCantAct`（AR−1）／`enterCleanup`（AR全回復）。GM ガード。`combatStart→enterSetup` 配線でシードをライフサイクル統合。
+- **CSカレントの「一度計算して凍結」モデル改修（§4.3・2026-07-21〜22 ユーザー確定）**：CSカレント＝CS＋CSカレントへの AE を決定時に一度計算して保存値へ焼き込み、以後再計算しない。実装＝cs.current の AE を実効 `currentTotal` でなく蓄積用派生値 `currentBuff` へ流し（`_resolveBuffApplications`・`_prepareCombatSpeedTotals`・`attributes.mjs`）、`currentTotal = current`（凍結）。→ **メジャー後0/待機1 は AE でも変更されない（ハード）／CS 変化は次セットアップの再計算まで反映されない**。→ Combat_Flow「CSカレントの一度計算して凍結モデル」。
+- 検証：cs.current AE→currentBuff・currentTotal 不変を `_applyEffectBuffs` 実走テストで裏取り。テスト 1696 green・eslint 0 error。**トラッカー UI が無いため実機確認は 13-4 以降**。
 
 ### 13-4: トラッカーUI上書き
 
