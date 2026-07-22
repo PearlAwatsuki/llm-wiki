@@ -3476,6 +3476,32 @@ Code の「dealt×vs\* 併記は二重加算」という申し送りに対しユ
 - 待機/行動不能/カット終了など RL 裁定箇所は強制しない（表示・補助に留める）。
 - **注記（2026-07-22）**: 本エントリの離散プロセス遷移・assignMain・endMain(didMajor) は 13-4 のサブターンモデル再設計で棄却・置換された（下記エントリ）。
 
+### 2026-07-22 フェーズ13-5 メインプロセス割り込み（挿入メイン・実機確認済）
+
+**2026-07-22** / **関連実装** `scripts/module/combat-progression.mjs`（`planInterruptStart`/`planInterruptEnd`/`buildInterruptEndUpdate`）・`scripts/combat/tnx-combat.mjs`（`startInterrupt`/`endInterrupt`/getter/ガード）・`combat-tracker-view.mjs`（footer/row）・`interrupt-grant.mjs`（新規）・`tnx-socket-handler.mjs`（3ソケット）・`usage.mjs`（`grantsInterrupt`）・`usage-check-context.mjs`・`tnx-character-sheet-base.mjs`・`tnx-usage-sheet.mjs`・`tnx-combat-tracker.mjs`・`templates/{app/usage-sheet,combat/tracker}.hbs`・`css/tnx2.css` / **ステータス**: 実装済・実機確認済（2026-07-22 ユーザー）
+
+#### メカニクス監査
+
+- **割り込み（挿入メイン）**（正本 Combat_Flow「割り込み（挿入メイン）」）＝順番外のメインプロセスを差し込む。二つの在ゲーム機能を一つのプリミティブに還元: イニシアチブでの割り込み（自分のメインを順番外で）・追加行動技能（AR 無消費で別キャラにメインを与える＝Aのメジャーを犠牲に）。
+- **起点＝用途の「割り込みを許可」トグル**（宣言/判定）: 使用で対象（対象なし＝自分）の combatant に `canInterrupt`。トラッカー入口は**対象の操作者/RL のみ**・フェーズ非依存・行使でワンショット消費。フラグを対象に立てる設計で自己割り込みと他者付与を一本化（ユーザー考案）。
+- **メイン中の割り込み＝そのメインを終了**（2026-07-22 ユーザー確定）: 通常/挿入いずれのメイン中でも、割り込み時点でそのメインを終了（AR−1・CS0）し**戻らない**。戻り先は常にサブターン（通常メイン中→イニシアチブ）。追加行動技能の「Aのメジャーを犠牲に」と一致。
+- **挿入メイン終了＝2ボタン**（「終了」＝AR据え置き／「AR を−1して終了」＝AR−1）・CS は両方据え置き（通常メインの CS→0 は適用しない＝2026-07-22 ユーザー確定＝指定は AR のみ）。
+- **完全自動化はしない**（ユーザー確定）: 技能組み合わせ・AR 消費の自動化を持たない。割り込みの実行はトラッカー入口の手動操作。
+
+#### 設計レビュー
+
+- **経緯**: 当初の 13-5「リアクション宣言タイミング統合」は 12＋確定方針で充足済みと判断しクローズ→ユーザーが「割り込みでメインを奪う」機能を要望→設計対話（起点＝トラッカー宣言 vs アイテムロール→ユーザー考案の「用途トグルで対象にフラグ→入口ゲート」に確定）→実装。付与を「結果カードの手動ボタン」と一旦説明したが、実装は**用途使用時の即時付与**を採用（カードへ新フラグを通す配線が判定/攻撃/宣言の各カード生成に広く及び risky・かつ実際の割り込みはトラッカー入口＝対象操作者/RL ゲートを押して初めて起こるため付与を早めても制御は失われない）。ユーザーはコミットで承認（明示裁定ではない＝将来手動ボタン化の余地あり）。
+- **純ロジック（TDD）**: `planInterruptStart`（メイン中は endMainId を返す・戻り先を計画）・`planInterruptEnd`（退避サブターンへ・spot 再算出フラグ）・`buildInterruptEndUpdate`（AR のみ・CS 不干渉）。テストは RED→GREEN。スタック（元メインへ戻す）方式は「メイン中の割り込み＝そのメイン終了」裁定で撤去し、戻り先1つ（`interruptReturn`）へ単純化。
+- **Foundry グルー**: `startInterrupt`（メイン終了記帳＋挿入フラグ＋許可消費）・`endInterrupt`（AR記帳＋復帰＋spot再算出）・advanceCut ガード（挿入メイン中は core キーバインドでも通常前進しない）。非GMは3ソケット（`interruptStart`/`interruptEnd`/`interruptGrant`）で GM へ委譲・要求者の所有権を検証。付与は `interrupt-grant.mjs`（`currentTargetActors`→combatant フラグ・GM委譲）を buildUsageCheckContext と _useDeclarationUsage の2チョークに配線（check/declaration 両対応）。循環 import 回避（socket→interrupt-grant は dynamic）。
+- **表示バグ是正（同日）**: トラッカーの AR・CSカレント表示がアクター派生 `combatSpeed.inCombat` 依存で、reset 時点に依存して陳腐化し行ごとに AR が出たり消えたりしていた。描画中の `combat.started` 直接判定へ変更して解消（`getCombatantByActor` は v12 deprecated だが機能はする＝原因ではない）。
+- テスト 1748 green・eslint 0・stylelint clean。
+
+#### 課題・申し送り
+
+- 付与タイミングは即時採用。RL/対象が「使用のたびでなく結果カードのボタンで許可を届けたい」場合は手動ボタン方式へ切替可能（カード flag の配線が必要）。
+- `canInterrupt` はカット境界での自動クリアを持たない（戦闘終了・行使で消える）。カットをまたいで許可を持ち越したくない要件が出たら 13-6 のカット境界イベントで掃く。
+- スポットのユーザー順タイブレーク未写像（13-4 申し送り継続）。
+
 ### 2026-07-22 フェーズ13-4 カット進行トラッカー（サブターンモデル・実機確認済）
 
 **2026-07-22** / **関連実装** `scripts/module/tnx-combat-tracker.mjs`・`combat-tracker-view.mjs`・`combat-turn-order.mjs`・`combat-progression.mjs`・`scripts/combat/tnx-combat.mjs`・`tnx-socket-handler.mjs`・`tnx.mjs`・`conditions.mjs`・`damage-chart.mjs`・`condition-resolution.mjs`・`templates/combat/*`・`css/tnx2.css` / **ステータス**: 実装済・実機確認済（2026-07-22 ユーザー）
