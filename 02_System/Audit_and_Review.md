@@ -3474,3 +3474,31 @@ Code の「dealt×vs\* 併記は二重加算」という申し送りに対しユ
 - RL 操作メソッド（enterInitiative/assignMain/endMain/declareWait/declareCantAct/enterCleanup）の UI 起動＝13-4。手番順の `_sortCombatants` 適用・現在プロセス表示も 13-4。
 - 実機確認（カット開始→各プロセス→記帳→凍結の一巡・setup バフの焼き込み・メジャー後0のハード）は 13-4 UI 後。
 - 待機/行動不能/カット終了など RL 裁定箇所は強制しない（表示・補助に留める）。
+- **注記（2026-07-22）**: 本エントリの離散プロセス遷移・assignMain・endMain(didMajor) は 13-4 のサブターンモデル再設計で棄却・置換された（下記エントリ）。
+
+### 2026-07-22 フェーズ13-4 カット進行トラッカー（サブターンモデル・実機確認済）
+
+**2026-07-22** / **関連実装** `scripts/module/tnx-combat-tracker.mjs`・`combat-tracker-view.mjs`・`combat-turn-order.mjs`・`combat-progression.mjs`・`scripts/combat/tnx-combat.mjs`・`tnx-socket-handler.mjs`・`tnx.mjs`・`conditions.mjs`・`damage-chart.mjs`・`condition-resolution.mjs`・`templates/combat/*`・`css/tnx2.css` / **ステータス**: 実装済・実機確認済（2026-07-22 ユーザー）
+
+#### メカニクス監査
+
+- **サブターンモデル**（Combat_Flow「トラッカー上の表現」＝正本）: メインプロセス＝キャラのターン、セットアップ/イニシアチブ/クリンナップ＝特定キャラに紐づかない全体の場（サブターン・同一カットに複数回）。イニシアチブは次のメイン行動者を**状態から確認する場**（イニシアチブで行動するキャラ＝次のメイン行動者とは限らない）。1カット＝1ラウンド。
+- **スポット走査**＝プロセスごとの行動権を CS順に巡回。「次へ」で渡す（宣言者はスポットの操作者か RL）。待機は候補本人の操作者の宣言（CSカレント→1）。
+- **メジャー未実行のメイン＝「メジャーで何もしなかった」扱い**（2026-07-22 裁定）＝メイン終了は常に AR−1・CSカレント0（ムーブ/マイナー無限反復の遮断）。「メジャーなしで終了」分岐は全廃。
+- **行動不能＝読み取り**（Combat_Flow §4 追記）: 戦闘不能タグ（blocksMainProcess＝気絶/失神/仮死/昏睡＋terminal の完全死亡/精神崩壊）または脱落マーク。手動ボタンは脱落切替と機能が被るため棄却。確認時に上位の行動不能者へ AR−1 自動記帳。**抹殺は対象外**（applyAtActEnd＝アクト終了時適用・アクト中は行動可＝ユーザー訂正。Code は terminal 一律ブロックと誤推定→Damage_Rules 既記載の読み落とし）。
+- **脱落マークの自動連動**: blocksMainProcess の付与で自動オン・除去で（該当が残らなければ）自動オフ。「dead」だけ core 特別ステータスで自動脱落になる非対称を解消。
+- **動転（ment-9）の制御判定要求を自動化**: 状態直下 `controlNegate`（感情）を新設し既存機構に配線。成功＝ダメージ消滅（2026-07-09 裁定の一般則）・物を落とす処理は卓運用。
+
+#### 設計レビュー
+
+- **経緯（重要）**: 当初 Code は FVTT の turn/round モデル（turns・nextTurn・combatant・ライフサイクル）を読まずに離散プロセスボタン・assignMain・行動起動ボタンで自作し、ユーザーの連続指摘（プロセスのつながり無視・行動権の受け渡し不在・行動のボタン制御・待機の宣言者）を受けて全面棄却→**実ソース精読**（templates/sidebar/tabs/combat/*・combat-tracker.mjs・combat.mjs）→サブターンモデルで再設計。フェーズ設計時の「上書き可能か」への安請け合いが根本原因（監査記録として保持）。
+- 実装: `TnxCombatTracker`（PARTS 3枚差し替え・既定機能温存・「カット進行」統一）／`nextTurn` 1本の前進（`advanceCut`＝スポット送り→尽きたら `advancePhase`）／core `turn` を「今の番」へ常時同期／`startCombat` override＝**シード→単一 update**（core は「フック→update」順のためフック内 update は上書き・競合＝実機で turn 固定・AR 未付与が発覚。**セットアップ入り時点で AR 付与済み**の要件もこれで満たす）／round 変更の `updateCombat` フックで全クライアント reset（core `updateCombatantActors` は render のみ）／プレイヤーの「次へ/手番終了」は `cutAdvance` ソケットで GM 委譲（要求者の所有権検証）。
+- 純ロジック（TDD）: `planAdvance`・スポット走査（`firstSpotId`/`nextSpotId`・cantAct 除外）・`confirmMain`（ペナルティ算出）・`footerPlan`/`rowActions`・`blocksMainProcess`/`actorCannotMainProcess`。v13 の単一ルート要素制約・`_onRender` の `.combat-tracker` 前提も実機エラーから是正。
+- 付随（同日）: 状態・負傷アイコンの整理（ユーザー主導・blood=肉体負傷専属/髑髏=完全死亡等）・damage-chart の notes 全廃（UI 説明文の規約違反＝未自動化6件はコードコメントへ）・スタイル既定アイコン door-closed（ユーザー）。
+- テスト 1730 green・eslint 0 error・stylelint clean。
+
+#### 課題・申し送り
+
+- 13-5: リアクションの宣言タイミング・回数のトラッカー統合。13-6: 境界イベント（カット進行終了時のシーン終了確認ダイアログ）。13-7: FS 実接続。
+- スポットのユーザー順タイブレーク（participantOf.userOrder）は未写像（id 順で決定的）。必要になったら接続。
+- 驚愕（AR−1）・士気喪失（AR 0）の付与時発火は未接続（damage-chart のコードコメント参照）＝13 以降の接続候補。

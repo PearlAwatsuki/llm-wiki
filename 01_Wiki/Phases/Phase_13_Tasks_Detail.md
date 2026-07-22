@@ -67,9 +67,18 @@ FVTT デフォルトのコンバットトラッカーを上書きし、TNX の**
 - **CSカレントの「一度計算して凍結」モデル改修（§4.3・2026-07-21〜22 ユーザー確定）**：CSカレント＝CS＋CSカレントへの AE を決定時に一度計算して保存値へ焼き込み、以後再計算しない。実装＝cs.current の AE を実効 `currentTotal` でなく蓄積用派生値 `currentBuff` へ流し（`_resolveBuffApplications`・`_prepareCombatSpeedTotals`・`attributes.mjs`）、`currentTotal = current`（凍結）。→ **メジャー後0/待機1 は AE でも変更されない（ハード）／CS 変化は次セットアップの再計算まで反映されない**。→ Combat_Flow「CSカレントの一度計算して凍結モデル」。
 - 検証：cs.current AE→currentBuff・currentTotal 不変を `_applyEffectBuffs` 実走テストで裏取り。テスト 1696 green・eslint 0 error。**トラッカー UI が無いため実機確認は 13-4 以降**。
 
-### 13-4: トラッカーUI上書き
+### 13-4: トラッカーUI上書き（2026-07-22 ✅ 実装済・実機確認済）
 
-`CombatTracker` サブクラス再テンプレート化。プロセス・手番ハイライト（CSカレント最大かつAR≥1）・CS/AR・timing別行動起動・現在プロセス表示。
+**サブターンモデル**（→ Combat_Flow「トラッカー上の表現」）で全面再設計した。Code の当初設計（各プロセスの離散ボタン・メイン行動者の RL 指名・行動の起動ボタン）は誤りとして全て棄却され、**FVTT 実ソースの精読**（`startCombat`/`nextTurn`/`_onRender`/テンプレート）を経て確定した。
+
+- **`TnxCombatTracker extends CombatTracker`**（`CONFIG.ui.combat`）: header/tracker/footer とも差し替え。既定機能（作成・切替・設定・コンテキストメニュー・表示/脱落/ピン）は温存し、文言は「カット進行」に統一（ラウンド表示・ターンナビ・一斉イニシアチブロールは撤去）。ヘッダー中央寄せはスペーサー方式。
+- **進行＝`nextTurn` 1本（「次へ」）**: サブターン中はスポット（プロセスごとの行動権・CS順・cantAct 除外）を次へ渡し、走査を終えたらフェーズ送り。メイン中は「手番終了」（常に AR−1・CSカレント0＝「メジャーで何もしなかった」裁定）。RL には別途フェーズ送りボタン（残走査の飛ばし用）＋常設「カット進行の終了」。手番/スポットのプレイヤーにも該当ボタンが出る（実行は `cutAdvance` ソケットで GM 委譲・要求者の所有権を検証）。
+- **`startCombat` override**: core は「combatStart フック発火→update」の順で、フック内の別 update は上書き・競合する（実機で発覚＝turn 固定・AR 未付与）。**シード（AR←付与値・CSカレント←CS）→単一 update（round/turn/flags）**の順に是正——**セットアップに入る時点で AR 付与済み**（ユーザー指摘）。次カットの再シードも update 前。round 変更の `updateCombat` フックで全クライアントが reset（core `updateCombatantActors` は render のみのため）。
+- **core `turn` を常に「今の番」（スポット/メイン）へ同期**＝ターンプレイヤー表示が巡回に追随。
+- **表示**: サブターン行（全体の場）＋CS を行の主数値として大きく表示（AR は添え）。**見出しはメインプロセス中にこそ点灯**（ユーザー指摘で反転）。エキストラは「手番なし」。
+- **行動不能＝読み取り**（→ Combat_Flow §4）: 戦闘不能タグ/脱落マークで候補・スポットから除外＋確認時 AR−1 自動。**脱落マークの自動オン/オフ連動**。抹殺は対象外（`applyAtActEnd`・アクト中行動可＝ユーザー訂正）。行の宣言操作は**待機のみ**（候補の操作者）。
+- 付随: 状態・負傷アイコンの整理（ユーザー主導・blood=肉体負傷専属等）・damage-chart の notes 全廃（規約違反＝未自動化はコードコメントへ）・**動転の制御判定要求の自動化**（状態直下 `controlNegate`）。
+- 検証: テスト 1730 green・eslint 0 error・stylelint clean・**実機確認済（2026-07-22 ユーザー・開始〜次カットの一巡・行動不能連動・動転要求）**。
 
 ### 13-5: リアクションの宣言タイミング・回数のトラッカー統合
 
