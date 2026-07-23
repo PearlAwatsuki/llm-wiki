@@ -44,17 +44,17 @@
 
 ### 2.1 値バフ① キャラクターへの着地（この表が全数）
 
-| キー | 着地 total | 備考 |
-|---|---|---|
-| `system.ability.reason` / `.passion` / `.life` / `.mundane` | `<能力>.total` | 能力値（理性／感情／生命／外界） |
-| `system.control.reason` / `.passion` / `.life` / `.mundane` | `<能力>.totalControl` | 制御値 |
-| `system.cs.base` | `combatSpeed.baseTotal` | **CSベース**への常時修正。**準備ゲートあり**（保持アイテムが未準備なら読み飛ばし。`noPrepareRequired` 品・styleSkill・アクター自身は対象外＝2026-07-02 裁定/2026-07-09） |
-| `system.cs.value` | `combatSpeed.valueTotal` | **CS**への修正（準備ゲートなし） |
-| `system.cs.current` | `combatSpeed.currentTotal` | **CSカレント**への修正（準備ゲートなし） |
-| `system.ar.max` | `actionRank.maxTotal` | **付与AR**への常時修正（フェーズ11）。`cs.base` と同じ準備ゲートあり |
-| `system.baseAttack.damageType` | `baseAttack.damageTypeTotal` | **生身のダメージ種別上書き**（2026-07-13。値=S/P/I/X の選択式・モード不問で常に上書き・素値は不変） |
-| `system.partSlot.<部位キー>` | `partSlotsEffective`（非スキーマ・`partSlotDeltas.<キー>` 経由） | **アクター部位スロットの増減**（フェーズ12・値=増減数・式可）。仮想名前空間 `partSlot`。既存部位はキー照合で count に加算（0クランプ）・**未知キーは正のデルタのときだけ新規実効スロットを作る**（負は既存のみ＝幽霊部位ガード）。`cs.base` と同じ準備ゲートあり。負傷 `partSlotMod` と合成して `partSlotsEffective` に着地（占有計算・装備先候補が読む。base の `partSlots` は編集用に不変） |
-| `system.handMaxSizeMod` | ネイティブ着地（base） | 手札上限修正の特例（KI-020）。所有 cast に着地（ADD）→ `resolveEffectiveHandMaxSize` が User の実効手札上限へ合算 |
+| キー                                                          | 着地 total                                             | 備考                                                                                                                                                                                                                                             |
+| ----------------------------------------------------------- | ---------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `system.ability.reason` / `.passion` / `.life` / `.mundane` | `<能力>.total`                                         | 能力値（理性／感情／生命／外界）                                                                                                                                                                                                                               |
+| `system.control.reason` / `.passion` / `.life` / `.mundane` | `<能力>.totalControl`                                  | 制御値                                                                                                                                                                                                                                            |
+| `system.cs.base`                                            | `combatSpeed.baseTotal`                              | **CSベース**への常時修正。**準備ゲートあり**（保持アイテムが未準備なら読み飛ばし。`noPrepareRequired` 品・styleSkill・アクター自身は対象外＝2026-07-02 裁定/2026-07-09）                                                                                                                            |
+| `system.cs.value`                                           | `combatSpeed.valueTotal`                             | **CS**への修正（準備ゲートなし）                                                                                                                                                                                                                            |
+| `system.cs.current`                                         | `combatSpeed.currentTotal`                           | **CSカレント**への修正（準備ゲートなし）                                                                                                                                                                                                                        |
+| `system.ar.max`                                             | `actionRank.maxTotal`                                | **付与AR**への常時修正（フェーズ11）。`cs.base` と同じ準備ゲートあり                                                                                                                                                                                                    |
+| `system.baseAttack.damageType`                              | `baseAttack.damageTypeTotal`                         | **生身のダメージ種別上書き**（2026-07-13。値=S/P/I/X の選択式・モード不問で常に上書き・素値は不変）                                                                                                                                                                                  |
+| `system.partSlot.<部位キー>`                                    | `partSlotsEffective`（非スキーマ・`partSlotDeltas.<キー>` 経由） | **アクター部位スロットの増減**（フェーズ12・値=増減数・式可）。仮想名前空間 `partSlot`。既存部位はキー照合で count に加算（0クランプ）・**未知キーは正のデルタのときだけ新規実効スロットを作る**（負は既存のみ＝幽霊部位ガード）。`cs.base` と同じ準備ゲートあり。負傷 `partSlotMod` と合成して `partSlotsEffective` に着地（占有計算・装備先候補が読む。base の `partSlots` は編集用に不変） |
+| `system.handMaxSizeMod`                                     | ネイティブ着地（base）                                        | 手札上限修正の特例（KI-020）。所有 cast に着地（ADD）→ `resolveEffectiveHandMaxSize` が User の実効手札上限へ合算                                                                                                                                                            |
 
 - `cs.*`／`ar.*`／`partSlot.*` は**仮想名前空間**——実スキーマパス（`system.combatSpeed.*`・`system.partSlots` 等）と分けることで、アクター自身の効果がネイティブ適用と二重に効くのを防ぐ。
 - **部位キー（フェーズ12）**: 部位スロットは `key`（安定参照）と `value`（表示ラベル）を持つ。AE・アイテム part 行・エイリアスの参照は**キー**で持ち、表示は**逆引きした現在ラベル**（識別キー・分類コードキーと同じ原則。ラベルのリネームで参照が壊れない）。既定ラベルは英語キー（`one-hand`＝片手持ち・`occiput`＝後頭部・「〜部」は `-part` 等・2026-07-15 ユーザー確定）。既存データは ready 一回の `migratePartSlotKeys` でキーを永続付与。正本は [Outfits.md](../Game_Rules/Outfits.md)「部位管理」。

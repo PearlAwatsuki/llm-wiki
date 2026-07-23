@@ -3476,6 +3476,29 @@ Code の「dealt×vs\* 併記は二重加算」という申し送りに対しユ
 - 待機/行動不能/カット終了など RL 裁定箇所は強制しない（表示・補助に留める）。
 - **注記（2026-07-22）**: 本エントリの離散プロセス遷移・assignMain・endMain(didMajor) は 13-4 のサブターンモデル再設計で棄却・置換された（下記エントリ）。
 
+### 2026-07-23 サブターンのスポット絞り込み（用途のあるプロセスだけ手番・実機確認済）
+
+**2026-07-23** / **関連実装** `scripts/module/combat-turn-order.mjs`（`firstSpotId`/`nextSpotId` の `eligibleIds`・`PHASE_TIMING_KEY`）・`usage-consumption.mjs`（`isConsumptionDepleted`）・`scripts/combat/tnx-combat.mjs`（`_eligibleSpotIds`/`_actorHasProcessAction`・3フロー配線） / **ステータス**: 実装済・実機確認済（2026-07-23 ユーザー）
+
+#### メカニクス監査
+
+- **サブターンのスポットは「そのプロセスの用途を持つ者」だけに止まる**（2026-07-23 ユーザー確定・→ Combat_Flow「トラッカー上の表現」）: セットアップ／イニシアチブ／クリンナップのスポット走査を、そのプロセスのタイミング（`process:setup`/`initiative`/`clean-up`）の用途を使える形で持つ参加者に絞る。持たない者は「次へ」で自動的に飛ばす。
+- **「使える」＝消費が枯渇していない**。消費設定が無い用途は常に使える（**設定なしを枯渇に含めない**＝ユーザー厳命）。`inert`（使用回数制限なし）・設定不備（対象不明）・消費量0/負は枯渇に含めない。戦闘タブ非表示（hideInCombatTab）の用途は数えない。
+- **プロセスは自動通過しない**（2026-07-23 ユーザー是正）: 手番が回る者が居なくてもプロセスは入って留まり、「次へ」を押して初めて既定処理（CSカレント確定／次のメイン確認／AR 回復・次カット）が走り次へ進む。当初 Code は空プロセスを自動 advancePhase していたが「自動通過はしない」で撤去。メインは対象外（AR=0 で自前スキップ）。
+
+#### 設計レビュー
+
+- 純ロジック（TDD）: `firstSpotId`/`nextSpotId` に任意の `eligibleIds`（Set）を追加し、渡せばその集合に絞る（null=従来どおり全員）。`isConsumptionDepleted(rows)`＝限度資源で正の消費量に残量が足りない行が一つでもあれば true（`inert`/`problem`/kind なし/amount≤0 は除外・空は false）。テスト RED→GREEN。
+- Foundry グルー: `_eligibleSpotIds(phase)` が `PHASE_TIMING_KEY` でフェーズ→timing.processName を引き、各 combatant のアクターが `_actorHasProcessAction`（timing 一致＋`resolveConsumeRowsForActor`→`isConsumptionDepleted` で枯渇でない）を満たすかで集合を組む。startCombat / advanceCut（`nextSpotId`）/ advancePhase（`firstSpotId`）の3点に配線。循環 import なし（usage-consumption は静的 import ゼロ）。
+- 経緯: ユーザー当初「戦闘タブでタイミングをスキップ」と表現したが実体はトラッカーのサブターン進行（Code が戦闘タブ表示と取り違え→是正）。さらに「プロセス丸ごとスキップ」でなく「既定処理だけ走る」＝手番の配り方だけ変える、と是正。最終的に自動前進も撤去（「次へ」を押すまで進まない）。
+- 待機への影響: イニシアチブ用途が無ければ毎カット、イニシアチブは既定処理だけで通過し待機宣言の機会が出ない（ユーザー了承済み。要れば「候補は常にイニシアチブで手番が回る」に変更可）。
+- テスト 1758 green・eslint 0・stylelint clean。
+
+#### 課題・申し送り
+
+- 待機を残す要件が出たら、イニシアチブの eligible に候補を常に含める（＝待機のために止まる）を接続。
+- AR 消費用途は AR 不足で枯渇＝手番なしになる。setup/cleanup タイミングで AR を消費する用途は稀だが、派生 `actionRank.inCombat` の陳腐化で誤判定しうる点は 13 系の inCombat 依存の残課題（表示側は combat.started へ移行済み・13-5）。
+
 ### 2026-07-22 フェーズ13-5 メインプロセス割り込み（挿入メイン・実機確認済）
 
 **2026-07-22** / **関連実装** `scripts/module/combat-progression.mjs`（`planInterruptStart`/`planInterruptEnd`/`buildInterruptEndUpdate`）・`scripts/combat/tnx-combat.mjs`（`startInterrupt`/`endInterrupt`/getter/ガード）・`combat-tracker-view.mjs`（footer/row）・`interrupt-grant.mjs`（新規）・`tnx-socket-handler.mjs`（3ソケット）・`usage.mjs`（`grantsInterrupt`）・`usage-check-context.mjs`・`tnx-character-sheet-base.mjs`・`tnx-usage-sheet.mjs`・`tnx-combat-tracker.mjs`・`templates/{app/usage-sheet,combat/tracker}.hbs`・`css/tnx2.css` / **ステータス**: 実装済・実機確認済（2026-07-22 ユーザー）
