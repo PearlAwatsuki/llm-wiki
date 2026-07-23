@@ -3476,6 +3476,31 @@ Code の「dealt×vs\* 併記は二重加算」という申し送りに対しユ
 - 待機/行動不能/カット終了など RL 裁定箇所は強制しない（表示・補助に留める）。
 - **注記（2026-07-22）**: 本エントリの離散プロセス遷移・assignMain・endMain(didMajor) は 13-4 のサブターンモデル再設計で棄却・置換された（下記エントリ）。
 
+### 2026-07-23 フェーズ13-6 カット進行の境界イベント発火＋シーン終了確認（案1・実機確認済）
+
+**2026-07-23** / **関連実装** `scripts/module/combat-events.mjs`（新規・`TNX_HOOKS`/`planPhaseEvents`）・`scripts/combat/tnx-combat.mjs`（startCombat/advancePhase/startInterrupt/endInterrupt の発火・`endCombat` override）・`css/tnx2.css`（ダイアログ縦積み） / **ステータス**: 実装済・実機確認済（2026-07-23 ユーザー）
+
+#### メカニクス監査
+
+- **境界イベントを発火するだけ**（正本 Combat_Flow「境界イベント」）: カット進行（＝シーン）開始/終了・カット境界（クリンナップ完了→次セットアップ）・プロセス遷移で `Hooks.callAll` する。**適用（効果の失効・回復・カウンタのリセット）はフェーズ15 が購読**——13-6 には適用ロジックを書かない。
+- **開始はシーンと連動・終了は非連動**（Combat_Flow 裁定）: `tnxCutProgressionStart`＝シーン開始。終了は案1ダイアログでシーンも終わるか選ぶ（`tnxCutProgressionEnd` は常に・`tnxSceneEnd` は選択時のみ）。RL がシーン内で治療まで認める運用のため。
+- **プロセスイベントは開始／終了の2エッジ**（2026-07-23 ユーザー指摘）: from→to の1本では「メインA終了＋メインB開始（割り込み）」を表せない。**挿入メイン（割り込み）も「メインプロセス」**として、その開始・終了、および割り込みで打ち切られた元メインの終了で `tnxProcessEnd(phase:"main")` を発火する＝「メインプロセス中」効果が挿入メイン・打ち切られた元メインでも失効できる。サブターンは割り込みで中断のみ（開始/終了を再発火しない＝サブターン中効果は割り込みを跨いで持続）。
+
+#### 設計レビュー
+
+- 純ロジック（TDD）: `planPhaseEvents({fromPhase, fromMainId, toPhase, toMainId, nextCut, round})`＝離脱プロセス終了→[次カット境界 cutEnd/cutStart]→遷移先開始 の順序列を返す。`TNX_HOOKS` はフック名の正本（凍結オブジェクト）。テスト RED→GREEN（5件）。
+- Foundry グルー: startCombat/advancePhase は遷移前状態を退避して update 後に発火。割り込みの発火は startInterrupt（元メイン打ち切りの processEnd は `planInterruptStart.endMainId` があるときのみ＝元が main のとき・挿入メインの processStart）・endInterrupt（挿入メインの processEnd）で直接。すべて GM 側（各メソッドは GM のみ実行）。combat-events は静的 import ゼロ＝循環なし。
+- 案1: `endCombat` を override（Foundry 既定の終了確認を置換）。`DialogV2.wait` の3択（callback で action 文字列を返す・close/cancel は no-op）。ボタン縦積みは `.tnx-scene-end-dialog .form-footer{flex-direction:column}`（用途ピッカーの縦積み規約に倣いスコープを絞る）。
+- イベントは購読者（15）が無ければ no-op のため現状の挙動に影響しない（発火タイミング・ペイロードの正しさを先に確定する狙い）。
+- テスト 1763 green・eslint 0・stylelint clean。
+
+#### 課題・申し送り（フェーズ15 購読側）
+
+- `tnxCutEnd`: 「カット」持続効果の失効・使用回数のカット境界リセット。
+- `tnxSceneEnd`: 「シーン中」効果の失効・仮死/昏睡の死亡判定・「シーン中N回」リセット。
+- `tnxProcessEnd`（phase:"main"）: メインプロセス中効果の失効（通常/挿入/打ち切り元の全メイン終了で発火）。
+- 「継続」を選んだ後のシーン終了導線（シーンコントロール側）はフェーズ14（シーン管理の一般化）。13-6 は `tnxSceneEnd` を発火する口だけ用意。
+
 ### 2026-07-23 サブターンのスポット絞り込み（用途のあるプロセスだけ手番・実機確認済）
 
 **2026-07-23** / **関連実装** `scripts/module/combat-turn-order.mjs`（`firstSpotId`/`nextSpotId` の `eligibleIds`・`PHASE_TIMING_KEY`）・`usage-consumption.mjs`（`isConsumptionDepleted`）・`scripts/combat/tnx-combat.mjs`（`_eligibleSpotIds`/`_actorHasProcessAction`・3フロー配線） / **ステータス**: 実装済・実機確認済（2026-07-23 ユーザー）
