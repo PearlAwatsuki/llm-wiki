@@ -3602,3 +3602,27 @@ Code の「dealt×vs\* 併記は二重加算」という申し送りに対しユ
 
 - 実機確認（ユーザー）で見る点: アイテム名辞典プルダウンが上位分類で絞れるか／搭載兵器をヴィークルに装備でき、ヴィークル表の列（攻等）で表示されるか／スロットなしホストの便宜スロットが**ホスト名**でゲージ・入れ子表示されるか／準備トグルの無効化・連動解除。
 - コンバイン合成の部位ラベルは hostKey 解決子を渡していない（コンバイン元がオプションのケースは稀・種別ラベルへ縮退）。必要になれば接続。
+
+### 2026-07-24 RL 任意ダメージのダメージ算出前フェーズ＋固定/カード算出の選択
+
+**2026-07-24** / **関連実装** `scripts/module/rl-grant-logic.mjs`（`buildRlDamageStagingFlag`／`RL_DAMAGE_MODES`）・`module/rl-grant.mjs`・`module/damage-flow.mjs`（`openRlFixedDamage`／`openDamageRollDialog` 固定分岐）・`module/attack-flow.mjs`（`renderAttackCard` の RL 分岐）・`module/request-presets.mjs`（プリセット mode）・`journal/tnx-scenario-sheet.mjs`・`templates/chat/rl-damage-card.hbs`（新規）・`templates/app/rl-grant-damage.hbs`・`templates/journal/scenario-sheet.hbs` / **ステータス**: 実装済・**実機確認済**（隔離 Foundry＋Playwright）
+
+#### メカニクス監査
+
+- RL 任意ダメージが「ダメージ算出の直前」効果（カバー等）を挟めなかったのを是正。当初（2026-07-20）はダメージカードを直接投稿していたため、カバーの起動口（攻撃カード限定＝命中確定後・ダメージカードを出す前）に相当する中間の器が無かった。**命中確定・ダメージ算出前の中間カード**を一度挟む形へ（確定で命中はするがダメージは未算出）。
+- **決め方は2択**（`rlGrant.mode`）: 固定ダメージ（指定値を直接算出）／カードを出す通常算出（攻撃力＝RL 設定の基準値＋カードの数字）。基準値を持つのは物理のみ（精神・社会は攻撃力の概念が無くカードのみ）。X 種別・軽減可否 RL 判断・軽減分岐なしの 2026-07-20 原則は不変。
+- カバー成立（`coveredBy`）後の被弾付け替えは両モードとも既存の `buildDamageTargets` で展開＝カバーした側が元々対象なら2つのダメージが別々に入る挙動（Damage_Rules）も踏襲。
+- プリセットは決め方（mode）も保存・再現（カード系ギミックを丸ごと保存できるように。当初 mode を外したのは誤り＝カード系が保存不能になる取りこぼしだった。既存プリセットは無印＝固定で後方互換）。
+
+#### 設計レビュー
+
+- **攻撃カードの器を流用**（形でなく機能での流用・[[feedback_function_over_form_reuse]]）: カバーの起動（対象行クリック→カバー技能判定→`coveredBy`）・被弾付け替え・「ダメージカードを出す」導線は攻撃カード（`attackCheck`）上に実装済み。RL 中間カードは `attackCheck` フラグ＋`rlGrant` マーカーで、判定表示を持たない専用テンプレート（`rl-damage-card.hbs`・`.tnx-attack-status` のみ）に `renderAttackCard` のライブ描画を委ねる。カバー用の別カード型を新設して再実装する案は退けた。
+- 対象は全員 `state:"hit"`・`confrontation:[]`＝リアクション導線なし。非カバーの対象行クリックは `handleTargetRowReactionClick` が `confrontation` 空で即 return＝無操作（安全）。`renderAttackCard` の RL 分岐は最小（`isRl` で命中行の制御値表記を抑止・固定モードのボタン文言を「ダメージを算出」に）。
+- カードモードは `openDamageRollDialog` にそのまま合流（攻撃者=RL・攻撃力=基準値・命中確定済みの通常攻撃と同型）。固定モードだけ冒頭で `openRlFixedDamage` へ分岐し、`buildRlDamageRollFlag`＋`buildDamageTargets` で固定値のダメージカードを直接生成する。
+- 値ラベルの寸法是正（[[feedback_self_review_ui_output]]）: 付与ダイアログ/プリセット編集の `.rl-form-group` は 90px 固定ラベル列で「基準値（攻撃力相当）」が溢れる（実機で scrollWidth 92px＞90px を検出）。共有列を広げると他ダイアログ/行がずれるため、入力面は「基準値」に短縮（列内に収まる・mode プルダウンが文脈を与える）。中間カードの内訳（roomy な `.cr-calc-label`）は「基準値（攻撃力相当）」のまま明示。
+- 検算: 純ロジック（`buildRlDamageStagingFlag`／プリセット mode）を TDD で追加。全 1787 test green・eslint 0 error・stylelint clean。**隔離 Foundry＋Playwright で実機確認済**——ダイアログ同期（モード/ラベル/可視）、中間カード（中立表記・命中行に制御値なし・カバー可）、固定算出の台帳、カードモードのロールダイアログ合流（攻撃力＝基準値）、`coveredBy` の被弾付け替え（2エントリ）、プリセット編集のモード欄。
+
+#### 課題・申し送り
+
+- カバーの**判定そのもの**（技能ロール→カード→スート判定→`coveredBy`）は攻撃カードと共有の未改変機構で、中間カードは前提（`attackCheck`＋`state:"hit"`＋`!damageRolled`＋対象行の起動口）を全て満たす。実機は起動口の存在（coverable クラス／クリック配線）と `coveredBy` の付け替えまでを確認し、カード操作を伴う判定本体は未改変につき机上で整合確認（テスト世界に山札/カバー技能の整備が無いため）。
+- FS判定の敗北時処理からの RL ダメージ発火は将来（`buildRl*` の呼び出し元は現状シーンコントロールの「ダメージ付与」のみ）。
