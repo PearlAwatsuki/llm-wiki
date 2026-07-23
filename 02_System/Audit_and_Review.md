@@ -3576,3 +3576,29 @@ Code の「dealt×vs\* 併記は二重加算」という申し送りに対しユ
 - 13-5: リアクションの宣言タイミング・回数のトラッカー統合。13-6: 境界イベント（カット進行終了時のシーン終了確認ダイアログ）。13-7: FS 実接続。
 - スポットのユーザー順タイブレーク（participantOf.userOrder）は未写像（id 順で決定的）。必要になったら接続。
 - 驚愕（AR−1）・士気喪失（AR 0）の付与時発火は未接続（damage-chart のコードコメント参照）＝13 以降の接続候補。
+
+### 2026-07-23 オプションのホスト指定統合（別大分類ホスト対応）＋準備ゲート
+
+**2026-07-23** / **関連実装** `scripts/data/item/common/extensible.mjs`（`SLOT_KINDS.outfitName`）・`common/outfit-base.mjs`（`hostName`→`hostKey`）・`part-helpers.mjs`（`matchesHostDescriptor`／`computeHostOccupancy`／`resolvePartRowsForDisplay`）・`module/outfit-dictionary.mjs`（新規）・`item/tnx-outfit-sheet.mjs`・`actor/tnx-character-sheet-base.mjs`・`data/actor/common/character-base.mjs`・`templates/item/outfit-sheet.hbs`・`templates/actor/parts/tab-outfits.hbs`・`css/tnx2.css` / **ステータス**: 実装済・**実機未確認**（ユーザーの Foundry 確認待ち）
+
+#### メカニクス監査
+
+- **別大分類ホスト**（搭載兵器＝武器→ヴィークル 等）を装備先に指定可能へ。旧「装備先候補＝自身の大分類で絞る」は誤りで、正しくは**オプションが宣言したホスト記述子**（大分類/小分類/除外/特徴 or 識別キー）で絞る。IANUSオプション（general／ホスト ianus・同大分類 cyberware）とは別軸＝IANUS は Item type の相違、搭載兵器は**大分類**の相違（Outfits.md 統合節）。
+- **アイテム名指定（スロットなしホストへの装備）＝便宜スロット「アイテム名」（容量1）**。「対象1つにつき1個だけ準備可能」は容量1の占有超過で自動的に効く（別の準備数制御を作らない・ユーザー確定）。名前照合の別系統を占有の一種へ統合。
+- **スロット名の見せ方（2026-07-23 ユーザー指摘で是正・二段）**: 当初は種別ラベル「アイテム名」を直出し→ホスト名へ→**「スロット名という概念自体が破綻」**（分類名「地上車両」も不自然・入れ子で所属は自明）。最終決定＝**入れ子行のスロット名タグとゲージのツールチップを廃止**。親アイテム行の**容量ゲージは残す**（残容量・超過。名前不要）。占有パネルのホストスロット占有チップは従来どおり（便宜スロットはホスト名）。
+- **入れ子行の列は移動先の表に合わせる**（2026-07-23 ユーザー指摘で是正）: 搭載兵器のように準備で別大分類ホスト配下へ移る行は、元カテゴリの列（攻/受/射）をそのまま持ち越さず**装備先グループの列**で計算する。
+- **オプションの準備ゲート**: オプションは装備先（親）が準備済みでなければ準備できない（`isOption` 規則の具体化）。旧来は部位設定時点で準備扱いになっていた。実効フラグ `isPreparedEffective`＝保存 `isPrepared` かつ親準備済み。トグルのゲート＋連動解除（ホスト準備解除で配下オプションも解除）。
+- **アイテム名は辞典参照**（自由記入廃止・ユーザー提案）: `packs/outfits`＋`works-outfits` から上位分類で絞ったプルダウン。保存＝識別キー、表示＝逆引き現在名。**旧データは考慮しない**（ユーザー確定）。
+
+#### 設計レビュー
+
+- **二本立て統合**: ホスト指定が①部位行記述子（ラベル＋アイテム名絞り・大分類跨ぎ可）②`parentItemId`（占有/入れ子/AE転送/`@item.parent`・自身の大分類で絞り）に分裂し二重入力だった。実バインドを `parentItemId` 一本へ寄せ、記述子は「定義上のターゲット指定」に純化。装備先候補とアイテム名辞典の絞りを共有純関数 **`matchesHostDescriptor`** に一本化（[[feedback_extract_reusable_mechanisms]]）。下流（占有・入れ子・AE転送・`@item.parent`）は `parentItemId` 参照のため無改修で整合。
+- **辞典ローダ** `outfit-dictionary.mjs` は `getIndex(fields)` 方式（KI-026 孤児化回避）＋パック単位キャッシュ（skill-dictionary 踏襲）。ラベルは所持品の識別キー逆引き優先・辞典名フォールバック（`resolveItemNameByKey`。保持名キャッシュなし＝[[feedback_no_stale_caches]]）。
+- **`isPreparedEffective`** はアクター `prepareDerivedData`（`_prepareOptionPreparedGate`・items 準備後）で派生＝非トグル経路でも古くならない安全網。占有計算は元々ホスト準備でゲート済みのため無改修。
+- **便宜スロット `outfitName`** は純関数 `computeHostOccupancy` に容量1で内包（実スロットなしホストも登録・占有発生時のみ 1/1 表示）。`SLOT_KINDS` へ追加（ホスト slots 設定 UI は lookup 専用なので漏れ出ない）。CSS 色（琥珀）追加。
+- 検算: part-helpers に `matchesHostDescriptor`・outfitName 占有・hostKey ラベル注入のテスト追加。全 1773 test green・eslint 0 error・stylelint clean。**UI レンダリングは実機未確認**（辞典プルダウン・占有ゲージ・準備トグル連動）。
+
+#### 課題・申し送り
+
+- 実機確認（ユーザー）で見る点: アイテム名辞典プルダウンが上位分類で絞れるか／搭載兵器をヴィークルに装備でき、ヴィークル表の列（攻等）で表示されるか／スロットなしホストの便宜スロットが**ホスト名**でゲージ・入れ子表示されるか／準備トグルの無効化・連動解除。
+- コンバイン合成の部位ラベルは hostKey 解決子を渡していない（コンバイン元がオプションのケースは稀・種別ラベルへ縮退）。必要になれば接続。
