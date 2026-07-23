@@ -212,7 +212,7 @@
   - `parseEffectTargetKey` は `{scope:"damageTaken", category, damageType}` / `{scope:"damageFrom", group, selector}` を返す。恒常適用パスからは除外（他の実行時系統と同じ）。
   - 重複規約は §4 のとおり（インスタンスの強者採用は**受け手基準＝最小値**＝最も負。`gatherDamageTakenSources` が pick=min で集計）。taken と from\* は1回の走査で照合し、同一効果に併記された行は**内容として合算した1行**になる（同名効果の複数インスタンスも合算値どうしで比較）。旧記述「併記しても1回だけ（最有利1つ）」と「攻撃側 dealt×vs\* は二重加算の疑い」は**誤りで撤回**（2026-07-17 ユーザー裁定＝行はすべて効果の内容として適用）。
   - 集計はダメージフローが**対象ごと**に評価（対象行プレビュー `targetPlannedPreview`・適用ダイアログ→ `collectDamageTakenRows`。攻撃者は `attackerUuid` から解決して from\* を照合）。攻撃側 `vs*` のような「先頭命中対象で近似」は生じない。内訳は対象行・適用ダイアログ「軽減（算出済み）」・適用済み表示に効果名で帰属（符号つき）。
-  - AE 設定シートのキー候補（datalist）に `damage.dealt`/`damage.taken` の固定キーを載せる（識別キーを取る `vs*`/`from*` は候補外）。
+  - AE 設定シートのキー候補（datalist）に `damage.dealt`/`damage.taken` の固定キーを載せる。**識別キーを取る `vs*`/`from*` も 2026-07-23 から候補に載せる**（旧「候補外」を撤回）——`damage.vsStyle.<key>` 等の**雛形**（任意入力部を `<key>` プレースホルダに統一）として提示し、`<key>` を打ち替える。詳細は §5 の datalist 節。
 
 ### 2.9 モード・値
 
@@ -313,7 +313,9 @@ v3 再設計（2026-07-13）で廃止した旧綴り。パーサが明示的に 
 | 特性フラグ（§2.3c・キーが `AE_FLAG_PARAMS` を指すとき） | **オン/オフの選択式**（フェーズ12） |
 | `system.part.<部位キー>`（§2.3e） | `and`/`or`/`and:2`/`or:2` の datalist（消費数付きも打てるよう自由入力保持・フェーズ12） |
 
-- **キー入力の datalist**（フェーズ12）: 全 change 行のキー欄に候補 datalist（`system.partSlot.<キー>`・`system.part.<キー>`・`name`・`system.<フラグ>`）を付けてオートコンプリート（自由入力は妨げない）。部位キーはワールドの部位スロットプリセットから引く。
+- **キー入力の datalist**（フェーズ12・2026-07-23 全キー網羅化＋独自コンボボックス化）: 全 change 行のキー欄に候補を付けてオートコンプリート（自由入力は妨げない）。
+  - **全キー網羅（2026-07-23・旧「中途半端」を是正／リスト形式の思想＝完全性）**: §2 の全キー一覧を載せる。**有限の組合せは実キーで全列挙**（`name`／`check.all|cardValue|suitChange`／`check.<能力値>`／`controlCheck.<能力値>`／`system.ability|control.<能力値>`／`system.cs.base|value|current`／`system.ar.max`／`system.baseAttack.damageType`／`system.partSlot|part.<部位キー>`（プリセットから）／`damage.dealt|taken.*`／`damage.replaceTag|addTag.<タグ>`（CONDITION_KINDS 全数）／`ignore.*`（個別BS含む）。**乗り先3モード（素のキー＝乗っているアイテム自身／`item.<識別キー>`／`system.category.<分類>`）× 着地属性（§2.3 型別パラメータ全数＋§2.3c 特性フラグ）を掛け合わせて全列挙**——分類は §2.4 の全数（大分類＋小分類＋疑似分類）なので `system.category.<分類>.<属性>` だけで約1,700件、総計およそ2,200件になる）。**`<key>` プレースホルダは識別キーの指定にのみ使う**（唯一の任意入力軸＝技能/スタイル/ワークス/アイテムの識別キー。`check.<key>`／`check.style|works.<key>`／`damage.vsStyle|vsWorks|fromStyle|fromWorks.<key>`／`item.<key>.system.<属性>`／`item.<key>.name`）——**1キーに `<key>` は最大1個**（分類キー・パラメータのような有限値には使わない）。構築は `renderActiveEffectConfig`（`scripts/tnx.mjs`）。正本は wiki §2 と `parseEffectTargetKey`。候補は cast で約2,200件になるが**一致は全件描画**（表示上限・打ち切り表示は設けない＝2026-07-23 ユーザー確定。実機計測で ▼全件描画≈69ms・狙った語の絞り込み≈17ms・広い接頭辞で最大≈80ms）。並びは「よく使う順→分類狙いを末尾」。
+  - **独自コンボボックス（2026-07-23・KI-036）**: ネイティブ `<datalist>` はドロップダウンのスクロール・▼位置を制御できないため、`enhanceComboboxes`（`scripts/module/combobox.mjs`）で独自コンボボックスへ昇格（body 直下 fixed でスクロール可・▼右端固定・テーマ追従）。詳細は [Sheets.md](../UI/Sheets.md)「共通 UI パターン」。partAdd 値の `and/or/and:2/or:2` datalist も同機構で昇格。
 - **保存はネイティブ項目と同じフォーム送信**（`name="flags.tokyo-nova-axleration.*"` を与えて「変更を保存」で一括保存・2026-07-13 ユーザー指摘で是正）。旧方式の change 即時 `setFlag` は、ドキュメント更新→シート再描画で**未保存のフォーム状態（transfer のオン等）が巻き戻る**バグの原因だった（「準備先をオンにすると自動適用がオフに戻り欄が消える」＝実際はオフになるのではなく未保存のオンが破棄されていた）。
 - **準備先のみ** transfer チェックの切替で出し分ける（常時自動適用の乗り先修飾そのもので、使用時付与ではコピー作成時に applyToParent を落とすためオフ時に意味を持つ経路が無い。純粋な表示制御でデータには触れない）。隠れている間も設定値はドキュメントに残るが、エンジンが transfer 状態でゲートするため実害はない。
 - **申し送り**: コンディション（BS）効果値フィールドの注入は従来どおり即時 `setFlag`（独自の再注入ロジックと不可分）。同種の巻き戻りを潜在的に持つが、statuses 変更との連動要件があるため別途扱い。

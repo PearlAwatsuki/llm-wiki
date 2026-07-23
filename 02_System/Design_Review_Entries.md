@@ -3343,3 +3343,48 @@ armor / cyborg / tap / vehicle / ianus / weapon / housing-area / residence)、
 
 - ⚠️ タイミング分類は Foundry のシートメソッド内に埋まっており単体テストが無い（本リポジトリの慣行＝純ロジックは `scripts/module/` に置いてテストする）。今回は実ソースを抜き出しての全数確認で代替した。再発防止を固めるなら純関数への切り出しが要るが、独断では行わない（§4.3）。
 - ⚠️ `combat-timing-chip--move`（旧・操縦移動の合成アクション）の CSS が未使用のまま残っている。今回の変更とは無関係のため触っていない。
+
+---
+
+### コンボボックス共通部品（自由入力＋候補）— ネイティブ datalist の置き換え
+
+**日付**: 2026-07-23
+**レビュー対象**: `scripts/module/combobox.mjs`（`enhanceComboboxes` / `Combobox`）、`css/tnx2.css`（`.tnx-combobox*`）、`scripts/tnx.mjs`（`renderActiveEffectConfig` 配線）、`scripts/module/part-slot-preset-app.mjs`（`_onRender` 配線）
+**ステータス**: ✅ 実装完了（eslint 0 error・stylelint clean・test 1773 green）・**実機確認済み（隔離 Foundry v13.351＋Playwright・2026-07-23）**
+
+#### 背景
+
+AE 設定シートの変更キー入力（`changes.*.key`）は任意文字列を許すため、ベタ打ち回避に HTML ネイティブ `<datalist>`（`<input list>`）を充てていた。狙いは妥当だが、ネイティブ datalist のドロップダウンは見た目・スクロール・▼位置がブラウザ任せで一切制御できず、候補が多い（cast では 200 件超）とスクロール不能で使い物にならない＝ユーザー報告の不具合（KI-036）。
+
+#### 設計判断（ユーザー確定）
+
+- **適用範囲＝明示配線**（number-input-spinner と同じ house style）。グローバル自動フックは採らない——他モジュール由来やネイティブの datalist へ無差別適用する副作用を避ける。今後の同型入力は `<input list>`＋`<datalist>` を書いて `enhanceComboboxes` を1行呼ぶだけ。
+- **既存マークアップを候補ソースに再利用（progressive enhancement）**。標準の `<input list>`＋`<datalist>` をそのまま書かせ、昇格時に候補を読む。呼び出し側の書き換えは最小。
+
+#### 良かった点
+
+- **元 `<input>` を器として保持**（name/value/フォーム送信経路を壊さない）。`list` は外してネイティブUIを無効化し、`data-tnx-combo` を冪等マーカ兼出所として付与。部位スロットの `_harvest()` は元 input を querySelector で読むため無改修で通る。
+- **ドロップダウンは body 直下 `position:fixed`**＝親の overflow（AE 設定タブ・app のスクロール枠）にクリップされない。`max-height`＋`overflow-y:auto` で必ずスクロール可。位置は入力直下（下端が画面外なら上へ反転）、幅・左端を入力に一致。スクロール/リサイズで追従、外側 pointerdown/Esc/blur/アンカー切断で閉じる。
+- **視覚はアンカー入力の computed style を継承**（背景は透明なら祖先を辿って solid を採る・枠と選択ハイライトは `currentColor` 混色）＝ネイティブシートの light/dark と TNX ダークの双方でテーマ非依存に馴染む。CSS は `.tnx-combobox*` の自立スコープ（`.tokyo-nova` 非依存＝body 直下要素に効かせるため）。
+- **自由入力を守る**（select 化しない・ハイライト既定は -1）。↑↓/Enter/Esc・クリック・ホバーに対応。確定時は input へ代入し `input`/`change` を bubbling 発火＝AE の `syncChangeValueInputs`（キー→値入力の型切替）や submitOnChange が正しく連鎖。
+- **レイアウト保全の2分岐**: 親が flex のときはラッパが元 input の `flex-grow/shrink/basis` を継承（部位スロット targetPart＝`flex:1 1 4rem` を保持・実機で `1 1 64px` を確認）、それ以外はラッパ `display:flex;width:100%`（AE のセル幅を満たす）。両分岐を実機検証。
+
+#### 留意点
+
+- ⚠️ AE 設定は submitOnChange で change 時に全体再描画＝各描画で input が作り直されるため、`enhanceComboboxes` は毎描画フレッシュに再適用（頭で開いているドロップダウンを閉じる）。冪等マーカで同一描画内の二重昇格を防ぐ。
+- ⚠️ `color-mix()` を枠/ハイライトに使用（V13 の Chromium で可）。旧環境では効かないが配布対象は V13。
+
+#### 実機検証（隔離 Foundry＋Playwright・2026-07-23）
+
+- 稼働中のユーザー実インスタンス（port 30000）に無干渉で、物理コピー＋別 port（30099）＋新規空ワールドで隔離起動。
+- AE 効果シート: 変更キー入力3件が昇格（`list` 除去確認）・▼が右端内側に配置・ドロップダウンは入力直下同幅・候補 217 件を `overflow:auto`（scrollHeight 5774 > client 258）でスクロール可・「part」入力で 172 件へ絞り込み・↑↓＋Enter で `system.partSlot.head-part` を確定・JS エラー0。partAdd 値入力も昇格（wrapper 4個）。
+- 部位スロットプリセット: 占有部位入力3件が昇格・flex 継承（`1 1 64px`）・86 件をスクロール表示・整列/JS エラー0。
+
+#### 追補: AE キー候補の全キー網羅化（2026-07-23・ユーザー追加指摘「中途半端」）
+
+- **問題**: コンボボックス化しても候補が `name`／部位キー／フラグ／`ignore.*`／`damage.dealt|taken` のみで、§2 の全キー一覧に対し判定バフ・キャラ値・型別パラメータ・識別キー系がごっそり欠けていた（旧「識別キー系は候補外」＝§2.8 の documented 判断）。
+- **設計判断（ユーザー確定・2段階）**: ①旧「識別キー系は候補外」を撤回し全キーを候補に。②当初「任意入力部は `<key>` 雛形で統一」としたが、ユーザーが「`<key>` は識別キーの指定のみ／2個含むキーは何を指す？」と指摘——**リスト形式の思想＝完全性なので有限の組合せは実キーで全列挙**、`<key>` は**識別キー（唯一の任意入力軸）専用・1キーに最大1個**へ是正。乗り先3モード（素のキー／`item.<識別キー>`／`system.category.<分類>`）×着地属性（型別パラメータ＋フラグ）を掛け合わせ、分類は §2.4 全数のため総計 cast で約2,200件。
+- **良かった点**: 正本（`parseEffectTargetKey`／wiki §2）に一つずつ当てて全系統を洗い出し、有限集合（能力値・型別パラメータ・フラグ・タグ・BS種別・分類キー・部位キー）を定数（`AE_FLAG_PARAMS`／`CONDITION_KINDS`／`OUTFIT_CATEGORIES`／部位プリセット）から機械生成。属性軸（`attrs`）を素のキー・`item.<key>`・`system.category.<cat>` の3モードで共有＝重複記述なし。`<key>` を含む option 値は属性エスケープ（`&lt;`）。**機構と内容の分離**——コンボボックスは候補ソースを増やしただけで不変（数千件でも同じ）。並びは「よく使う順→分類狙いを末尾」で表示上限の先頭を有用キーにする。
+- **留意点**: ⚠️ 分類×パラメータは意味の薄い組合せ（`system.category.social.attack` 等）も含むが、AE は型を強制しないため「書けるキー＝全部出す」の思想を優先（ユーザー裁定）。⚠️ `<key>` 雛形はそのまま保存すると死にキー（`parseEffectTargetKey` 空振り）だが打ち替え前提。⚠️ **描画上限は設けない**（当初 200件上限＋「他N件」を入れたが、ユーザーが「指示文はUI方針に反する／上限撤廃」を確定＝一致は全件描画・マーカーなし）。datalist は毎描画（submitOnChange 再描画）で再構築、ドロップダウンも一致全件を innerHTML 一括描画するが、実機計測で ▼全件≈69ms・狙った語≈17ms・広い接頭辞（一致≈2,000件）で最大≈80ms＝実用上許容（GPU無効の headless 計測のため実機はより速い見込み）。
+- **実機検証**: cast の効果シートで候補 **2,234 件**・`system.category.melee.attack`／`bodyArmor.defence.S`／`item.<key>.system.suits.spade` 等の実キー欠け0・**`<key>` を含む44件は全て識別キー位置＝2個含む候補0**・▼で全2,234件を全件描画（マーカー無し）・「category.melee.」絞り込みで melee 属性36件・再描画時間 狙った語17ms/広い接頭辞最大80ms・JS エラー0（隔離 Foundry v13.351＋Playwright・2026-07-23）。
+- **正本の追随**: [Active_Effects.md](../01_Wiki/Game_Mechanics/Active_Effects.md) §2.8／§5 の旧「候補外」「datalist は partSlot/part/name/フラグのみ」記述を更新済み。

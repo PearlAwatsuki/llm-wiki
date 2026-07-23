@@ -39,6 +39,7 @@
 - **テキスト自動スケール**: CastSheet（`_applyTextSqueezing()`）
 - **フラグトグル**: アウトフィットシートのヘッダーアイコン（準備済み・携帯中・プレアクト購入）
 - **ContextMenu**: 全シートの閲覧/編集/削除（type 依存で複製・リンク解除等を追加）
+- **コンボボックス（自由入力＋候補）**: `scripts/module/combobox.mjs` の `enhanceComboboxes(root)`（2026-07-23・KI-036）。標準の `<input list="x">` ＋ `<datalist id="x">` を、スタイル可能な独自コンボボックスへ「昇格」させる横断機構（number-input-spinner と同じ明示配線方式）。ネイティブ `<datalist>` はドロップダウンの見た目・スクロール・▼位置がブラウザ任せで制御不能なため置き換える。元 `<input>` はそのまま値の器として使い（name/value/フォーム送信を壊さない）、候補は datalist から昇格時に読んで `list` 属性を外す（ネイティブUI無効化・冪等マーカ `data-tnx-combo`）。ドロップダウンは `document.body` 直下に `position:fixed`（親 overflow でクリップされない・`max-height`＋`overflow-y:auto` で必ずスクロール可）、視覚はアンカー入力の computed style を継承しテーマ非依存。自由入力は常に許容（select 化しない）・↑↓/Enter/Esc 対応。CSS は `.tnx-combobox*`（`.tokyo-nova` 非依存の自立スコープ）。配線先=AE設定シートの変更キー入力＋ partAdd 値入力（`tnx.mjs` の `renderActiveEffectConfig`）、部位スロットプリセットの占有部位入力（`part-slot-preset-app.mjs`）。今後の同型入力は `<input list>`＋`<datalist>` を書いて `enhanceComboboxes` を1行呼ぶだけで対応。
 
 ## キャストシートタブ構成（2026-07-03 実態に整合化）
 
