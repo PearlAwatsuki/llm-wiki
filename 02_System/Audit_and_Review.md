@@ -3476,6 +3476,27 @@ Code の「dealt×vs\* 併記は二重加算」という申し送りに対しユ
 - 待機/行動不能/カット終了など RL 裁定箇所は強制しない（表示・補助に留める）。
 - **注記（2026-07-22）**: 本エントリの離散プロセス遷移・assignMain・endMain(didMajor) は 13-4 のサブターンモデル再設計で棄却・置換された（下記エントリ）。
 
+### 2026-07-24 フェーズ13-7 FS実接続（進行中・①進行値加算 完了）
+
+**2026-07-24** / **関連実装** `scripts/module/focus-system-logic.mjs`（`computeProgressGain`）・`progress-mod.mjs`（`resolveProgressModForActor`/`outfitFieldNumber`）・`focus-system-result.mjs`（新規）・`tnx.mjs`（描画フック） / **ステータス**: ①実装済（実機確認待ち）・②〜⑥未
+
+#### メカニクス監査（①）
+
+- **獲得進行値 ＝ `floor(差分値÷10 ＋ 進行修正) ＋ 支援ボーナス`**（ルール3＋5）。端数切り捨ては和全体（進行修正は floor 内）・支援は獲得進行値への加算（floor 外・ルール5訂正=2026-07-23）。差分値 null（失敗/ファンブル）は進行なし。
+- **進行修正の解決**（ルール4）: none=固定/式・actor=アクター system 値（`reason.total` 等の直下パス）・outfit=判定者の**準備済み**アイテムの値（`{mode,value}`/直値/attackField を `total→value→数値` で吸収・準備済み複数は選択）。
+- **適用はダメージと同じ手動ボタン**（2026-07-23 ユーザー確定＝自動加算でなく RL がボタンで反映）。進行判定要求カード（`extra.focusSystemKind==="progress"`）の**成功**対象行にボタン、押下で FS 進行値へ加算・カードは反映済み（再適用防止）。
+
+#### 設計レビュー（①）
+
+- 純ロジック `computeProgressGain`（TDD・null 差分の Number 化ガード込み）。`outfitFieldNumber`（フィールド形の吸収・TDD）。Foundry グルー `resolveProgressModForActor`（source 別 paramValue 解決→既存 `resolveProgressMod` の式評価へ）・結果カードのボタン描画は checkRequest 描画の**後**に登録して結果表示へ追記。更新は RL(=GM) のみ（world 設定）。
+- 未（②〜⑥）: 支援の AR 消費＋pendingSupport 加算（①は支援ボーナス0）／宛先自動判別・AR 絞り込み・自動送信（③④）／cut 連動＋カウントダウン表示（⑥）。
+- テスト 1795 green・eslint 0。
+
+#### 申し送り
+
+- outfit の参照アイテム選択ダイアログは適用時＝RL 側に出る（判定者本人でなく RL が選ぶ）。
+- ②で `pendingSupport`（対象別の保留支援ボーナス）を FS state に接続し、`applyFocusProgress` の読み取り＋消費を有効化する。
+
 ### 2026-07-23 フェーズ13-6 カット進行の境界イベント発火＋シーン終了確認（案1・実機確認済）
 
 **2026-07-23** / **関連実装** `scripts/module/combat-events.mjs`（新規・`TNX_HOOKS`/`planPhaseEvents`）・`scripts/combat/tnx-combat.mjs`（startCombat/advancePhase/startInterrupt/endInterrupt の発火・`endCombat` override）・`css/tnx2.css`（ダイアログ縦積み） / **ステータス**: 実装済・実機確認済（2026-07-23 ユーザー）
