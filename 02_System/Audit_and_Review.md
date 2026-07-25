@@ -3476,9 +3476,15 @@ Code の「dealt×vs\* 併記は二重加算」という申し送りに対しユ
 - 待機/行動不能/カット終了など RL 裁定箇所は強制しない（表示・補助に留める）。
 - **注記（2026-07-22）**: 本エントリの離散プロセス遷移・assignMain・endMain(didMajor) は 13-4 のサブターンモデル再設計で棄却・置換された（下記エントリ）。
 
-### 2026-07-24 フェーズ13-7 FS実接続（進行中・①進行値加算 完了）
+### 2026-07-24〜25 フェーズ13-7 FS実接続（①〜⑥実装済・実機確認待ち）
 
-**2026-07-24** / **関連実装** `scripts/module/focus-system-logic.mjs`（`computeProgressGain`）・`progress-mod.mjs`（`resolveProgressModForActor`/`outfitFieldNumber`）・`focus-system-result.mjs`（新規）・`tnx.mjs`（描画フック） / **ステータス**: ①実装済（実機確認待ち）・②〜⑥未
+**2026-07-24〜25** / **関連実装** `focus-system-logic.mjs`（`computeProgressGain`）・`progress-mod.mjs`（`resolveProgressModForActor`/`outfitFieldNumber`）・`focus-system-result.mjs`（新規・①手動/②自動）・`focus-system-request.mjs`（③④宛先/自動送信）・`focus-system-state.mjs`（`advanceFocusCuts`）・`tnx-focus-system-panel.mjs`＋`focus-system-panel.hbs`（⑥表示）・`tnx.mjs`＋`tnx-socket-handler.mjs`（フック配線） / **ステータス**: ①〜⑥実装済・**実機確認待ち**（合流後にまとめて＝2026-07-25 ユーザー方針）
+
+#### 追加メカニクス監査（②〜⑥・2026-07-25）
+
+- **②支援＝結果確定で自動適用**（2026-07-24 ユーザー確定＝ダメージと性格が違う）: `_onCheckResult` で AR−1（成否問わず）＋成功なら FS 全体の `pendingSupport` +1。①の進行適用が読み取り＋消費。**「次に進行判定を行うキャスト」が受け取る**ため対象別でなく FS 全体の1カウンタ（順番が入れ替わっても「次」は「次」・2026-07-25 ユーザー確定）。二重適用ガード。
+- **③④＝カット進行への合流（自動送信）**: `tnxProcessStart` 購読で、メイン開始→手番キャスト（ルール14）へ進行判定・イニシアチブ開始→AR残の参加者（ルール15）へ支援判定を各実行中 FS に自動送信。手動ダイアログも既定を自動判別。
+- **⑥cut連動＋カウントダウン**: `tnxCutEnd` で cut型 FS の経過カット +1。パネル表示は `cutLimit−経過` のカウントダウン（内部は経過カット＝round と同じ向き・2026-07-24 ユーザー確定）。敗北確定は RL 操作のまま（ルール17）。
 
 #### メカニクス監査（①）
 
@@ -3489,13 +3495,14 @@ Code の「dealt×vs\* 併記は二重加算」という申し送りに対しユ
 #### 設計レビュー（①）
 
 - 純ロジック `computeProgressGain`（TDD・null 差分の Number 化ガード込み）。`outfitFieldNumber`（フィールド形の吸収・TDD）。Foundry グルー `resolveProgressModForActor`（source 別 paramValue 解決→既存 `resolveProgressMod` の式評価へ）・結果カードのボタン描画は checkRequest 描画の**後**に登録して結果表示へ追記。更新は RL(=GM) のみ（world 設定）。
-- 未（②〜⑥）: 支援の AR 消費＋pendingSupport 加算（①は支援ボーナス0）／宛先自動判別・AR 絞り込み・自動送信（③④）／cut 連動＋カウントダウン表示（⑥）。
-- テスト 1795 green・eslint 0。
+- テスト 1795 green・eslint 0・stylelint clean。
 
-#### 申し送り
+#### 申し送り・実機確認時の要点
 
-- outfit の参照アイテム選択ダイアログは適用時＝RL 側に出る（判定者本人でなく RL が選ぶ）。
-- ②で `pendingSupport`（対象別の保留支援ボーナス）を FS state に接続し、`applyFocusProgress` の読み取り＋消費を有効化する。
+- outfit の参照アイテム選択ダイアログは進行適用時＝RL 側に出る（判定者本人でなく RL が選ぶ）。
+- **自動送信は各実行中 FS ごとに送る**（並行 FS が複数なら手番/イニシアチブ開始で複数の要求カードが出る）。**割り込みメイン（追加行動/イニシアチブ割り込み）でも `tnxProcessStart(main)` が出るため進行判定が自動送信される**（割り込み行動者が対象）。実機で過多／不要なら送信条件を絞る。
+- カットのカウントダウン表示は現在値＝`cutLimit−経過`。パネルの手動 +/− ボタンは**経過カット**を増減する（＋＝進める＝表示は減る）。実機で直感に反するなら +/− の向きを調整。
+- 進行判定が失敗（ボタン非表示）の間、`pendingSupport` は次に成功した進行判定へ持ち越す。
 
 ### 2026-07-23 フェーズ13-6 カット進行の境界イベント発火＋シーン終了確認（案1・実機確認済）
 
