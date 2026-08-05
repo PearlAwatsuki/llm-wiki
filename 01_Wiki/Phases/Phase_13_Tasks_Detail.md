@@ -115,6 +115,14 @@ FVTT デフォルトのコンバットトラッカーを上書きし、TNX の**
 - **③④自動送信・宛先自動判別**: `tnxProcessStart` でメイン→進行判定・イニシアチブ→支援判定を自動送信（宛先はメイン候補/AR残）。
 - **⑥cut連動**: `tnxCutEnd` で経過カット +1・パネルはカウントダウン表示（cutLimit−経過）。
 
+### 13-7後・再設計: AR・メジャー・割り込み・支援（2026-08-05 ✅ 実装済・実機確認待ち）
+
+13-7 実装後、ユーザーの再整理で **AR・メジャーアクション・プロセス所有の一般則**（Combat_Flow 2026-07-26）と**支援判定の細則**を確定し、13-5 の割り込みと 13-7② の支援を全面改訂した。詳細は監査「2026-08-05 AR・メジャー・割り込み・支援の再設計」。段取りは A+B（一般則の土台＝メジャー記帳＋AR−1∧CS0 一本化）→ C（割り込み＝サスペンド／レジューム＋consumesAr）→ D（支援 per-target・支援者が判定時に対象選択）。相互依存が強いため実機確認は全実装後に一括（2026-07-25 ユーザー方針＝起動形が変わる先行分は合流後まで確認しない）。
+
+- **A+B**: `majorActed`（メジャー実行者追跡）・`buildArDecrementUpdate`（AR−1∧CS0 一本化・空メジャー廃止）・`isMajorActionTiming`・`markMajorAction`（`_execute` フック＋`markMajor` ソケット）。
+- **C**: `interruptStack`＋`pushInterruptFrame`/`popInterruptFrame`（元プロセスを終了せず退避→復帰）・用途 `interruptConsumesAr`（既定=真）→ combatant フラグ → 挿入メイン・終了「割り込みを終了」1ボタン。
+- **D**: 支援ボーナスを**対象キャラに乗る ActiveEffect** で表現（専用 `pendingSupport` カウンタ廃止）。支援者が**普通にターゲット（レティクル）で対象1体**を指定→`result.focusSupportTargetId`→`autoApplyFocusSupport` が**成功で対象へ支援 AE（進行 +1・duration＝カット終了）を付与**＋支援者をメジャー記帳（`markMajorAction`）・`applyFocusProgress` は本人に乗った支援 AE を合算・消費（除去）。AE は対象に乗る＝FS 非スコープ。カット終了の自動失効はフェーズ15。
+
 ### 13-8: 仕上げ・実機確認・v0.13.0
 
 記録の最新化・実機確認・版数同期（タグ付け・push はユーザー）。

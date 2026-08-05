@@ -3388,3 +3388,26 @@ AE 設定シートの変更キー入力（`changes.*.key`）は任意文字列�
 - **留意点**: ⚠️ 分類×パラメータは意味の薄い組合せ（`system.category.social.attack` 等）も含むが、AE は型を強制しないため「書けるキー＝全部出す」の思想を優先（ユーザー裁定）。⚠️ `<key>` 雛形はそのまま保存すると死にキー（`parseEffectTargetKey` 空振り）だが打ち替え前提。⚠️ **描画上限は設けない**（当初 200件上限＋「他N件」を入れたが、ユーザーが「指示文はUI方針に反する／上限撤廃」を確定＝一致は全件描画・マーカーなし）。datalist は毎描画（submitOnChange 再描画）で再構築、ドロップダウンも一致全件を innerHTML 一括描画するが、実機計測で ▼全件≈69ms・狙った語≈17ms・広い接頭辞（一致≈2,000件）で最大≈80ms＝実用上許容（GPU無効の headless 計測のため実機はより速い見込み）。
 - **実機検証**: cast の効果シートで候補 **2,234 件**・`system.category.melee.attack`／`bodyArmor.defence.S`／`item.<key>.system.suits.spade` 等の実キー欠け0・**`<key>` を含む44件は全て識別キー位置＝2個含む候補0**・▼で全2,234件を全件描画（マーカー無し）・「category.melee.」絞り込みで melee 属性36件・再描画時間 狙った語17ms/広い接頭辞最大80ms・JS エラー0（隔離 Foundry v13.351＋Playwright・2026-07-23）。
 - **正本の追随**: [Active_Effects.md](../01_Wiki/Game_Mechanics/Active_Effects.md) §2.8／§5 の旧「候補外」「datalist は partSlot/part/name/フラグのみ」記述を更新済み。
+
+### AR・メジャー・割り込み・支援の再設計（フェーズ13・2026-08-05）
+
+**日付**: 2026-08-05
+**レビュー対象**: `combat-progression.mjs`・`combat-turn-order.mjs`・`tnx-combat.mjs`・`tnx-check-flow.mjs`・`interrupt-grant.mjs`・`focus-system-result.mjs`・`tnx-rl-request-app.mjs`
+**ステータス**: レビュー済(問題なし)・実機確認待ち
+
+#### 良かった点
+
+- **純ロジックとグルーの分離を維持**: フェーズ遷移・記帳・割り込みスタックの判断は Foundry 非依存の `combat-progression.mjs`（TDD）に集約し、`TnxCombat` は適用のみ。`isMajorActionTiming` も純関数（`combat-turn-order.mjs`）。既存の 13-3/13-4 の分離方針を踏襲。
+- **記帳の一本化**: 旧 `buildEndMainUpdate`＋`buildCantActUpdate`（同一挙動の重複）を `buildArDecrementUpdate` に統合。呼び出し元（メイン終了・行動不能ペナルティ・挿入メイン終了）が同じ関数を共有し、AR減少⟺CS0 の不変条件が一箇所で保証される。
+- **所有モデルを consumesAr 一点に外部化**: 自己/他者の割り込みを自動導出せず、用途宣言（`interruptConsumesAr`）→ combatant フラグ → 挿入メインへ伝搬。将来の神業例外を「用途で明示」で吸収でき、分岐の増殖を避ける（ユーザー方針＝2026-07-26）。
+- **割り込みスタックで入れ子に耐える**: 単一フレーム（旧 `interruptReturn`）から配列スタック（`interruptStack`）へ。各フレームが親の `interruptConsumesAr` まで退避するため、入れ子でも復帰時に親の有償/無償が正しく戻る。`popInterruptFrame` は入力を破壊しない。
+- **既存の起動集約を尊重**: メジャー記帳は `_execute`（唯一のカードプレイ経路）に1点フック。支援対象は既存の `extra→ctx→result` 伝搬に相乗り（新経路を作らない）。委譲は既存の socket 集約（`markMajor` 1種追加）。
+- **冪等性**: `_addMajorActed` は重複無視、`markMajorAction` は `_execute` 経由と FS 経由の二重呼びを吸収。`autoApplyFocusSupport` は `focusSupportApplied` で二重記帳を防ぐ。
+
+#### 留意点
+
+- ⚠️ `tnx-check-flow.mjs`／`focus-system-result.mjs` が `TnxCombat` を静的 import。循環は `tnx-combat → tnx-socket-handler →（動的）focus-system-result` が動的のため成立せず（確認済み）。
+- ⚠️ 支援を答える時点でカット進行の phase が initiative でない場合、`markMajorAction` は現 phase の `majorActed` に積む（現実には支援はイニシアチブで答える前提）。要実機確認。
+- ⚠️ 再判定（allowRecheck）を持つ支援用途では、`focusSupportApplied` の冪等ガードにより支援 AE の付け直しは起きない（成否が変わっても再適用しない）。支援用途は通常 recheck を持たない想定。
+- 〔2026-08-05 追補〕支援ボーナスの表現を二転した。①当初 `pendingSupport` カウンタ → ②「フラグだけの AE」= **中身のない見えない効果**（ユーザーが「効果の中身が無い／見えない効果を勝手に付けるな」と是正）→ ③**中身のある本物の change を持つ AE**。最終形：実フィールド `AttributesTemplate.focus.progressBonus`（素値0・integer）を追加し、支援 AE は `change: system.focus.progressBonus +1`（ネイティブ AE 適用が着地）。中核 AE パーサ（`parseEffectTargetKey`/`_applyEffectBuffs`＝§4.3）は**非改変**——アクター上の素の `system.*` 効果は `_resolveBuffApplications` の self 分岐（bearer≠Item）で空返しのためカスタム適用は走らず、ネイティブ適用のみ＝二重加算なし（cs/ar が仮想名前空間で回避しているのと逆に、実フィールド＋actor-borne self の組で自然回避）。進行判定時に実効値 `system.focus.progressBonus` を加算し、その change を持つ AE を除去して消費。可視で RL が手当てでき、consume-once に自然。カット終了の自動失効はフェーズ15 の一般機構へ委譲。
+- ⚠️ 旧 13-5 の割り込みは「実機確認済」だったが、AR/戻り/終了ボタンを置換したため**この部分は再確認が要る**（監査エントリに明記）。

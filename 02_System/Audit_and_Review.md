@@ -3483,6 +3483,7 @@ Code の「dealt×vs\* 併記は二重加算」という申し送りに対しユ
 #### 追加メカニクス監査（②〜⑥・2026-07-25）
 
 - **②支援＝結果確定で自動適用**（2026-07-24 ユーザー確定＝ダメージと性格が違う）: `_onCheckResult` で AR−1（成否問わず）＋成功なら FS 全体の `pendingSupport` +1。①の進行適用が読み取り＋消費。**「次に進行判定を行うキャスト」が受け取る**ため対象別でなく FS 全体の1カウンタ（順番が入れ替わっても「次」は「次」・2026-07-25 ユーザー確定）。二重適用ガード。
+  - **〔2026-08-05 改訂〕**②は下記「AR・メジャー・割り込み・支援の再設計」で置換。**AR−1 の直接引きは廃止**（メジャー記帳＝一般則がイニシアチブ終了時に AR−1＋CS0）・**進行ボーナスは対象キャラに乗る ActiveEffect**（支援者が判定時に普通にターゲット＝レティクルで対象1体を指定・成功で対象へ支援 AE(進行+1) 付与・対象の次回進行判定で合算して消費＝AE 除去）。専用 `pendingSupport` カウンタは廃止。「次に進行判定を行う者が受け取る」「FS 全体1カウンタ」は撤回。AE は対象に乗る＝FS 非スコープ。
 - **③④＝カット進行への合流（自動送信）**: `tnxProcessStart` 購読で、メイン開始→手番キャスト（ルール14）へ進行判定・イニシアチブ開始→AR残の参加者（ルール15）へ支援判定を各実行中 FS に自動送信。手動ダイアログも既定を自動判別。
 - **⑥cut連動＋カウントダウン**: `tnxCutEnd` で cut型 FS の経過カット +1。パネル表示は `cutLimit−経過` のカウントダウン（内部は経過カット＝round と同じ向き・2026-07-24 ユーザー確定）。敗北確定は RL 操作のまま（ルール17）。
 
@@ -3501,8 +3502,8 @@ Code の「dealt×vs\* 併記は二重加算」という申し送りに対しユ
 
 - outfit の参照アイテム選択ダイアログは進行適用時＝RL 側に出る（判定者本人でなく RL が選ぶ）。
 - **自動送信は各実行中 FS ごとに送る**（並行 FS が複数なら手番/イニシアチブ開始で複数の要求カードが出る）。**割り込みメイン（追加行動/イニシアチブ割り込み）でも `tnxProcessStart(main)` が出るため進行判定が自動送信される**（割り込み行動者が対象）。実機で過多／不要なら送信条件を絞る。
-- カットのカウントダウン表示は現在値＝`cutLimit−経過`。パネルの手動 +/− ボタンは**経過カット**を増減する（＋＝進める＝表示は減る）。実機で直感に反するなら +/− の向きを調整。
-- 進行判定が失敗（ボタン非表示）の間、`pendingSupport` は次に成功した進行判定へ持ち越す。
+- カットのカウントダウン表示は現在値＝`cutLimit−経過`。パネルの手動 +/− は**表示（残りカット）**に合わせる（＋＝残りを増やす＝経過 cut −1／−＝残りを減らす＝cut +1）。〔2026-08-06 是正〕当初は経過カットを直接増減し「＋で表示が減る」直感逆だったのをユーザー指摘で修正。
+- 〔2026-08-05 改訂〕支援ボーナスは対象キャラに乗る **ActiveEffect**（進行 +1）へ移行。進行判定を行う本人に乗った支援 AE を合算・消費（除去）する。専用 `pendingSupport` カウンタは廃止。
 
 ### 2026-07-23 フェーズ13-6 カット進行の境界イベント発火＋シーン終了確認（案1・実機確認済）
 
@@ -3554,7 +3555,9 @@ Code の「dealt×vs\* 併記は二重加算」という申し送りに対しユ
 
 ### 2026-07-22 フェーズ13-5 メインプロセス割り込み（挿入メイン・実機確認済）
 
-**2026-07-22** / **関連実装** `scripts/module/combat-progression.mjs`（`planInterruptStart`/`planInterruptEnd`/`buildInterruptEndUpdate`）・`scripts/combat/tnx-combat.mjs`（`startInterrupt`/`endInterrupt`/getter/ガード）・`combat-tracker-view.mjs`（footer/row）・`interrupt-grant.mjs`（新規）・`tnx-socket-handler.mjs`（3ソケット）・`usage.mjs`（`grantsInterrupt`）・`usage-check-context.mjs`・`tnx-character-sheet-base.mjs`・`tnx-usage-sheet.mjs`・`tnx-combat-tracker.mjs`・`templates/{app/usage-sheet,combat/tracker}.hbs`・`css/tnx2.css` / **ステータス**: 実装済・実機確認済（2026-07-22 ユーザー）
+> **〔2026-08-05 全面改訂〕本エントリの AR 挙動・戻り先・終了ボタンは下記「AR・メジャー・割り込み・支援の再設計」で置換。** 「メイン中の割り込み＝終了・戻らない」→**サスペンド／レジューム（元メインへ戻る）**・「2ボタン（AR-1して終了/終了）」→**「割り込みを終了」1ボタン＋consumesAr で AR 自動判定**・`planInterruptStart`/`planInterruptEnd`/`buildInterruptEndUpdate` 廃止→`pushInterruptFrame`/`popInterruptFrame`＋`interruptStack`。起点（用途トグルで対象に `canInterrupt`）・入口ゲート設計は有効。
+
+**2026-07-22** / **関連実装** `scripts/module/combat-progression.mjs`（`planInterruptStart`/`planInterruptEnd`/`buildInterruptEndUpdate`）・`scripts/combat/tnx-combat.mjs`（`startInterrupt`/`endInterrupt`/getter/ガード）・`combat-tracker-view.mjs`（footer/row）・`interrupt-grant.mjs`（新規）・`tnx-socket-handler.mjs`（3ソケット）・`usage.mjs`（`grantsInterrupt`）・`usage-check-context.mjs`・`tnx-character-sheet-base.mjs`・`tnx-usage-sheet.mjs`・`tnx-combat-tracker.mjs`・`templates/{app/usage-sheet,combat/tracker}.hbs`・`css/tnx2.css` / **ステータス**: 実装済・**AR/戻り/終了は 2026-08-05 に再設計で置換**（起点設計は継続）
 
 #### メカニクス監査
 
@@ -3654,3 +3657,25 @@ Code の「dealt×vs\* 併記は二重加算」という申し送りに対しユ
 
 - カバーの**判定そのもの**（技能ロール→カード→スート判定→`coveredBy`）は攻撃カードと共有の未改変機構で、中間カードは前提（`attackCheck`＋`state:"hit"`＋`!damageRolled`＋対象行の起動口）を全て満たす。実機は起動口の存在（coverable クラス／クリック配線）と `coveredBy` の付け替えまでを確認し、カード操作を伴う判定本体は未改変につき机上で整合確認（テスト世界に山札/カバー技能の整備が無いため）。
 - FS判定の敗北時処理からの RL ダメージ発火は将来（`buildRl*` の呼び出し元は現状シーンコントロールの「ダメージ付与」のみ）。
+
+### 2026-08-05 AR・メジャー・割り込み・支援の再設計（フェーズ13・実機確認待ち）
+
+**2026-08-05** / **関連実装** `combat-progression.mjs`（`buildArDecrementUpdate`/`pushInterruptFrame`/`popInterruptFrame`・旧 `buildEndMainUpdate`/`buildCantActUpdate`/`planInterruptStart`/`planInterruptEnd`/`buildInterruptEndUpdate` 廃止）・`combat-turn-order.mjs`（`isMajorActionTiming`）・`tnx-combat.mjs`（`markMajorAction`/`_addMajorActed`/`majorActed`/`interruptStack`/`interruptConsumesAr`/`startInterrupt`/`endInterrupt`/`advancePhase`）・`tnx-check-flow.mjs`（`_execute` メジャー記帳＋`focusSupportTargetId`）・`usage-check-context.mjs`（`usageTiming`）・`usage.mjs`（`interruptConsumesAr`）・`tnx-usage-sheet.mjs`＋`usage-sheet.hbs`（トグル）・`interrupt-grant.mjs`（consumesAr 伝搬）・`tnx-socket-handler.mjs`（`markMajor`・`_onInterruptEnd`）・`combat-tracker-view.mjs`／`tnx-combat-tracker.mjs`（終了1ボタン）・`focus-system-result.mjs`（`autoApplyFocusSupport`＝支援 AE 付与／`applyFocusProgress`＝支援 AE 合算・消費）・`tnx-rl-request-app.mjs`（`onDoCheck`＝支援対象をレティクルで取得）・`attributes.mjs`（`focus.progressBonus` 実フィールド） / **ステータス**: 実装済・**実機確認待ち**（A+B→C→D は相互依存が強く、合流後にまとめて＝2026-07-25 ユーザー方針）
+
+#### ルール解釈（正本 Combat_Flow「AR・メジャーアクション・プロセス所有の一般則」2026-07-26／Focus_System「支援判定の細則」）
+
+- **AR はトップレベルのプロセス所有者が、プロセス終了時に、メジャーを行っていれば −1（同時に CSカレント→0・カット終了まで）。** 空メジャー廃止＝実際にメジャーを行った者だけ（2026-07-22「常に AR−1」撤回）。AR 減少 ⟺ CS0（行動不能の AR−1 にも適用・待機は別）。AR≥2 は CS0 の手番で再行動（confirmMain 既定）。
+- **サブターン（setup/initiative/cleanup）は無所有**。そこで行ったメジャー（例=支援判定）は本人がそのサブターン終了時に払う。
+- **割り込み＝サスペンド／レジューム**（旧「メイン中の割り込み＝終了・戻らない」撤回）。元プロセス（メイン/サブターン）は終了せず退避し、挿入メイン終了で厳密に復元。**consumesAr**（用途宣言・既定=真）で挿入メインが AR を消費するか決める：自己割り込み=有償・追加行動技能=無償（付与者が自分のメジャーとして肩代わり）。所有モデルは設計思想の正本として残し、実装は用途側 consumesAr で表現（自己/他者を自動導出しない＝将来の神業例外も用途で明示）。
+- **支援判定**＝ムーブ／マイナーを伴わないメジャー・指定技能はアクション技能。**支援者が判定時に普通にターゲット（レティクル）で対象1体を指定**（2026-08-05 ユーザー確定）。成功で**対象へ支援 ActiveEffect（進行 +1・duration＝カット終了）を付与**し、対象の次の進行判定で合算・消費（AE 除去）。AR は一般則でイニシアチブ終了時に引く。専用 `pendingSupport` カウンタは廃止（基本機能＝AE で表現）。AE は対象に乗る＝FS 非スコープ。
+
+#### 監査結果（✅）
+
+- 一般則の三本柱（メジャー記帳／AR−1∧CS0 一本化／サスペンド・レジューム＋consumesAr）を正本の文言どおり符号化。メジャー判定は用途タイミング（`action`×`major`／`initiativeMajor`）。支援はタイミングに依らずメジャーなので FS 側で記帳（`markMajorAction` は冪等＝`_execute` の記帳と二重にならない）。
+- 純ロジックは TDD（`isMajorActionTiming` 5＋`buildArDecrementUpdate` 統合＋`pushInterruptFrame`/`popInterruptFrame` 8）。テスト 1795 green・eslint 0 error。
+
+#### 課題・申し送り（実機確認の要点）
+
+- **実機未確認**（A+B/C/D 一括）: ①メジャー用途のカードプレイ→プロセス終了で AR−1∧CS0（空メジャーは無charge）②割り込み開始→退避→挿入メインでメジャー→「割り込みを終了」で consumesAr に応じ AR 処理→元位置へ復帰（メイン再開/サブターン再開）③追加行動（consumesAr=偽）＝無償で付与者が肩代わり④入れ子割り込み⑤支援＝対象をターゲット→成功で対象へ支援 AE 付与→その対象の進行判定で AE 合算・消費。
+- 支援は普通にターゲット（レティクル）で対象1体を指定（0/複数は中止）。支援ボーナスは対象キャラに乗る AE で、**中身のある本物の change**＝`system.focus.progressBonus += 1`（実フィールド `AttributesTemplate.focus.progressBonus` を追加・素値0・ネイティブ適用が着地）。空の見えない効果（フラグだけ）は禁止（2026-08-05 ユーザー指摘で是正）。カスタム適用パスはアクター上の素の `system.*` を self 分岐で空返し＝二重加算なし。duration＝カット終了で**自動失効はフェーズ15**（今は進行判定での消費＝AE 除去が主経路）。アイコンは未使用の `icons/svg/regen.svg`。自己割り込みの起点（用途トグル）は 13-5 のまま。
+- 神業の割り込み特別措置は将来（consumesAr の用途宣言で例外を明示できる素地は用意済み）。
