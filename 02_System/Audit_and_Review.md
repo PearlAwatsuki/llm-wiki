@@ -3476,9 +3476,9 @@ Code の「dealt×vs\* 併記は二重加算」という申し送りに対しユ
 - 待機/行動不能/カット終了など RL 裁定箇所は強制しない（表示・補助に留める）。
 - **注記（2026-07-22）**: 本エントリの離散プロセス遷移・assignMain・endMain(didMajor) は 13-4 のサブターンモデル再設計で棄却・置換された（下記エントリ）。
 
-### 2026-07-24〜25 フェーズ13-7 FS実接続（①〜⑥実装済・実機確認待ち）
+### 2026-07-24〜25 フェーズ13-7 FS実接続（①〜⑥・実機確認済 2026-08-06・v0.13.0）
 
-**2026-07-24〜25** / **関連実装** `focus-system-logic.mjs`（`computeProgressGain`）・`progress-mod.mjs`（`resolveProgressModForActor`/`outfitFieldNumber`）・`focus-system-result.mjs`（新規・①手動/②自動）・`focus-system-request.mjs`（③④宛先/自動送信）・`focus-system-state.mjs`（`advanceFocusCuts`）・`tnx-focus-system-panel.mjs`＋`focus-system-panel.hbs`（⑥表示）・`tnx.mjs`＋`tnx-socket-handler.mjs`（フック配線） / **ステータス**: ①〜⑥実装済・**実機確認待ち**（合流後にまとめて＝2026-07-25 ユーザー方針）
+**2026-07-24〜25** / **関連実装** `focus-system-logic.mjs`（`computeProgressGain`）・`progress-mod.mjs`（`resolveProgressModForActor`/`outfitFieldNumber`）・`focus-system-result.mjs`（新規・①手動/②自動）・`focus-system-request.mjs`（③④宛先/自動送信）・`focus-system-state.mjs`（`advanceFocusCuts`）・`tnx-focus-system-panel.mjs`＋`focus-system-panel.hbs`（⑥表示）・`tnx.mjs`＋`tnx-socket-handler.mjs`（フック配線） / **ステータス**: 実装済・**実機確認済（2026-08-06・v0.13.0）**。②は 2026-08-05 再設計で AE 化・下記改訂参照
 
 #### 追加メカニクス監査（②〜⑥・2026-07-25）
 
@@ -3660,7 +3660,7 @@ Code の「dealt×vs\* 併記は二重加算」という申し送りに対しユ
 
 ### 2026-08-05 AR・メジャー・割り込み・支援の再設計（フェーズ13・実機確認待ち）
 
-**2026-08-05** / **関連実装** `combat-progression.mjs`（`buildArDecrementUpdate`/`pushInterruptFrame`/`popInterruptFrame`・旧 `buildEndMainUpdate`/`buildCantActUpdate`/`planInterruptStart`/`planInterruptEnd`/`buildInterruptEndUpdate` 廃止）・`combat-turn-order.mjs`（`isMajorActionTiming`）・`tnx-combat.mjs`（`markMajorAction`/`_addMajorActed`/`majorActed`/`interruptStack`/`interruptConsumesAr`/`startInterrupt`/`endInterrupt`/`advancePhase`）・`tnx-check-flow.mjs`（`_execute` メジャー記帳＋`focusSupportTargetId`）・`usage-check-context.mjs`（`usageTiming`）・`usage.mjs`（`interruptConsumesAr`）・`tnx-usage-sheet.mjs`＋`usage-sheet.hbs`（トグル）・`interrupt-grant.mjs`（consumesAr 伝搬）・`tnx-socket-handler.mjs`（`markMajor`・`_onInterruptEnd`）・`combat-tracker-view.mjs`／`tnx-combat-tracker.mjs`（終了1ボタン）・`focus-system-result.mjs`（`autoApplyFocusSupport`＝支援 AE 付与／`applyFocusProgress`＝支援 AE 合算・消費）・`tnx-rl-request-app.mjs`（`onDoCheck`＝支援対象をレティクルで取得）・`attributes.mjs`（`focus.progressBonus` 実フィールド） / **ステータス**: 実装済・**実機確認待ち**（A+B→C→D は相互依存が強く、合流後にまとめて＝2026-07-25 ユーザー方針）
+**2026-08-05** / **関連実装** `combat-progression.mjs`（`buildArDecrementUpdate`/`pushInterruptFrame`/`popInterruptFrame`・旧 `buildEndMainUpdate`/`buildCantActUpdate`/`planInterruptStart`/`planInterruptEnd`/`buildInterruptEndUpdate` 廃止）・`combat-turn-order.mjs`（`isMajorActionTiming`）・`tnx-combat.mjs`（`markMajorAction`/`_addMajorActed`/`majorActed`/`interruptStack`/`interruptConsumesAr`/`startInterrupt`/`endInterrupt`/`advancePhase`）・`tnx-check-flow.mjs`（`_execute` メジャー記帳＋`focusSupportTargetId`）・`usage-check-context.mjs`（`usageTiming`）・`usage.mjs`（`interruptConsumesAr`）・`tnx-usage-sheet.mjs`＋`usage-sheet.hbs`（トグル）・`interrupt-grant.mjs`（consumesAr 伝搬）・`tnx-socket-handler.mjs`（`markMajor`・`_onInterruptEnd`）・`combat-tracker-view.mjs`／`tnx-combat-tracker.mjs`（終了1ボタン）・`focus-system-result.mjs`（`autoApplyFocusSupport`＝支援 AE 付与／`applyFocusProgress`＝支援 AE 合算・消費）・`tnx-rl-request-app.mjs`（`onDoCheck`＝支援対象をレティクル／無指定は対象選択ダイアログ）・`attributes.mjs`（`focus.progressBonus` 実フィールド） / **ステータス**: 実装済・**実機確認済（2026-08-06・v0.13.0）**
 
 #### ルール解釈（正本 Combat_Flow「AR・メジャーアクション・プロセス所有の一般則」2026-07-26／Focus_System「支援判定の細則」）
 
