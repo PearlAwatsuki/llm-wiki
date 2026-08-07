@@ -103,6 +103,7 @@
 | [Phase_12_Tasks_Detail.md](Phases/Phase_12_Tasks_Detail.md) | フェーズ12 完了記録（攻撃判定 / ダメージ算出 / FS判定基幹） |
 | [Phase_12_Implementation_Plan.md](Phases/Phase_12_Implementation_Plan.md) | フェーズ12 残作業の実装計画（T1〜T11・作業順序と依存） |
 | [Phase_13_Tasks_Detail.md](Phases/Phase_13_Tasks_Detail.md) | フェーズ13 完了記録（戦闘システム＝カット進行） |
+| [Phase_14_Tasks_Detail.md](Phases/Phase_14_Tasks_Detail.md) | フェーズ14 計画（セッション進行・計画確定/実装未着手） |
 
 ## 関連
 
