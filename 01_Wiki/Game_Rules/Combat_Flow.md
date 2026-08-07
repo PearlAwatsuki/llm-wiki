@@ -261,7 +261,9 @@ FVTT コンバットトラッカーへの載せ方の正本。Code の当初設�
 | `tnxCutEnd` | 次カット境界（cut N 終了）／カット進行終了時（最終カット） | `{cut}` | 「カット」持続効果の失効・使用回数のカット境界 |
 | `tnxProcessStart` / `tnxProcessEnd` | プロセスの開始／終了（**2エッジ**） | `{phase, combatantId, cut, viaInterrupt?}` | プロセス単位の持続効果 |
 | `tnxCutProgressionEnd` | カット進行の終了（案1後） | `{sceneEnded}` | カット進行の後片付け |
-| `tnxSceneEnd` | 案1で「シーンも終了」を選択時 | `{}` | 「シーン中」効果の失効・仮死/昏睡の死亡判定・「シーン中N回」リセット |
+| `tnxSceneEnd` | シーン切替・アクト終了（14-2）／案1で「シーンも終了」を選択時 | `{sceneId}`（14-2 で追加） | 「シーン中」効果の失効・仮死/昏睡の死亡判定・「シーン中N回」リセット |
+
+> **14-2 追記（2026-08-08）**: シーン/アクト系のフック（`tnxSceneStart`/`tnxActStart`/`tnxActEnd`・正本は同じ `TNX_HOOKS`）はセッション進行（`session-state.mjs`）が **data 単独引数**で発火する（combat 引数なし）。案1の `tnxSceneEnd` も `endSceneFromCombat` への委譲で同形になり、`sceneEnded` ガードで次のシーン切替と二重発火しない（アクト外＝シーン外戦闘は `sceneId:""` の素発火にフォールバック）。→ [Phase_14_Tasks_Detail](../Phases/Phase_14_Tasks_Detail.md)
 
 - **プロセスイベントは開始／終了の2エッジ**（2026-07-23 ユーザー確定）: from→to の1本では「メインA終了＋メインB開始（割り込み）」を表せないため。**挿入メイン（割り込み）も「メインプロセス」**なので、その開始・終了、および割り込みで打ち切られた元メインの終了でも `tnxProcessEnd(phase:"main")` を発火する——ゆえに「メインプロセス中」効果は挿入メイン・打ち切られた元メインでも失効できる。サブターンは割り込みで**中断（サスペンド）**されるだけで終了しないため、その出入りでは開始／終了を再発火しない（サブターン中効果は割り込みを跨いで持続）。
 - 遷移のイベント計画は純関数 `planPhaseEvents`（`advancePhase` 用・離脱プロセス終了→[次カット境界]→遷移先開始）。割り込みの発火は `startInterrupt`/`endInterrupt` が直接行う。
