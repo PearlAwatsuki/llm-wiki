@@ -77,7 +77,7 @@
 - 登場状態（Actor フラグ・`appearance-state.mjs`）・シーンプレイヤー（User flag `isScenePlayer`）・チーム操作（純関数・1アクター1チーム）
 - 境界イベント: `tnxActStart`/`tnxActEnd`/`tnxSceneStart` 追加・`tnxSceneEnd` payload `{sceneId}`・シーン/アクト系は data 単独引数。13 案1は `endSceneFromCombat` へ委譲（`sceneEnded` ガード）
 - アクト開始トリガー（`startAct`）: ハンドアウト `actorId` のキャストへ報酬点＋CS を自動設定（`buildPreActInit`・シートのプレアクト初期化と計算共用）→ 先頭シーン開始まで一括（操作 UI は 14-3）
-- 切り札のシーン消費化で「現在のシーンカード」を記録（`sessionSceneCard` ソケットで GM 委譲）
+- 「現在のシーンカード」の記録＝**ドロー提示（`drawNeuroCard`）・切り札のシーン消費化の両経路**（`recordCurrentSceneCard`・非 GM は `sessionSceneCard` ソケットで GM 委譲。当初切り札のみ→2026-08-08 ユーザー指摘で是正 `6d41d63`）
 
 ### 14-3: シーン進行パネル
 
