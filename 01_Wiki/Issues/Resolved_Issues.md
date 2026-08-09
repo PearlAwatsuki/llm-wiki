@@ -277,7 +277,7 @@
 - **解消内容**: 実効値 `uses.maxTotal` を新設（`scripts/data/item/uses.mjs`）。`resolveItemTotalPath` を `uses.max` / `uses.maxTotal` の両綴りから `uses.maxTotal` へ写像し、AE の追加/上書き/乗算がそのまま効くようにした。読み手（消費アダプタ `ITEM_RESOURCES.uses`・神業スロット表示・神業使用の残り判定）を `usesMaxTotalOf` 経由へ一斉掃引。母数を機械維持する書き手（スタイルレベル連動・多重取得 ±1）は `usesMaxBaseOf` を土台に文字列で保存する。同時に `uses.max` を式も受ける StringField 化（[Formula_Reference.md](../Game_Mechanics/Formula_Reference.md)「使用回数の最大値」）。
 - **順序**: 式の評価は AE 適用前（`_applyEffectBuffs` の直前）。「レベル回」は AE でレベルが上がっても増えない＝2026-08-09 ユーザー裁定。
 - 記録の訂正: Active_Effects.md §2.2 の「`uses` には効かない」→ `uses.max → uses.maxTotal` を着地表に追加。
-- 検証: テスト 1952 green（+34）・eslint 0 error（警告15は既存）・stylelint clean。シート組版は隔離ブラウザで実測（式が読める幅・バッジが行内・「/」の段が崩れない）。**Foundry 実機での AE 着地確認は 14-8 の一括確認に含める（未実施）**。
+- 検証: テスト 1946 green（+28）・eslint 0 error（警告15は既存）・stylelint clean。シート組版は隔離ブラウザで実測（最大値欄と消費済み欄が同じ 200px・式が収まる・「/」の段が崩れない）。**Foundry 実機での AE 着地確認は 14-8 の一括確認に含める（未実施）**。
 
 ---
 

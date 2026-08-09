@@ -3979,12 +3979,14 @@ Code の「dealt×vs\* 併記は二重加算」という申し送りに対しユ
 
 #### 実装結果（2026-08-09・上記設計どおり）
 
-- **新設 `scripts/data/item/uses.mjs`**（`part-helpers.mjs` と同じ「item 直下のユーティリティ」・`tests/template-integrity.test.mjs` の非 DataModel 登録簿に宣言）: `resolveUsesMaxDetail`/`resolveUsesMax`（数値も式も受け、0clamp・切り捨て・評価不能は 0）・`usesMaxIsFormula`・`usesMaxTotalOf`（読み手の実効値リーダー）・`usesMaxBaseOf`（母数を機械維持する書き手の土台）・`computeUsesMaxTotal`／`ForActor`・`clampUsesMaxTotalForActor`・`migrateUsesMaxToString`。
-- **`resolved` を分けた理由**: 実効値 0 には「レベル0の技能で正しく 0」と「式を書き間違えて読めず 0」の2種類がある。シートが後者だけ「＝ ?」を出せるよう、評価の成否を `uses.maxResolved` として派生に載せた（評価は1回のまま）。
+- **新設 `scripts/data/item/uses.mjs`**（`part-helpers.mjs` と同じ「item 直下のユーティリティ」・`tests/template-integrity.test.mjs` の非 DataModel 登録簿に宣言）: `resolveUsesMax`（数値も式も受け、0clamp・切り捨て・評価不能は 0）・`usesMaxTotalOf`（読み手の実効値リーダー）・`usesMaxBaseOf`（母数を機械維持する書き手の土台）・`computeUsesMaxTotal`／`ForActor`・`clampUsesMaxTotalForActor`・`migrateUsesMaxToString`。
 - **StyleSkill の評価順**: `prepareDerivedData` を `_applyLevelRef()` → `computeUsesMaxTotal(this)` に分解した（旧実装は levelRef の早期 return が末尾を巻き込むため）。「1シーンにレベル回」がレベル自動参照（10-3）の結果を読むのに順序が要る。
 - **端数は切り捨て**（Code 判断・TNX の除算慣例に合わせた。裁定余地あり）。
-- 検証: テスト **1952 green（+34）**・eslint 0 error（警告15は既存）・stylelint clean。
-- **組版の自己検証**（隔離ブラウザ・実 CSS＋実マークアップを実測）: 最大値欄は 60px 固定をやめて行の残り幅を分け合う（実測 308〜338px・式もプレースホルダも折り返さない）／消費済み欄は 60px のまま／バッジは入力の右にインラインで段数を増やさない（4状態すべて行高 52px＝「/」の位置が崩れない）／横スクロールなし。**初版はラベル「最大値」を中央寄せにしていて、広い欄の中央に浮いて入力と結びつかなかったため左端へ直付けに是正**（ラベルはコントロールに直付け＝`f41c24c` の教訓）。
+- 検証: テスト **1946 green（+28）**・eslint 0 error（警告15は既存）・stylelint clean。
+- **UI（2026-08-09 ユーザー是正後の確定形）**: 最大値欄は `type="text"`＋プレースホルダ「数値 または 式」のみ。**消費済み欄と同じ 200px**（`.usage-limit-group:has(.usage-field--formula) .usage-field input`）で、式は左揃え・消費済みは数値なので中央揃えのまま。
+  - **却下された初版（ユーザー指摘「=n はいりません。余計なことをしないでください」）**: 実効値バッジ `＝ 3`（評価不能は `＝ ?`）を入力の右に出し、最大値欄だけ行の残り幅いっぱい（308〜338px）に広げていた。バッジと、それを支えるためだけに置いた派生 `uses.maxResolved`・`usesMaxIsFormula`・`resolveUsesMaxDetail` は**すべて撤去**（機能が消えたら支える仕組みも残さない）。
+  - **教訓**: 「式を表示するなら実効値も見せる」という一般則（`feedback_formula_needs_input` 由来）を、**求められていない表示の追加**の根拠にしていた。要求は「式を入力できるようにする」であって「計算結果を見せる」ではない。欄の幅も同様で、**入りうる最長ではなく実際に入る式の長さ**（`@item.self.system.levelTotal`＝実測 173px）で決めるのが正しく、行いっぱいに広げたのは過剰だった。
+  - 幅の実測（隔離ブラウザ・実 CSS＋実マークアップ）: 200px で `@item.self.system.levelTotal`（173px）も `… - 1`（192px）もプレースホルダも収まり、両欄の幅が一致、4状態すべて行高 52px（「/」の位置が崩れない）、横スクロールなし。150px を先に試したが式が収まらず却下。
 
 #### 課題・申し送り（更新）
 
