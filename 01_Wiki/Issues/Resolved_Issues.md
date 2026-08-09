@@ -288,3 +288,17 @@
 - `_getHistoryData` / `_saveHistoryData` に ownerUserId 分岐追加 (2-2) → 3-3 で削除完了
 
 詳細は [Known_Issues_Detail.md](Known_Issues_Detail.md) を参照。
+
+## KI-039: 表示値が素の値になっている箇所（キャストシートの住宅施設・技能レベル・コンバイン行）
+
+- **起票**: 2026-08-09（フェーズ14-8 で住宅施設を舞台にする実装を入れた際に発見）
+- **解消**: 2026-08-09（フェーズ14-8 の続き）
+- **症状**: 「**表示は AE 込み実効値（`…Total` / `.total`）・編集入力は base のまま**」という既存規約（`_computeColValue` の doc コメントに明記）に反し、素値を読んでいる**表示**が3系統あった。
+  1. **住宅施設の登場判定目標値・電脳/アナログセキュリティ**（`tnx-character-sheet-base.mjs` の `effectiveValues`）。素値＋住宅エリア修正で表示しており、**住宅エリアが未設定だと素値のまま**フォールバックしていた。同種の表示を行う `tnx-outfit-sheet.mjs` は `appearanceTargetTotal` 優先で、2箇所で読み方が食い違っていた。
+  2. **一般技能・スタイル技能のレベル表示**（`tab-abilities.hbs`）。閲覧表示が `system.level`（素値）を出していた（編集入力欄は base で正しい）。
+  3. **コンバイン行の列値**（`_computeCombinedColValue`）。隠・危険値・受・電制・制・SF・乗員・サイクル・CS・防（S/P/I）・スロットが `.value`（素値）読みだった。`attack` だけ 2026-07-13 に実効値へ是正されており、**部分的な修正の取り残し**だった。
+- **修正**:
+  - 住宅施設の実効値算出を `residence-area.mjs` の `residenceEffectiveValues()` に一本化（`…Total ?? 素値` ＋ 住宅エリア修正）。住宅エリアが無くても実効値を返すので、フォールバックの分岐そのものが消えた。舞台の目標値（`residenceStageParams`）もこれを通す。
+  - `tab-abilities.hbs` の2箇所を `levelTotal` へ。
+  - `_computeCombinedColValue` に `_computeColValue` と同じ `mvT`（`.total ?? .value`）を導入して全列を通した。防は `S_total ?? S_defence` 形式、スロットも `mvT` 経由。
+- **検証**: 隔離 Foundry で確認。住宅施設＝実効99・エリア修正+2で **101**（エリアなしでも **99**・旧実装は 12 に戻っていた）、技能レベル **Lv9**。コンバイン列は実装を直接呼んで、**素値のみのとき従来と同一出力**・実効値があるとき全列が実効値になることを確認。
