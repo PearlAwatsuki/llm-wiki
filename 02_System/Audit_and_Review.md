@@ -3914,3 +3914,65 @@ Code の「dealt×vs\* 併記は二重加算」という申し送りに対しユ
 - コネ登録 UI はシーン指定技能と同型（プルダウン＋チップ・`data-no-save`・未選択プレースホルダ）。同型化に合わせ指定技能セレクトにも「- 技能を選択 -」を追加（先頭技能のままの誤登録防止）。
 - 「その他（自由記述）」の記述欄は 2 行目全幅に配置（`:has(.skill-name)` で wrap・実測 534px）→ 1 行内へ戻した後、**2026-08-09 に自由記述ごと廃止**（`5c0e782`・`.skill-key--free` / `.skill-name` の CSS も削除。`legacyName` は `_prepareContext` で「識別キーが無く name がある行」にだけ立てる＝辞典行に残る旧 name はラベルに出さない）。
 - 検証: テスト 1899 green（+4）・eslint/stylelint clean。隔離実機で「コネ登録→チップ〈コネ：検証用〉→識別キー保存」「スート選択→保存→表示」「トグル/ヘッダー不在・削除アイコン枠内」をスクリーンショット付きで確認。ハンドアウト送信のコネ表示名解決はコード検証のみ（アクト開始付与も同・実機確認は 14-8 一括に含める）。
+
+### 2026-08-09 使用回数の最大値を式で入力可能にする（設計・実装未着手）
+
+**2026-08-09** / **関連実装** なし（設計確定のみ） / **ステータス**: 設計確定・ユーザー承認済・実装未着手
+
+ユーザー要望「最大『レベル』回のような表現が現状できない。最大値欄に式で値を入力可能にしてほしい」に対する設計。フェーズ14 のロードマップ項目ではなく、合間の機能追加（PATCH 相当）。
+
+#### メカニクス監査
+
+- **「レベル回」の意味**（2026-08-09 ユーザー裁定）: 使用回数の最大値がレベルを参照する場合、**AE でレベルが上がっても使用回数は増えない**。Code は当初これを「実装順序ゆえの制約」として提示したが、ユーザーはこれを**ルールとしての正解**と裁定した。したがって式の評価は AE 適用**前**の値を読むのが正しく、後述の順序境界は妥協ではなく意図した挙動である。
+- **神業の母数バフは AE で増える**（既存記述の追認）: [Usage_System.md](../01_Wiki/Game_Mechanics/Usage_System.md) の「万能神業（ファイト！等）による母数増加は AE で `uses.max` を増やす」は正しい仕様。ただし着地点が無く**実際には効いていなかった**（[KI-038](../01_Wiki/Issues/Known_Issues_Detail.md)）。本改修で新設する実効値 `uses.maxTotal` を AE 着地点として登録し、記述どおりに動くようにする（2026-08-09 ユーザー裁定「登録する」）。[Active_Effects.md](../01_Wiki/Game_Mechanics/Active_Effects.md) §2.2 の「`uses` には効かない」は訂正対象。
+- **対象タイプ**（2026-08-09 ユーザー裁定）: アウトフィット共通・スタイル技能・神業の**3タイプとも同じ表示**にする。ただし**実質的に式を使うのはアウトフィットとスタイル技能のみ**。神業の最大値（母数）はスタイルレベル連動フックが機械維持するため、式を入れても次のレベル変更で数値に上書きされる——これは仕様として許容し、専用の分岐は設けない（ユーザー「神業についてはそれで結構です」）。
+- **スコープ外**: 残弾（`ammo.max`）・常備化個数（`quantity.max`）。同じ形なので必要になれば同じ手順で足せる。
+
+#### 設計（データモデル）
+
+- `uses.max` を `NumberField` → **`StringField`**（3モデル: `outfit-base.mjs` / `style-skill.mjs` / `miracle.mjs`）。**数値も式も同じ1欄で受ける**——用途の `checkBonusSelf` / `damageBonusSelf` と同じ既存流儀（`parsePlainNumber` が純数値を Roll を介さず即返す）。数値欄と式欄に割らないのは真実の所在を1つに保つため。initial はアウトフィット/スタイル技能 `""`・神業 `"1"`。
+- migrateData: 数値→文字列。共通関数 `migrateUsesMaxToString(source)` を `helpers.mjs` に既存の `migrateUsesValueToSpent` と並べる。**呼び出し順は「spent 移行 → max 文字列化」**（前者が `typeof uses.max === "number"` を読むため。神業の `usageCount` 移行も同じ理由で先）。
+- `uses.spent` は数値のまま（消費実績であって設計値ではない）。
+- 派生（スキーマ外）で **`uses.maxTotal`（number）**。`levelTotal` / `actionRank.maxTotal` と同じ位置づけ。
+
+#### 設計（派生パイプライン）
+
+既存の「base → total を置いてから AE が total を改変する」原則のまま 2 段。
+
+1. **アイテム単体の段**（各 DataModel の `prepareDerivedData`）: `uses.maxTotal = 評価(uses.max)`。式には `@item.self` だけを供給する（アクター無所属＝辞典・ワールド直下・コンペンディウムでもシートが値を出せるようにするため）。アウトフィットは `computeItemEffectiveValues` に相乗り、スタイル技能・神業は各 `prepareDerivedData` から共通関数を呼ぶ。
+2. **アクターの段**（`character-base.mjs` の `_applyEffectBuffs()` の**直前**）: 所有アイテムの `uses.maxTotal` を `buildFormulaData(actor, null, item)` のフル文脈（`@system.*` / `@item.<識別キー>.*` / `@item.self`）で再評価する。
+3. **AE の着地**: `resolveItemTotalPath("uses.max")` を `uses.maxTotal` へ写像（`uses.maxTotal` 綴りも同じ所へ正規化）。AE 適用後の 0clamp を `actionRank.maxTotal` の隣に置く。
+
+- **順序境界**: 式が参照する値は **AE 適用前**の実効値。これは上記メカニクス監査の裁定（レベルが AE で上がっても使用回数は増えない）と一致する。技術的にも、②を AE の前に置くことで AE（`system.uses.max`）を `uses.maxTotal` へ素直に着地させ、**追加／上書き／乗算のモード意味論をそのまま活かせる**（後段に置くと AE 分を消すため差分アキュムレータが必要になり、上書き・乗算が壊れる）。`actionRank.maxTotal`（派生で base を置き、その上に AE が乗る）と同型。
+- 評価不能（自由文・ダイス入り・構文エラー）は `0`。式どうしの相互参照は前提としない（既存の式機構と同じ）。
+
+#### 設計（読み手・書き手の全数掃引）
+
+実効フィールド新設のため `uses.max` を触る全箇所を洗う（grep 済み・下記で全数）。
+
+読み手 → `maxTotal` へ:
+1. `usage-consumption.mjs` `ITEM_RESOURCES.uses` の `remaining` / `max` / `update` クランプ（消費経路の単一チョークポイント。ここ1箇所で消費ダイアログの「残り X/Y」も不足判定も正しくなる）
+2. `tnx-character-sheet-base.mjs` 神業スロットの並び生成
+3. `tnx-character-sheet-base.mjs` 神業使用時の残り判定と spent クランプ
+
+書き手（機械維持の経路・数値を書き続ける）:
+4. `tnx.mjs` 神業のスタイルレベル連動、`tnx-character-sheet-base.mjs` 多重取得の +1 / −1 → `String(newMax)` を書く。「現在の母数 +1」の土台は素値が数値としてパースできればそれ、できなければ（＝式が入っている）`maxTotal` を土台にする。
+5. `tnx-outfit-sheet.mjs` / `tnx-style-skill-sheet.mjs` の制限オフ時リセット値 `0` → `""`
+
+#### 設計（UI）
+
+- 3シートの「最大値」欄（`outfit-sheet.hbs` / `style-skill-sheet.hbs` / `miracle-sheet.hbs`）を `type="number"` → `type="text"`。placeholder は既存の式欄の流儀を踏襲（`式（例: @item.self.system.levelTotal、3）`）。
+- 入力欄の直後に**実効値バッジ**（`＝ 3`）。**素値と一致するとき（純数値）は出さない**＝式のときだけ。評価不能は `＝ ?`。式を表示するなら実効値も見せる（説明文言ではなく動的データなので UI 文言規約に抵触しない）。
+- 「消費済み」欄は数値入力のまま（使用回数はスピナー不使用の既存例外を維持）。
+
+#### 設計（テスト）
+
+- 純粋関数 `computeUsesMaxTotal`（純数値／空／評価不能→0／負→0clamp）
+- `resolveItemTotalPath("uses.max") === "uses.maxTotal"`（両綴りの正規化）
+- migrateData の数値→文字列（3モデル）。既存の「`uses.max` は NumberField で initial 0」テスト2件（`style-skill.test.mjs` / `outfit-base.test.mjs`）は StringField 版へ差し替え
+- `ITEM_RESOURCES.uses` が `maxTotal` を読むこと（`usage-consumption.test.mjs`）
+
+#### 課題・申し送り
+
+- 実装時に更新する記録: Active_Effects.md §2.2（`system.uses.max → uses.maxTotal` を着地表へ・「uses には効かない」を訂正）／Formula_Reference.md（`@item.<key>.system.uses.maxTotal` の追加と順序境界の明記）／Usage_System.md（神業母数バフが実際に効くようになった旨）／Item_Types.md・DataModel.md（`uses.max` の型）／KI-038 を Resolved へ。
+- 実機確認は 14-8 の一括確認に含める（起動形は変わらないが、使用回数は消費フロー全体に効くため単独では閉じない）。

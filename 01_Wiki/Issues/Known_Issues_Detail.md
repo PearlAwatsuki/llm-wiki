@@ -718,4 +718,27 @@ styleSkill の書き換え神業 ID 参照機能。現状は一貫して命名�
 
 ---
 
-*最終更新: 2026-07-19(KI-008 解消=EXP 再計算の合流。番号つき KI は全解消・残存は FA5/6 混在の軽微のみ)*
+## KI-038: `system.uses.max` 宛の ActiveEffect が効かない（着地先が死んでいる）
+
+**発見**: 2026-08-09（使用回数の最大値を式対応にする設計調査中に発覚）
+**ファイル**: `scripts/data/item/helpers.mjs`(resolveItemTotalPath)、`scripts/module/usage-consumption.mjs`(ITEM_RESOURCES.uses)、`scripts/actor/tnx-character-sheet-base.mjs`
+
+**症状**
+使用回数（`uses`）に実効値フィールドが無いため、`system.uses.max` を狙う AE が**どこにも着地しない**。`resolveItemTotalPath("uses.max")` は `uses.max.total` を返すが、`uses.max` は数値なのでこのパスは実体を持たず、読み手も存在しない（消費・表示は一貫して素値 `uses.max` を読む）。
+
+**記述の矛盾**（本 KI の発覚点）
+- [Usage_System.md](../Game_Mechanics/Usage_System.md)・`miracle.mjs` の冒頭コメント: 「万能神業（ファイト！等）による母数増加は **AE で `uses.max` を増やす**（専用の加算欄は設けない）」
+- [Active_Effects.md](../Game_Mechanics/Active_Effects.md) §2.2: 「数値フィールドで total を持たないもの（`quantity`・`uses`・`ammo`・`range` 等）には**効かない**」
+
+コードは後者が正。前者は 2026-07-18 の uses 一本化時に「そうする」と決めたまま**着地点が作られなかった**もので、監査記録にも「母数バフの AE 経路は要実機確認」と残っていた（[Audit_and_Review.md](../../02_System/Audit_and_Review.md) 2026-07-21 の実機確認欄）。神業の母数を AE で増やす手段が事実上無い状態。
+
+**修正の方向（2026-08-09 ユーザー裁定＝「登録する」）**
+使用回数の最大値を式対応にする改修で実効値 `uses.maxTotal` を新設し、**同じフィールドを AE の着地点として登録する**（`resolveItemTotalPath("uses.max") → "uses.maxTotal"`）。読み手（消費アダプタ・神業スロット表示・使用時の残り判定）を実効値読みへ一斉掃引する。Active_Effects.md §2.2 の「uses には効かない」を訂正する。設計は [Audit_and_Review.md](../../02_System/Audit_and_Review.md) の 2026-08-09 エントリ。
+
+**修正の難易度**: 中（実効値の新設＋読み手の全数掃引を伴う）
+
+**担当**: 使用回数の式対応と同一作業（フェーズ14 の合間の修正）。
+
+---
+
+*最終更新: 2026-08-09(KI-038 起票=uses.max 宛 AE の着地先欠落)*

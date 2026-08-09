@@ -98,11 +98,11 @@
 
 ### 技能（generalSkill / styleSkill）
 
-| キー | 意味 |
-|---|---|
-| `@item.<key>.system.levelTotal` | 技能レベルの実効値（`.level` は素値） |
-| `@item.<key>.system.suits.spade` / `.heart` / `.diamond` / `.club` | 使用可能スート（真偽） |
-| `@item.<key>.system.isAction` | アクション技能か（真偽） |
+| キー                                                                 | 意味                      |
+| ------------------------------------------------------------------ | ----------------------- |
+| `@item.<key>.system.levelTotal`                                    | 技能レベルの実効値（`.level` は素値） |
+| `@item.<key>.system.suits.spade` / `.heart` / `.diamond` / `.club` | 使用可能スート（真偽）             |
+| `@item.<key>.system.isAction`                                      | アクション技能か（真偽）            |
 
 ### アウトフィット共通（全 outfit 型）
 
