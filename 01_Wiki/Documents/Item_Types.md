@@ -35,7 +35,7 @@
 | hack | SchemaField | `{mode: none/value, value}` — 電脳制御値 |
 | exclusive | ArrayField | 専用（フェーズ10-2 で自由記述→**辞典参照の配列** `{type: style/organization, key}` へ。指定のみで enforcement なし） |
 | part | ArrayField | 部位行（フェーズ10-1 で種別ベースへ拡張）: `{kind: none/bodyPart/option/reference/other, value, slots, hostMajor, hostMinor, hostMinorExclude, hostFeature, hostName, refSubKind}`。兄弟フィールド `partRelation`（and/or）・`partOrChoice`（or 時の占有行）・`partOptional`（部位全体に効く任意フラグ・占有非カウント） |
-| uses | SchemaField | `{isLimit, type, max, spent}` — 使用回数（spent=消費済み・D&D 方式） |
+| uses | SchemaField | `{isLimit, type, max, spent}` — 使用回数（spent=消費済み・D&D 方式）。**max は StringField で数値も式も受ける**（2026-08-09「1シーンにレベル回」）。実効値は派生 `uses.maxTotal`＝式を解いた結果に AE が乗ったもので、**消費・表示は必ず実効値を読む**（`usesMaxTotalOf`・`scripts/data/item/uses.mjs`） |
 | majorCategory | StringField | 大分類（choices 付き）|
 | minorCategory | StringField | 小分類（choices 付き、大分類と Item type で絞込） |
 | identificationKey | StringField | 識別キー（全アイテム型共通） |

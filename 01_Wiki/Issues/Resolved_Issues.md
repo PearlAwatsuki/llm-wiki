@@ -269,6 +269,18 @@
 
 ---
 
+## KI-038: `system.uses.max` 宛の ActiveEffect が効かない（着地先が死んでいた）
+
+- **発見/解消**: 2026-08-09（使用回数の最大値を式対応にする設計調査中に発覚・同日解消）
+- **症状**: 使用回数に実効値フィールドが無く、`resolveItemTotalPath("uses.max")` が返す `uses.max.total` は実体を持たず読み手もいない。`uses.max` を狙う AE は**どこにも着地しない**＝神業の母数バフ（ファイト！等）が事実上不可能だった。
+- **原因**: 2026-07-18 の uses 一本化で「母数バフは AE で `uses.max` を増やす」と決めたが、**着地点（`…Total` の実効値フィールド）を作らないまま**にしていた。消費・表示は一貫して素値を読んでいたため、仮に着地しても効かない状態。記録上も Usage_System.md（効く）と Active_Effects.md §2.2（効かない）が矛盾し、監査の実機確認欄に「母数バフの AE 経路は要実機確認」と残ったままだった。
+- **解消内容**: 実効値 `uses.maxTotal` を新設（`scripts/data/item/uses.mjs`）。`resolveItemTotalPath` を `uses.max` / `uses.maxTotal` の両綴りから `uses.maxTotal` へ写像し、AE の追加/上書き/乗算がそのまま効くようにした。読み手（消費アダプタ `ITEM_RESOURCES.uses`・神業スロット表示・神業使用の残り判定）を `usesMaxTotalOf` 経由へ一斉掃引。母数を機械維持する書き手（スタイルレベル連動・多重取得 ±1）は `usesMaxBaseOf` を土台に文字列で保存する。同時に `uses.max` を式も受ける StringField 化（[Formula_Reference.md](../Game_Mechanics/Formula_Reference.md)「使用回数の最大値」）。
+- **順序**: 式の評価は AE 適用前（`_applyEffectBuffs` の直前）。「レベル回」は AE でレベルが上がっても増えない＝2026-08-09 ユーザー裁定。
+- 記録の訂正: Active_Effects.md §2.2 の「`uses` には効かない」→ `uses.max → uses.maxTotal` を着地表に追加。
+- 検証: テスト 1952 green（+34）・eslint 0 error（警告15は既存）・stylelint clean。シート組版は隔離ブラウザで実測（式が読める幅・バッジが行内・「/」の段が崩れない）。**Foundry 実機での AE 着地確認は 14-8 の一括確認に含める（未実施）**。
+
+---
+
 ## フェーズ2 で部分的解消
 
 ### KI-017 (部分 → 3-3 で完全解消)

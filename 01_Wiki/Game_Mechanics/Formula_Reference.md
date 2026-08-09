@@ -22,7 +22,7 @@
   - アクター: 能力値 `reason.total`/`reason.totalControl`。 アイテム: `attack.total`・`defence.S_total`・`levelTotal`・`<param>.total`（素のパラメータキー `system.attack.value`／`system.category.weapon.attack` 等の AE がここへ着地・v3）。
   - ※ **アイテムのパラメータが「キャラクターへ」与える修正**（制御値修正・CS 修正・危険値など）は AE でなく派生パイプラインが直接読む設計（[Active_Effects.md](Active_Effects.md) 大原則5）。ただしこれは「アイテム→キャラ」の話で、`@item.<識別キー>.system.<param>.total` が指す**アイテム自身の値**は上記どおり AE 込みで取れる。
 - `@item.<識別キー>` は**識別キーを持つアイテムだけ**引ける（辞典由来の技能・アウトフィットは持つ）。識別キーはアイテムの `system.identificationKey`。
-- どこで使えるか: 判定ボーナス（アクター・判定時）・ダメージ修正（攻撃者・ダメージ算出時）・**AE の「値」**（change.value にも式を書ける・2026-07-10）。`@diff`/`@achievement` はダメージ算出時のみ（AE 値・判定ボーナスでは不可）。**`@target.*` はダメージ修正（攻撃者側）でのみ**供給。**`@card` は判定ボーナス（カードプレイ後に評価されるため可）とダメージ修正**（命中判定のカード値を攻撃→ダメージフラグで持ち回り）で使える（AE 値は判定文脈がないため不可）。
+- どこで使えるか: 判定ボーナス（アクター・判定時）・ダメージ修正（攻撃者・ダメージ算出時）・**AE の「値」**（change.value にも式を書ける・2026-07-10）・**使用回数の最大値**（アイテムシートの「最大値」欄・2026-08-09。下記）。`@diff`/`@achievement` はダメージ算出時のみ（AE 値・判定ボーナスでは不可）。**`@target.*` はダメージ修正（攻撃者側）でのみ**供給。**`@card` は判定ボーナス（カードプレイ後に評価されるため可）とダメージ修正**（命中判定のカード値を攻撃→ダメージフラグで持ち回り）で使える（AE 値は判定文脈がないため不可）。
 
 ### `@target.*`（攻撃対象・ダメージの式でのみ・2026-07-10）
 
@@ -49,6 +49,16 @@
 - 例（AE 値）: オプションの AE 値を `@item.parent.system.attack.total` にすると、装備先アイテムの攻撃力を参照できる。
 - 例（用途）: 「この用途の判定修正値」に `@item.self.system.levelTotal`、「この用途のダメージ修正値」に `@item.self.system.attack.total`（＝用途の親アイテムのレベル/攻撃力）。用途の実行時は親アイテムを式に渡すため、識別キーの無いアイテムでも参照できる。
 - **AE 値は `prepareDerivedData` 内で評価**されるため、`.total` は「リテラル値の AE を先に適用した後」の値を参照する（リテラル先→式後の2フェーズ。式値どうしは相互参照しない前提）。判定/ダメージの用途式は実行時評価なので、参照先 `.total` は AE 完全適用済み（[Active_Effects.md](Active_Effects.md) §3）。
+
+### 使用回数の最大値（`uses.max`・2026-08-09）
+
+「1シーンに**レベル回**」のような使用回数を表すため、アイテムシートの**「最大値」欄そのものが式を受ける**（数値も式も同じ1欄・用途の判定修正値欄と同じ流儀）。実効値は `uses.maxTotal`。
+
+- 例（スタイル技能「1シーンにレベル回」）: 最大値欄に `@item.self.system.levelTotal`。`@item.self` ＝**その使用回数を持つアイテム自身**（識別キー不要）。
+- 例（アウトフィットが別技能のレベルに従う）: `@item.<技能の識別キー>.system.levelTotal`。
+- 端数は**切り捨て**・負値と評価不能（自由文・ダイス入り・構文エラー）は **0**。評価不能はシートの実効値バッジが「＝ ?」を出して 0 と区別する。
+- **順序境界（重要・2026-08-09 ユーザー裁定）**: 式は **AE 適用前**の値を読む。「レベル回」の使用回数は **AE でレベルが上がっても増えない**——これはルールとしての正解であり、実装順序の都合ではない。一方 `uses.max` を狙う AE 自身は実効値 `uses.maxTotal` に乗る（[Active_Effects.md](Active_Effects.md) §2.2）。
+- 神業の母数もこの欄だが、**スタイルレベル連動フックが機械維持する**ため式を入れても次のレベル変更で数値に上書きされる（式の運用対象はアウトフィットとスタイル技能）。
 
 ### AE のキーで判定・ダメージそのものに干渉する
 
@@ -115,7 +125,7 @@
 | `@item.<key>.system.appearancePenalty.total` | **危険値** |
 | `@item.<key>.system.hack.total` | **電脳制御値** |
 | `@item.<key>.system.quantity.value` / `.max` | 数量 |
-| `@item.<key>.system.uses.max` / `.spent` | 使用回数（最大 / 消費済み。残り＝max−spent） |
+| `@item.<key>.system.uses.maxTotal` / `.spent` | 使用回数（**最大値の実効値** / 消費済み。残り＝maxTotal−spent。`.max` は素値＝式そのものが入りうる） |
 | `@item.<key>.system.isPrepared` / `.isCarrying` | 準備済み / 携帯中（真偽） |
 
 ### 武器（weapon）
@@ -125,7 +135,7 @@
 | `@item.<key>.system.attack.total`                      | **攻撃力の実効値**（`.value` は素値・`.damageType` は種別 S/P/I/X） |
 | `@item.<key>.system.guardValue.total`                  | 受け値                                                 |
 | `@item.<key>.system.FAValue`                           | フルオート値（`.isFullAuto` が真のとき有効）                       |
-| `@item.<key>.system.uses.max` / `.spent`               | 使用回数（アウトフィットを「使用」する回数）                          |
+| `@item.<key>.system.uses.maxTotal` / `.spent`          | 使用回数（アウトフィットを「使用」する回数・最大値は実効値）              |
 | `@item.<key>.system.ammo.max` / `.spent`               | 残弾（装弾数/撃った数。使用回数とは別資源）                          |
 | `@item.<key>.system.range.min` / `.max`                | 射程                                                  |
 

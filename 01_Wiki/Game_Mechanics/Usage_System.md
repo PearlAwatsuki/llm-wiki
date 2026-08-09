@@ -248,6 +248,8 @@ CLAUDE.md §4.3 より:
 > **神業の使用回数を汎用 uses へ一本化**（ユーザー提案・合意のうえ「改変禁止」を更新）。旧 `usageCount {value(母数)/total(残り)/mod(バフ)}` を廃し、他アイテムと同じ `uses {isLimit, max, spent}` を持つ（残り = max − spent）。migrateData で `max=value+mod`・`spent=max−total`。**この一本化で、旧実装にあった「連動フックは value=母数/total=残り、消費経路は value=残り」という value/total の解釈矛盾（＝用途経由の神業消費が母数を削る潜在バグ）も解消**。
 >
 > - **母数 = uses.max = 連動スタイルの合計レベル（上限3。「母数=スタイルレベルと同一」ユーザー確定）**。万能神業（ファイト！等）による母数増加は **AE で uses.max を増やす**（専用の加算欄は設けない）。
+>   - **2026-08-09（KI-038 解消）**: この AE 経路は宣言されていただけで**着地点が無く実際には効いていなかった**。実効値 `uses.maxTotal` を新設して着地させ、記述どおりに動くようにした（詳細は [Active_Effects.md](Active_Effects.md) §2.2）。消費・表示は全て実効値を読む。
+>   - あわせて `uses.max` は**数値も式も受ける StringField** になった（[Formula_Reference.md](Formula_Reference.md)「使用回数の最大値」）。ただし神業の母数は下記の連動フックが機械維持する領分のため、式を入れても次のレベル変更で数値に上書きされる（式の運用対象はアウトフィットとスタイル技能）。
 > - style レベル変更 → 連動 miracle の `uses.max` をスタイル合計レベル（上限3）へ設定・spent はクランプ (`preUpdateItem`)。
 > - style 削除（レベル1）→ 連動 miracle 削除 (`preDeleteItem`)。
 > - miracle 削除 → `uses.max>1` なら削除でなく max−1（多重取得の1つを外す・`preDeleteItem`／コンテキストメニュー）。

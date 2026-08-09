@@ -739,6 +739,8 @@ styleSkill の書き換え神業 ID 参照機能。現状は一貫して命名�
 
 **担当**: 使用回数の式対応と同一作業（フェーズ14 の合間の修正）。
 
+**解消（2026-08-09・使用回数の式対応と同時）**: 実効値 `uses.maxTotal` を新設（`scripts/data/item/uses.mjs`）し、`resolveItemTotalPath("uses.max")` を `uses.maxTotal` へ写像。読み手（消費アダプタ `ITEM_RESOURCES.uses`・神業スロット表示・神業使用の残り判定）を `usesMaxTotalOf` 経由の実効値読みへ一斉掃引し、母数を機械維持する書き手は `usesMaxBaseOf` を土台に文字列で保存するようにした。Active_Effects.md §2.2 の「`uses` には効かない」を訂正。詳細は [Resolved_Issues.md](Resolved_Issues.md) の KI-038。**実機確認は 14-8 の一括確認に含める（未実施）**。
+
 ---
 
-*最終更新: 2026-08-09(KI-038 起票=uses.max 宛 AE の着地先欠落)*
+*最終更新: 2026-08-09(KI-038 解消=uses.maxTotal 新設で AE 着地点を用意)*

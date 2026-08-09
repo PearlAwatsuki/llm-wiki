@@ -3917,7 +3917,7 @@ Code の「dealt×vs\* 併記は二重加算」という申し送りに対しユ
 
 ### 2026-08-09 使用回数の最大値を式で入力可能にする（設計・実装未着手）
 
-**2026-08-09** / **関連実装** なし（設計確定のみ） / **ステータス**: 設計確定・ユーザー承認済・実装未着手
+**2026-08-09** / **関連実装** `scripts/data/item/uses.mjs`(新設)・`helpers.mjs`・`common/outfit-base.mjs`・`style-skill.mjs`・`miracle.mjs`・`actor/common/character-base.mjs`・`usage-consumption.mjs`・`tnx-character-sheet-base.mjs`・`tnx.mjs`・`tnx-item-sheet.mjs`・`tnx-outfit-sheet.mjs`・`tnx-style-skill-sheet.mjs`・3シートの hbs・`tnx2.css`＋tests / **ステータス**: 実装済（実機確認は 14-8 一括）
 
 ユーザー要望「最大『レベル』回のような表現が現状できない。最大値欄に式で値を入力可能にしてほしい」に対する設計。フェーズ14 のロードマップ項目ではなく、合間の機能追加（PATCH 相当）。
 
@@ -3976,3 +3976,17 @@ Code の「dealt×vs\* 併記は二重加算」という申し送りに対しユ
 
 - 実装時に更新する記録: Active_Effects.md §2.2（`system.uses.max → uses.maxTotal` を着地表へ・「uses には効かない」を訂正）／Formula_Reference.md（`@item.<key>.system.uses.maxTotal` の追加と順序境界の明記）／Usage_System.md（神業母数バフが実際に効くようになった旨）／Item_Types.md・DataModel.md（`uses.max` の型）／KI-038 を Resolved へ。
 - 実機確認は 14-8 の一括確認に含める（起動形は変わらないが、使用回数は消費フロー全体に効くため単独では閉じない）。
+
+#### 実装結果（2026-08-09・上記設計どおり）
+
+- **新設 `scripts/data/item/uses.mjs`**（`part-helpers.mjs` と同じ「item 直下のユーティリティ」・`tests/template-integrity.test.mjs` の非 DataModel 登録簿に宣言）: `resolveUsesMaxDetail`/`resolveUsesMax`（数値も式も受け、0clamp・切り捨て・評価不能は 0）・`usesMaxIsFormula`・`usesMaxTotalOf`（読み手の実効値リーダー）・`usesMaxBaseOf`（母数を機械維持する書き手の土台）・`computeUsesMaxTotal`／`ForActor`・`clampUsesMaxTotalForActor`・`migrateUsesMaxToString`。
+- **`resolved` を分けた理由**: 実効値 0 には「レベル0の技能で正しく 0」と「式を書き間違えて読めず 0」の2種類がある。シートが後者だけ「＝ ?」を出せるよう、評価の成否を `uses.maxResolved` として派生に載せた（評価は1回のまま）。
+- **StyleSkill の評価順**: `prepareDerivedData` を `_applyLevelRef()` → `computeUsesMaxTotal(this)` に分解した（旧実装は levelRef の早期 return が末尾を巻き込むため）。「1シーンにレベル回」がレベル自動参照（10-3）の結果を読むのに順序が要る。
+- **端数は切り捨て**（Code 判断・TNX の除算慣例に合わせた。裁定余地あり）。
+- 検証: テスト **1952 green（+34）**・eslint 0 error（警告15は既存）・stylelint clean。
+- **組版の自己検証**（隔離ブラウザ・実 CSS＋実マークアップを実測）: 最大値欄は 60px 固定をやめて行の残り幅を分け合う（実測 308〜338px・式もプレースホルダも折り返さない）／消費済み欄は 60px のまま／バッジは入力の右にインラインで段数を増やさない（4状態すべて行高 52px＝「/」の位置が崩れない）／横スクロールなし。**初版はラベル「最大値」を中央寄せにしていて、広い欄の中央に浮いて入力と結びつかなかったため左端へ直付けに是正**（ラベルはコントロールに直付け＝`f41c24c` の教訓）。
+
+#### 課題・申し送り（更新）
+
+- **Foundry 実機での確認は未実施**（14-8 の一括に含める）: ①「レベル回」の式を入れた技能の残量が消費ダイアログで正しいこと ②`system.uses.max` の AE（神業母数バフ）が実際に効くこと＝KI-038 の本丸 ③旧データ（数値 max）の移行が保存時に文字列で着地すること。
+- 残弾（`ammo.max`）・常備化個数（`quantity.max`）は式非対応のまま。これで `resolveItemTotalPath` が死んだ着地先（`ammo.max.total` 等）を返す唯一の残りになった——必要になったら uses と同じ手順で足せる。

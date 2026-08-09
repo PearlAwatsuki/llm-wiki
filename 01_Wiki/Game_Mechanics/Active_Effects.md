@@ -89,8 +89,13 @@
 | **タップ tap** | `cycle`（サイクル）・`combatSpeedMod`（CS 修正）（＋共通） |
 | **住宅施設 residence** | `appearanceTarget`（外見目標値）・`cyberSecurity`・`analogSecurity`（セキュリティ）→ `<名>Total` |
 | **技能 generalSkill / styleSkill** | `level`（技能レベル）→ `levelTotal` |
+| **使用回数を持つ全型**（アウトフィット共通／styleSkill／miracle） | `uses.max`（使用回数の最大値＝神業では母数）→ `uses.maxTotal` |
 
-- **数値フィールドで total を持たないもの**（`quantity`・`uses`・`ammo`・`range` 等）には効かない。文字列・真偽の上書きは §2.3b（ダメージ種別）・§2.3c（特性フラグ）・§2.3d（名前装飾）で個別に扱う。
+- **`uses.max` の着地（2026-08-09・KI-038）**: 従来「効かない」と書いていたが、**着地点 `uses.maxTotal` を新設して効くようにした**。これにより Usage_System.md が約束していた**神業の母数バフ（ファイト！等）が実際に動く**（それ以前は `uses.max.total` という誰も読まない先へ落ちて無効だった）。
+  - 素値 `uses.max` は**数値も式も受ける StringField**。実効値は「式（または数値）を解いた結果」に AE が乗ったもの。
+  - **順序境界**: 式の評価は **AE 適用前**に行う（`computeUsesMaxTotalForActor` を `_applyEffectBuffs` の直前で呼ぶ）。したがって「レベル回」の使用回数は **AE でレベルが上がっても増えない**（2026-08-09 ユーザー裁定＝ルールとしての正解）。この順序により AE 側は追加/上書き/乗算のモード意味論をそのまま使える（`actionRank.maxTotal` と同型）。
+  - 読み手は必ず `usesMaxTotalOf(system)` を経由する（`readFlag` と同じ思想＝素値の直読みは AE も式も効かない）。母数を機械維持する書き手は `usesMaxBaseOf(system)`。
+- **数値フィールドで total を持たないもの**（`quantity`・`ammo`・`range` 等）には効かない。文字列・真偽の上書きは §2.3b（ダメージ種別）・§2.3c（特性フラグ）・§2.3d（名前装飾）で個別に扱う。
 - ※アイテムのパラメータが「キャラクターへ」与える修正（controlMod・combatSpeedMod・危険値など）は AE でなく派生パイプラインが直接読む（大原則5）。本表は「アイテム自身の実効値」を AE で動かす話。
 
 #### 2.3b ダメージ種別の上書き（2026-07-13）
