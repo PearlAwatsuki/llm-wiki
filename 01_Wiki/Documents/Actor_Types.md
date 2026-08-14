@@ -22,7 +22,7 @@
 | 固有フィールド | 型 | 備考 |
 |---|---|---|
 | ownerUserId / syncWithOwner | String / Boolean | User UUID — EXP 同期用（フェーズ2-1）と同期の有効化 |
-| history | ObjectField | オブジェクトマップ `{ [id]: { date, title, exp, rl, players } }` |
+| history | ObjectField | オブジェクトマップ `{ [id]: { date, title, exp, rl, players, origin, castUuid } }`。`origin` は**誰がこの行を作ったか**（同期 OFF 時の由来分離用）、`castUuid` は**そのセッションに連れて行ったキャスト**（キャストシートの履歴表示の絞り込み用・空＝紐づけ無し）。意味が違うため別フィールド |
 | exp | SchemaField | value, spent, total, additional |
 | lifePath | SchemaField | origin, experience, encounter — 各 `{itemUuid, name}` SchemaField。フェーズ6-5 実装済み |
 | partSlots | ArrayField | 部位スロット集合（フェーズ10-1）。`{value, count, occupiesOther, targetPart, targetCount}` — 占有計算の母数。新規キャストにはゲーム設定のプリセットを流し込む |

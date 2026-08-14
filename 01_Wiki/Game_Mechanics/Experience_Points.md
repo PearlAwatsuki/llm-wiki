@@ -17,9 +17,12 @@ FEAR 系の特性: **経験点はプレイヤーに付与**され、キャスト
 
 ```javascript
 {
-  [randomId]: { id, date, title, exp, rl, players }
+  [randomId]: { id, date, title, exp, rl, players, origin, castUuid }
 }
 ```
+
+- `origin` — **誰がこの行を作ったか**（cast の UUID / User の id）。同期 OFF 時の由来分離（`separateHistoryByOrigin`）が使う。
+- `castUuid` — **そのセッションに連れて行ったキャスト**の UUID（空＝紐づけ無し）。キャストシートの履歴表示の絞り込みに使う（下記）。意味が違うので `origin` とは別に持つ。
 
 - 追加: `system.history.${newId}`
 - 削除: `system.history.-=${targetId}`
@@ -80,6 +83,24 @@ newValue = (newTotal + 170) - (abilityExpCost + itemExpCost)
 | player シート | TnxHistoryMixin (player 廃止で消滅予定) |
 
 履歴変更時: cast シート → User flag へキー変換 (`system.history.X` → `flags.TNX.history.X`)
+
+### キャストシートは自分のセッションだけ出す（2026-08-15 ユーザー指示）
+
+同期中のキャストには User flag の履歴が**丸ごと**配られる（`buildCastHistorySyncUpdate`）ため、cast の `system.history` は全キャスト分の合併になる。**キャストシートの表示はここから `castUuid === cast.uuid` の行だけに絞る**（`_prepareHistoryForDisplay` の第2引数）。データの配り方・権威モデルは変えない＝絞るのは表示だけ。
+
+- 経緯: 独自アプリ（レコードシート）が無かった頃は、同じプレイヤーのキャスト同士で履歴を共有していたため全件表示が正しかった。レコードシート＝プレイヤーの記録全体、キャストシート＝そのキャストを連れて行ったセッション、という分担になった。
+- **紐づけ無し（`castUuid` 空）の行はどのキャストシートにも出さない**（既存データ・レコードシートで足した行）。キャストに紐づけたい行は**キャストシートの「行を追加」**から作る（自動でそのキャストを焼く）。既存行の推測による一括割り当ては行わない。
+- **同期していないキャストは絞らない**。`performUnsyncSeparation` が他キャスト由来を除いており `system.history` が元々そのキャスト固有のため、絞ると既存の自分の行まで消える。
+- **総経験点は絞り込みの影響を受けない**（プレイヤー付与・キャストは消費の単位）。結果としてキャストシートには、合計が総経験点に一致しない履歴が並ぶ——これは仕様。
+
+`castUuid` を焼く場所:
+
+| 行の出どころ | castUuid |
+|---|---|
+| 経験点配布アプリ | `user.character`（cast 型のみ・2026-08-09 裁定） |
+| キャストシートの「行を追加」 | そのキャスト |
+| レコードシートの「行を追加」 | 空（紐づけ無し） |
+| RL 自身の配布分 | 空（キャストを連れて行っていない） |
 
 ## 能力値の実効値（表示用）
 
