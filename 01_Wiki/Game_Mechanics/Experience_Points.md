@@ -102,6 +102,8 @@ newValue = (newTotal + 170) - (abilityExpCost + itemExpCost)
 | レコードシートの「行を追加」 | 空（紐づけ無し） |
 | RL 自身の配布分 | 空（キャストを連れて行っていない） |
 
+記帳する日付は `awardEntryDate()`（`exp-award-logic.mjs`）＝**手元のローカル日付**。ただし **5 時より前の確定は前日**として扱う（深夜の記帳は前日から続いているアクトのもの・2026-08-15 裁定／KI-041）。
+
 ## 能力値の実効値（表示用）
 
 実効値は `CastDataModel.prepareDerivedData`（フェーズ9）で `system.<key>.total` / `.totalControl` に一本化。シートは `_prepareContext()`（ApplicationV2）→ `_getAbilitiesData()` で集約済みの total を読む（`getData()` は ApplicationV1 の廃止メソッド）。
