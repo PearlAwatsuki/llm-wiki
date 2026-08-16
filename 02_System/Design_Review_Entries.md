@@ -3916,3 +3916,22 @@ DialogV2(v13) の `.dialog-content.standard-form` は `display:flex; gap:16px` �
 
 - テスト 2126 green（生成関数の抽出は挙動不変・純ロジック追加なし）・eslint/stylelint 新規指摘なし。
 - **隔離 Foundry**: ヘッダー238px／ボディ293px（ボディが広い）・枠つきシーンカードとメタ行の描画・**HUD のシーンカードにホバーで `#tooltip` に `.tnx-neuro-card-chat` が入りチャットカードと同一の見た目になる／パネルのシーンカードではツールチップが出ない**（スクリーンショット3枚を目視精査）。
+
+### 情報収集判定（フェーズ14-9・2026-08-16）
+
+**日付**: 2026-08-16
+**レビュー対象**: `scripts/module/info-gathering.mjs`（新設）・`session-logic.mjs`・`tnx-hud.mjs`・`tnx-rl-request-app.mjs`（`resolveDesignatedSkillResponse` 抽出）・`tnx-check-flow.mjs`・`tnx-socket-handler.mjs`
+**ステータス**: 実装済・隔離 Foundry で検証済（GM/PL 2クライアント）
+
+#### 設計判断
+
+- **技能解決は判定要求の応答機構を抽出して共用**: 選択解決部（複数キー→選択・所持技能の実解決・用途/コンボ候補 KI-025・代用判定）を `resolveDesignatedSkillResponse` として切り出し、起動（`_activateItemCheck`）は呼び出し側に残した。要求側の FS 支援ターゲット選択などダイアログ順序が呼び出し元固有のため、**「選択の解決」と「起動」の間に継ぎ目を置く**のが安全（同じ挙動を2実装しない・起動集約も守る）。
+- **開示は純関数＋単調**: `discloseInfoByAchievement` は開くだけで閉じない（冪等）。継続 `infoGathering` の rerun は `rerunOnSuccessOnly` を使わない——成功→成功で達成値が伸びたケースに追加開示が要るため（成功ゲートはハンドラ内・単調性が安全性を担保）。
+- **書き込みの委譲は既存型**: `infoDisclose` ソケット＝sessionTeam と同型の activeGM 代行。開示は単調なので検証は要求者の存在確認に留めた（悪意ある偽開示も「開くだけ」で、RL がパネルから閉じ直せる）。
+- **HUD 表示は純関数で出し分け**（`hudInfoItems`）・ツールチップは info-card.hbs＋`buildInfoCardData` の再利用（チャット送信と同じ組み立て＝意匠と内容が定義から一致・シーンカードツールチップと同じ `#tooltip` 器無効化）。
+- **専用カードは文脈分岐**（登場判定と同型・用途を作らない）: タグ「情報収集判定」・項目名行・帰結行。
+
+#### 検証
+
+- 純ロジック TDD **+11＝2137 green**・eslint/stylelint 新規指摘なし。
+- **隔離 Foundry E2E**: PL 実カードプレイの全経路（マスク→公開→起動→技能キー選択→成功→ソケット経由の自動開示→ツールチップの開示モード化）と RL 視点（実名＋非公開印・ボタンなし）。開示境界（達成値10: 5/10 開・12 閉）を実データで確認。スクリーンショット6枚を目視精査。
