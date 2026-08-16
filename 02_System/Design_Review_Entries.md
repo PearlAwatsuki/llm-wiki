@@ -3901,12 +3901,13 @@ DialogV2(v13) の `.dialog-content.standard-form` は `display:flex; gap:16px` �
 ### パネルヘッダーの整理とシーンカードツールチップ（フェーズ14-8・2026-08-16）
 
 **日付**: 2026-08-16
-**レビュー対象**: `scripts/module/tnx-action-handler.mjs`（`buildNeuroCardChatHTML` 抽出）・`tnx-scenario-panel.mjs`・`templates/app/scenario-panel.hbs`・`css/tnx2.css`
-**ステータス**: 実装済・隔離 Foundry で検証済
+**レビュー対象**: `scripts/module/tnx-action-handler.mjs`（`buildNeuroCardChatHTML` 抽出）・`tnx-hud.mjs`・`tnx-scenario-panel.mjs`・`templates/hud/hud.hbs`・`templates/app/scenario-panel.hbs`・`css/tnx2.css`
+**ステータス**: 実装済（付け先是正込み）・隔離 Foundry で検証済
 
 #### 設計判断
 
-- **チャットカードとツールチップの意匠一致は「同じ生成関数」で保証**: `_postCardToChat` にインラインだったニューロカードのチャット HTML 生成を `buildNeuroCardChatHTML(card)` へ抽出し、チャット投稿とパネルのツールチップの両方が呼ぶ。意匠を CSS の目視合わせで揃えるのではなく、**同じ HTML を出す**ことで定義から一致させる（「同じものを 2 度組み立てない」）。
+- **チャットカードとツールチップの意匠一致は「同じ生成関数」で保証**: `_postCardToChat` にインラインだったニューロカードのチャット HTML 生成を `buildNeuroCardChatHTML(card)` へ抽出し、チャット投稿とツールチップの両方が呼ぶ。意匠を CSS の目視合わせで揃えるのではなく、**同じ HTML を出す**ことで定義から一致させる（「同じものを 2 度組み立てない」）。
+- **付け先は「説明が見えていない場所」**（ユーザー指摘による是正）: Code は当初パネルのシーンカード（キーワード・暗示が既に見えている）に付けており、同じ内容を重ねる無意味な表示だった。**カード画像しか見えない HUD のシーンカード表示**（`.scene-card-display`）に付け替え。ツールチップは情報が不足している表示を補う道具であり、フル表示の隣に置くものではない——次に付け先を選ぶときはこの基準で判断する。
 - **ツールチップは v13 コアの機構に乗る**: 要素に `data-tooltip-html`（cleanHTML 処理済みの HTML 注入・v13 API リファレンスで確認）と `data-tooltip-class` を付けるだけで、ホバー検知・位置決め・消去はコアの TooltipManager が担う。自前のホバーリスナー・表示要素を作らない。コアの `#tooltip` の器（背景・枠・影）は tooltip-class で無効化し、中身のカード意匠をそのまま見せる。
 - **メタ情報はラベル列グリッド**（`max-content 1fr`・ラベルは mono＋アクセント色＝チャットカードのフィールドラベルと同じ読み方向）。行は値があるときだけ描画（「エリア：未定」のような空値表示を出さない＝ユーザー指示）。
 - **比率はヘッダー圧縮＋上限引き上げの併用**: ヘッダー側はカード枠のコンパクト化（画像 64px）、パネル上限 560→700px。CSS だけで「ボディ≥ヘッダー」を厳密に強制する仕組み（min-height 予約）は、開始前・PL などボディが短い状態で空白を作るため採らず、実測で担保する形にした。
@@ -3914,4 +3915,4 @@ DialogV2(v13) の `.dialog-content.standard-form` は `display:flex; gap:16px` �
 #### 検証
 
 - テスト 2126 green（生成関数の抽出は挙動不変・純ロジック追加なし）・eslint/stylelint 新規指摘なし。
-- **隔離 Foundry**: ヘッダー238px／ボディ293px（ボディが広い）・枠つきシーンカードとメタ行の描画・ホバーで `#tooltip` に `.tnx-neuro-card-chat` が入りチャットカードと同一の見た目になること（スクリーンショット2枚を目視精査）。
+- **隔離 Foundry**: ヘッダー238px／ボディ293px（ボディが広い）・枠つきシーンカードとメタ行の描画・**HUD のシーンカードにホバーで `#tooltip` に `.tnx-neuro-card-chat` が入りチャットカードと同一の見た目になる／パネルのシーンカードではツールチップが出ない**（スクリーンショット3枚を目視精査）。
