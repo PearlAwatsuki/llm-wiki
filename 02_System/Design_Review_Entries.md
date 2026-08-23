@@ -3972,3 +3972,22 @@ DialogV2(v13) の `.dialog-content.standard-form` は `display:flex; gap:16px` �
 
 - 純ロジック TDD +8＝2147 green・eslint/stylelint 新規指摘なし。
 - **隔離 Foundry E2E（GM+PL 2クライアント・23項目 all green）**: 両経路のダイアログ文言と分岐・中央配置・ゴーストの往復同期・分身の素通し・発行側にだけダイアログ・activeGM 代行・同期削除の素通り。スクリーンショット4枚を目視精査。
+
+### チームの退場連動と確認の一点化（フェーズ14-8・2026-08-23）
+
+**日付**: 2026-08-23
+**レビュー対象**: `scripts/module/session-logic.mjs`・`appearance-state.mjs`・`session-state.mjs`・`tnx-scenario-panel.mjs`・`tnx-socket-handler.mjs`・`scripts/tnx.mjs`
+**ステータス**: 実装済・隔離 Foundry で検証済
+
+#### 設計判断
+
+- **確認の条件を「経路」から「巻き込み」へ**: 前日実装は退場の全経路に確認を出したが、裁定（チーム退場時のみ）を機能で読み替え、**連動が自分以外の登場中メンバーに及ぶときだけ**確認する形にした。単独退場の×・トークン削除は素通し＝preDeleteToken の veto はチーム連動時だけになり、単独のトークン削除は「削除→deleteToken 後段で登場状態を落とす」の一本になった（削除の再発行やバイパス付き再削除が単独経路から消え、構造が簡単になった）。
+- **連動は確認とセット**: 確認を経ない削除（一括削除・分身の整理）は決して連動しない。cascade の入口は「確認ダイアログの OK」と「×ボタン（確認後）」だけ——意図の確認なしに他人のトークンが消える経路を作らない。
+- **対象解決は純関数＋GM 側で再解決**: `teamLinkedExitTargets` は teams・設定・登場状態を注入で受ける純関数。PL 起点の `teamExit` ソケットはペイロードの対象リストを信用せず、activeGM が同じ関数で再解決する（sessionTeam の所有権検証と同型）。
+- **循環 import の回避**: session-state → appearance-state の既存依存があるため、appearance-state からは session-state を import せず、sessionState 設定の直読み（注記付き・この1箇所のみ）と session-logic（純）の `teamLinkedExitTargets` で解決した。チーム操作 API の正は従来どおり session-state。
+- **exitActor の撤去**: 退場の入口が manualExitTargets/confirmTeamExitDialog/applyManualExit に一本化され、唯一の呼び元（パネル×）が移行したため、支える仕組みごと削除（撤去規範）。
+
+#### 検証
+
+- 純ロジック TDD +5＝2152 green・eslint/stylelint 新規指摘なし。
+- **隔離 Foundry E2E 12項目 all green**（GM+PL）: 設定オフ/オン×経路2種×キャンセル/OK・PL 委譲・チーム未所属・分身規約の維持。スクリーンショット3枚を目視精査。
