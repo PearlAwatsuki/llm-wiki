@@ -2,7 +2,12 @@
 
 [Known_Issues_Detail.md](Known_Issues_Detail.md) から**現在有効**な項目のみ抽出。
 
-現在、機能的支障のある未解消 KI は無い（KI-040・KI-041 とも解消 → [Resolved_Issues.md](Resolved_Issues.md)）。
+## KI-042: activeGM 不在だと情報収集判定の自動開示が消失し、結果カードは「情報を開示した」と表示する
+
+- **起票**: 2026-08-25（「開示結果が HUD・ツールチップに出ない」報告の隔離実機調査で確定）
+- **症状**: GM クライアント未接続で PL が情報収集判定に成功すると、判定は完走し結果カードに「情報を開示した」と出るが、開示の正本（アクトジャーナルの infoItems）は開かず、HUD チップ・ツールチップにも反映されない。
+- **原因**: 開示の書き込みは GM 所有ジャーナルのため `emitInfoDisclose` で activeGM に委譲する（info-gathering.mjs）。activeGM 不在では受信者がおらず開示は静かに消失。結果カードの帰結行は `result.success` のみから組まれ（tnx-check-flow.mjs `_renderResultContent` の infoCheck）、実適用と無関係＝虚偽表示になる。
+- **詳細**: [Known_Issues_Detail.md](Known_Issues_Detail.md) KI-042
 
 ## 軽微な残存 (機能的支障なし)
 
