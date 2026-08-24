@@ -3991,3 +3991,22 @@ DialogV2(v13) の `.dialog-content.standard-form` は `display:flex; gap:16px` �
 
 - 純ロジック TDD +5＝2152 green・eslint/stylelint 新規指摘なし。
 - **隔離 Foundry E2E 12項目 all green**（GM+PL）: 設定オフ/オン×経路2種×キャンセル/OK・PL 委譲・チーム未所属・分身規約の維持。スクリーンショット3枚を目視精査。
+
+### 情報開示の公開を実適用側へ一元化（フェーズ14-9・2026-08-25）
+
+**日付**: 2026-08-25
+**レビュー対象**: `scripts/module/info-gathering.mjs`・`session-logic.mjs`・`tnx-check-flow.mjs`・`templates/chat/check-result.hbs`・`templates/chat/parts/info-disclose-outcome.hbs`・`scripts/tnx.mjs`
+**ステータス**: 実装済・隔離 Foundry で検証済
+
+#### 設計判断
+
+- **公開の実行点を「開示の実適用直後」（GM 側 `applyInfoDisclosure`）に一元化**: 帰結行の刻印と公開カード送信が、正本更新と同じ場所・同じ差分ゲートに載る。GM 直判定／PL ソケット委譲／再判定・事後修正 rerun の全経路を1箇所で覆い、順序（正本更新→公開）も保証される。
+- **帰結行は「表示」でなく「実適用の証言」**: 判定側の初回描画から撤去し、適用後に挿入する。適用が失われれば帰結行も出ない＝虚偽表示（KI-042）が構造的に不可能。挿入は `cr-info-outcome` マーカーで冪等、`checkResult.infoDisclosed` フラグが再判定の本文再構築へ引き継ぐ。マークアップはパーシャル1枚を check-result.hbs と挿入側で共有（複製しない）。
+- **差分は純関数**: `newlyDisclosedInfo` が前後比較で新規分を返し、「新規があるときだけ書く・送る」のゲートに使う。開示の単調性と合わせて rerun の重複送信が自然に消える（rerunOnSuccessOnly に頼らない）。
+- **未開示併記は共通ビルダー1箇所**: `buildInfoCardData` の開示モード拡張で、ツールチップ・パネル手動送信・自動公開カードの3面に同時適用（表記の一本化の規範）。ブロック生成は `infoCardBlocks(mode, filter)` に統一し、旧 onlyDisclosed 真偽二分岐を置き換えた。
+- **messageId の通し方**: `_postResultChat` が作成メッセージを返す形にし、完了継続へ素通し。`_rerunContinuation` はオプション第3引数の拡張（両呼び元とも `message` を既に持つ）で後方互換のまま各継続へ配る。
+
+#### 検証
+
+- 純ロジック TDD +7＝2159 green・eslint/stylelint 新規指摘なし。
+- 隔離 Foundry E2E（develop 複製・GM+PL 2クライアント）: 監査エントリ「2026-08-25 フェーズ14-9 是正」の4シナリオ・スクリーンショット目視精査。

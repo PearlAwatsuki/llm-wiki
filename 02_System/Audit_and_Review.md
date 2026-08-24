@@ -4665,3 +4665,26 @@ Code の「dealt×vs\* 併記は二重加算」という申し送りに対しユ
 #### 監査結果 ✅
 
 - 本体 `642b225`・stylelint クリーン。隔離 Foundry 実測: 長名（全角約80字）＝高さ94px・はみ出しゼロ／静的ラベル＝36px 維持／`--sm`＝26px 維持。スクリーンショット目視（4行折り返し・アイコン左・全文可読）。
+
+### 2026-08-25 フェーズ14-9 是正 KI-042 開示消失＋開示内容の自動公開＋未開示の併記
+
+**2026-08-25** / **関連実装** `scripts/module/info-gathering.mjs`・`session-logic.mjs`・`tnx-check-flow.mjs`・`templates/chat/check-result.hbs`・`templates/chat/parts/info-disclose-outcome.hbs`・`scripts/tnx.mjs` / **ステータス**: 実装済・隔離 Foundry E2E 実機確認済
+
+#### ルール解釈
+
+- 発端はユーザー報告「判定はできるが判定後の情報公開が未完成」「そもそも HUD にもツールチップにも開示の結果が出ない」。隔離実機（develop 複製）で判定フローを実操作で追い、**GM 接続下では既存実装が健全に動くこと**と、**activeGM 不在時に開示が黙って消え、結果カードだけ「情報を開示した」と出る**こと（KI-042）を切り分けた。ユーザーが後者を原因と確認。
+- 是正の裁定（2026-08-25 ユーザー承認）: ①帰結行は開示の**実適用後**に刻む（実適用と表示を一致させる） ②activeGM 不在は判定をブロックせず警告のみ（「判定そのものはブロックしない」の系統） ③判定成功で**今回新たに判明した分**の公開カードを自動送信（新規分のみ＝Code 提案を承認。全開示済みの再掲はツールチップと手動送信が担う） ④**「未開示の情報がある場合は、公開されている情報の下に表示してください。形式は完全に未開示の時と同様です」**（verbatim・開示済み表示の全面＝ツールチップ/手動送信/自動公開カードに適用）。正本は Scenario_Progress に記録済み。
+
+#### 実装
+
+- 純関数（session-logic）: `newlyDisclosedInfo`（開示前後差分）・`buildInfoDiscloseCardData`（新規分＋未開示併記のカードデータ・新規なしは null）・`buildInfoCardData` 開示モードへ未開示併記を追加（内部を `infoCardBlocks(mode, filter)` に統一）。
+- 配線: 結果カードの帰結行を初回描画から撤去（`infoCheck.disclosed` は `checkResult.infoDisclosed` フラグ駆動）。GM 側 `applyInfoDisclosure` が差分ゲートを通過したときだけ正本を書き、`applyMessagePatch` で帰結行を挿入（`cr-info-outcome` マーカーで冪等）し、公開カード（info-card.hbs）を送信。PL 側は activeGM 不在で警告し emit しない。messageId は `_postResultChat` の戻り値→完了継続、および `_rerunContinuation` 両呼び元→CONTINUATIONS rerun に通した。
+
+#### 監査結果 ✅
+
+- 「開示された」という帰結の表示が実適用の裏付けなしに出る経路が構造的に消えた。差分ゲートは開示の単調性と整合し、再判定・事後修正の rerun で重複送信しない。
+- テスト +7＝2159 green・eslint 新規指摘なし。隔離 Foundry E2E（GM+PL）: 成功＝帰結行・公開カード・チップ点灯・ツールチップ併記／rerun 達成値12＝追加分のみのカード・帰結行1個のまま／同値再実行＝カード増なし／PL 単独＝警告表示・帰結行なし・フラグ不変。スクリーンショット目視精査（チャット幅で併記の折り返し・はみ出しなし）。
+
+#### 課題・申し送り
+
+- なし（PL 単独でも判定自体は完走することを E2E で確認済み。調査中に一度「GM 不在で手札プレイが無反応」と誤認したのは、テストスクリプトが A のスート宣言ダイアログを見落としたため——実装の不具合ではない）。
