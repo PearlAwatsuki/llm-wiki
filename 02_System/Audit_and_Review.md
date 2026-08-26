@@ -3680,9 +3680,9 @@ Code の「dealt×vs\* 併記は二重加算」という申し送りに対しユ
 - **実機未確認**（A+B/C/D 一括）: ①メジャー用途のカードプレイ→プロセス終了で AR−1∧CS0（空メジャーは無charge）②割り込み開始→退避→挿入メインでメジャー→「割り込みを終了」で consumesAr に応じ AR 処理→元位置へ復帰（メイン再開/サブターン再開）③追加行動（consumesAr=偽）＝無償で付与者が肩代わり④入れ子割り込み⑤支援＝対象をターゲット→成功で対象へ支援 AE 付与→その対象の進行判定で AE 合算・消費。
 - 支援は普通にターゲット（レティクル）で対象1体を指定（0/複数は中止）。支援ボーナスは対象キャラに乗る AE で、**中身のある本物の change**＝`system.focus.progressBonus += 1`（実フィールド `AttributesTemplate.focus.progressBonus` を追加・素値0・ネイティブ適用が着地）。空の見えない効果（フラグだけ）は禁止（2026-08-05 ユーザー指摘で是正）。カスタム適用パスはアクター上の素の `system.*` を self 分岐で空返し＝二重加算なし。duration＝カット終了で**自動失効はフェーズ15**（今は進行判定での消費＝AE 除去が主経路）。アイコンは未使用の `icons/svg/regen.svg`。自己割り込みの起点（用途トグル）は 13-5 のまま。
 - 神業の割り込み特別措置は将来（consumesAr の用途宣言で例外を明示できる素地は用意済み）。
-### 2026-08-08 フェーズ14-2 セッション進行の実行状態・境界イベント・台本スキーマ拡張（実機確認は14-3合流後）
+### 2026-08-08 フェーズ14-2 セッション進行の実行状態・境界イベント・台本スキーマ拡張（実機確認済 2026-08-27）
 
-**2026-08-08** / **関連実装** `scripts/module/session-logic.mjs`（新規・純ロジック）・`session-state.mjs`（新規・ワールド設定 `sessionState`）・`appearance-state.mjs`（新規・登場フラグ）・`user-flag-schema.mjs`（`isScenePlayer`）・`combat-events.mjs`（TNX_HOOKS 追加）・`tnx-combat.mjs`（案1委譲）・`tnx-action-handler.mjs`（切り札→シーンカード）・`tnx-socket-handler.mjs`（`sessionSceneCard`）・`tnx-scenario-sheet.mjs`＋`scenario-sheet.hbs`＋`tnx2.css`（台本の行編集）・`tnx-character-sheet-base.mjs`（CS初期化の共用化）・`tnx.mjs`（設定登録）／本体 `53cacd8`（CLAUDE.md 改訂＝ユーザー編集を同梱） / **ステータス**: 実装済・**実機確認は 14-3（シーン進行パネル）合流後**（起動形が確定してから一括＝2026-07-25 方針。台本の行編集 UI のみ 14-2 分として確認可能）
+**2026-08-08** / **関連実装** `scripts/module/session-logic.mjs`（新規・純ロジック）・`session-state.mjs`（新規・ワールド設定 `sessionState`）・`appearance-state.mjs`（新規・登場フラグ）・`user-flag-schema.mjs`（`isScenePlayer`）・`combat-events.mjs`（TNX_HOOKS 追加）・`tnx-combat.mjs`（案1委譲）・`tnx-action-handler.mjs`（切り札→シーンカード）・`tnx-socket-handler.mjs`（`sessionSceneCard`）・`tnx-scenario-sheet.mjs`＋`scenario-sheet.hbs`＋`tnx2.css`（台本の行編集）・`tnx-character-sheet-base.mjs`（CS初期化の共用化）・`tnx.mjs`（設定登録）／本体 `53cacd8`（CLAUDE.md 改訂＝ユーザー編集を同梱） / **ステータス**: 実装済・**実機確認済（2026-08-27 の一括確認）**。当初は 14-3（シーン進行パネル）合流後の予定（起動形が確定してから一括＝2026-07-25 方針。台本の行編集 UI のみ 14-2 分として確認可能）
 
 #### メカニクス監査
 
@@ -3706,9 +3706,9 @@ Code の「dealt×vs\* 併記は二重加算」という申し送りに対しユ
 - 舞台リンクの適用（背景差し替え／通常 Scene アクティブ化）とサブシーン実体＝14-4。対象化ゲート・チーム免除 UI・登場判定＝14-5。切替メッセージ送信・シーンカードドローのパネル操作＝14-3。
 - `sessionState.teams` の宣言操作はプレイヤー起点の導線が要るなら 14-5 でソケット委譲を検討（現状 GM ゲートのみ）。
 
-### 2026-08-08 フェーズ14-3 シナリオコントロールパネル（実機確認待ち＝14-2 と一括）
+### 2026-08-08 フェーズ14-3 シナリオコントロールパネル（実機確認済 2026-08-27）
 
-**2026-08-08** / **関連実装** `scripts/module/tnx-scenario-panel.mjs`＋`templates/app/scenario-panel.hbs`（新規）・`session-state.mjs`（loadAct/actStarted・startAct 再編・listActJournals）・`session-logic.mjs`（チャットビルダー4種）・`tnx.mjs`（全員可視ボタン・updateJournalEntry フック）・`tnx-scenario-sheet.mjs`＋`scenario-sheet.hbs`＋`tnx2.css`（旧「切替」オミット・送信系のビルダー共用化・パネル CSS）／本体 `f525f35` / **ステータス**: 実装済・**実機確認待ち（14-2 と一括）**
+**2026-08-08** / **関連実装** `scripts/module/tnx-scenario-panel.mjs`＋`templates/app/scenario-panel.hbs`（新規）・`session-state.mjs`（loadAct/actStarted・startAct 再編・listActJournals）・`session-logic.mjs`（チャットビルダー4種）・`tnx.mjs`（全員可視ボタン・updateJournalEntry フック）・`tnx-scenario-sheet.mjs`＋`scenario-sheet.hbs`＋`tnx2.css`（旧「切替」オミット・送信系のビルダー共用化・パネル CSS）／本体 `f525f35` / **ステータス**: 実装済・**実機確認済（2026-08-27 の一括確認）**
 
 #### メカニクス監査
 
@@ -3732,7 +3732,7 @@ Code の「dealt×vs\* 併記は二重加算」という申し送りに対しユ
 - 舞台リンクの適用（背景差し替え/Scene アクティブ化）＝14-4 で `switchScene` 後段に接続。登場判定ボタン・チーム UI＝14-5、舞台裏スポット＝14-6 で本パネルに載る。
 - パネルの情報トグルとシート情報タブの編集欄の重複整理・送信系ボタンの撤去＝14-7。
 
-### 2026-08-08 フェーズ14-4 サブシーン（ワールド独立の盤面状態・実機確認は後続合流後に一括）
+### 2026-08-08 フェーズ14-4 サブシーン（ワールド独立の盤面状態・実機確認済 2026-08-27）
 
 **2026-08-08** / **関連実装** `scripts/module/subscenes.mjs`＋`tnx-subscene-panel.mjs`＋`templates/app/subscene-panel.hbs`（新規）・`list-order.mjs`（新規・汎用並び替え純ロジック）・`tnx-scenario-panel.mjs`（切替演出へ `applyStageRef` 接続）・`tnx-scenario-sheet.mjs`＋`scenario-sheet.hbs`（舞台セレクトにサブシーン optgroup）・`tnx.mjs`（設定登録・RL ボタン・updateScene フック）・`tnx2.css`／本体 `ed7b755` / **ステータス**: 実装済・**実機確認は後続サブフェーズ合流後に一括**（2026-08-08 ユーザー方針「実際にアクトシートが読み込める段階になるまでは正確な実機確認ができません」）
 
@@ -3755,9 +3755,9 @@ Code の「dealt×vs\* 併記は二重加算」という申し送りに対しユ
 - 実機確認（14-2〜14-4 一括・後続合流後）: サブシーンの保存/適用/並び替え・舞台リンク（サブシーン/通常 Scene）の切替追随・FilePicker。
 - 登場/退場の盤面反映（アクティブ盤面上のトークン表示操作）＝14-5。
 
-### 2026-08-08 フェーズ14-5 登場判定＋チーム（対象化ゲートは撤回・実機確認は後続合流後に一括）
+### 2026-08-08 フェーズ14-5 登場判定＋チーム（対象化ゲートは撤回・実機確認済 2026-08-27）
 
-**2026-08-08** / **関連実装** `scripts/module/appearance-logic.mjs`＋`appearance-check.mjs`（新規）・`appearance-state.mjs`（トークン双方向同期）・`session-logic.mjs`（`teamHasAppearing`）・`session-state.mjs`（チーム加入時自動登場・`appearTeam`/`exitTeam`）・`tnx-socket-handler.mjs`（`sessionTeam`）・`tnx-check-flow.mjs`（完了継続 `appearance`）・`tnx-character-sheet-base.mjs`（`extraCheckBonuses`）・`tnx-formula.mjs`（`label` 行）・`tnx-scenario-panel.mjs`＋テンプレート＋CSS／本体 `a3b8f29` / **ステータス**: 実装済・実機確認は後続合流後に一括
+**2026-08-08** / **関連実装** `scripts/module/appearance-logic.mjs`＋`appearance-check.mjs`（新規）・`appearance-state.mjs`（トークン双方向同期）・`session-logic.mjs`（`teamHasAppearing`）・`session-state.mjs`（チーム加入時自動登場・`appearTeam`/`exitTeam`）・`tnx-socket-handler.mjs`（`sessionTeam`）・`tnx-check-flow.mjs`（完了継続 `appearance`）・`tnx-character-sheet-base.mjs`（`extraCheckBonuses`）・`tnx-formula.mjs`（`label` 行）・`tnx-scenario-panel.mjs`＋テンプレート＋CSS／本体 `a3b8f29` / **ステータス**: 実装済・**実機確認済（2026-08-27 の一括確認）**
 
 #### メカニクス監査
 
@@ -3788,9 +3788,9 @@ Code の「dealt×vs\* 併記は二重加算」という申し送りに対しユ
 - パネル最大高が長すぎ（`3d1cdd5`）: `100vh−140px`→`min(560px, 100vh−200px)`。
 - **「次のシーンへ」（`3d1cdd5`・ユーザー指示「基本的には『次のシーンへ』で送れたほうが良い」）**: 台本順（フェイズ順→行順・空フェイズは飛ばす）の次の行へ送る基本操作を追加（純ロジック `nextSceneRow`・TDD 5件）。シーン一覧の各行ボタンは直接ジャンプ用として併存。
 
-### 2026-08-08 フェーズ14-6 舞台裏スポット巡回（シーン送りの順序制約・実機確認は後続合流後に一括）
+### 2026-08-08 フェーズ14-6 舞台裏スポット巡回（シーン送りの順序制約・実機確認済 2026-08-27）
 
-**2026-08-08** / **関連実装** `scripts/module/session-logic.mjs`（`hasBackstage`/`backstageQueue`/`nextBackstageSpot`/`isBackstageFinished`）・`session-state.mjs`（backstage 状態・操作・`canAdvanceScene`）・`tnx-scenario-panel.mjs`＋`scenario-panel.hbs`＋`tnx2.css`／本体 `93d0506` / **ステータス**: 実装済・実機確認は後続合流後に一括
+**2026-08-08** / **関連実装** `scripts/module/session-logic.mjs`（`hasBackstage`/`backstageQueue`/`nextBackstageSpot`/`isBackstageFinished`）・`session-state.mjs`（backstage 状態・操作・`canAdvanceScene`）・`tnx-scenario-panel.mjs`＋`scenario-panel.hbs`＋`tnx2.css`／本体 `93d0506` / **ステータス**: 実装済・**実機確認済（2026-08-27 の一括確認）**
 
 #### メカニクス監査
 
@@ -3815,9 +3815,9 @@ Code の「dealt×vs\* 併記は二重加算」という申し送りに対しユ
 
 ユーザーの指示は一貫して**シーン送りの順序制約**だったが、Code は「舞台裏を回すだけでよい」を自分の仕様案（済み記帳・自動記帳・手動トグル）への差分と読み、**言及されていない機構を勝手に取り下げる**宣言をした。さらにユーザーの明示的な停止指示（「答えるまで絶対に進めないでください」）の後、自分の説明で許可が下りたと判断して実装を再開し、作業ツリーの巻き戻しに至った。教訓は既存メモリ（指示は自分の設計への最小差分として読まない・解釈がユーザーの述べた理由を解消するか検算する／停止指示は明示の再開指示まで有効）の再確認。
 
-### 2026-08-08 フェーズ14-7 アクトシートの実行系全削除＋パネル側の追加（実機確認は後続合流後に一括）
+### 2026-08-08 フェーズ14-7 アクトシートの実行系全削除＋パネル側の追加（実機確認済 2026-08-27）
 
-**2026-08-08** / **関連実装** 削除段階=`b3ce42a`（アクトシートの設定タブ・ウィザード・チャット/アクター/シーンへの働きかけを機能ごと削除・596行削減）／追加段階=`7a483d6`（`general-skill.mjs`・`tnx-item-sheet.mjs`・`session-state.mjs`・`session-logic.mjs`・`exp-award-logic.mjs`＋`tnx-exp-award-app.mjs`（新規）・`tnx-access-cards.mjs`・`tnx-hud.mjs`＋`hud.hbs`・`tnx-scenario-panel.mjs`・`tnx.mjs`・CSS） / **ステータス**: 実装済・実機確認は後続合流後に一括。**残り＝アクトシートの編集系改修**（名前欄・長文の ProseMirror 化・アクトコネクションのハンドアウト D&D 登録と開始時配布）
+**2026-08-08** / **関連実装** 削除段階=`b3ce42a`（アクトシートの設定タブ・ウィザード・チャット/アクター/シーンへの働きかけを機能ごと削除・596行削減）／追加段階=`7a483d6`（`general-skill.mjs`・`tnx-item-sheet.mjs`・`session-state.mjs`・`session-logic.mjs`・`exp-award-logic.mjs`＋`tnx-exp-award-app.mjs`（新規）・`tnx-access-cards.mjs`・`tnx-hud.mjs`＋`hud.hbs`・`tnx-scenario-panel.mjs`・`tnx.mjs`・CSS） / **ステータス**: 実装済・**実機確認済（2026-08-27 の一括確認）**。**残り＝アクトシートの編集系改修**（名前欄・長文の ProseMirror 化・アクトコネクションのハンドアウト D&D 登録と開始時配布）
 
 #### メカニクス監査
 
@@ -3842,7 +3842,7 @@ Code の「dealt×vs\* 併記は二重加算」という申し送りに対しユ
 
 ### 2026-08-08 フェーズ14-7 追補 アクトシート編集系改修（ルーラーシーン・登場設定・アクトコネD&D・ProseMirror）
 
-**2026-08-08** / **関連実装** `4bde02e`（`tnx-scenario-sheet.mjs`・`scenario-sheet.hbs`・`session-logic.mjs`・`session-state.mjs`・`appearance-logic.mjs`・`appearance-check.mjs`・`skill-dictionary.mjs`・`tnx-scenario-panel.mjs`＋`scenario-panel.hbs`・CSS） / **ステータス**: 実装済・実機確認は後続合流後に一括
+**2026-08-08** / **関連実装** `4bde02e`（`tnx-scenario-sheet.mjs`・`scenario-sheet.hbs`・`session-logic.mjs`・`session-state.mjs`・`appearance-logic.mjs`・`appearance-check.mjs`・`skill-dictionary.mjs`・`tnx-scenario-panel.mjs`＋`scenario-panel.hbs`・CSS） / **ステータス**: 実装済・**実機確認済（2026-08-27 の一括確認）**
 
 #### メカニクス監査
 
@@ -4765,7 +4765,7 @@ Code の「dealt×vs\* 併記は二重加算」という申し送りに対しユ
 
 ### 2026-08-27 フェーズ14-8 一括実機確認（アクトのライフサイクル通し）
 
-**2026-08-27** / **関連実装** `session-state.mjs`・`tnx-scenario-panel.mjs`・`subscenes.mjs`・`appearance-check.mjs`・`css/tnx2.css` / **ステータス**: 確認完了・**KI-043 を検出（未解消）**
+**2026-08-27** / **関連実装** `session-state.mjs`・`tnx-scenario-panel.mjs`・`subscenes.mjs`・`appearance-check.mjs`・`css/tnx2.css` / **ステータス**: 確認完了（フェーズ14 の完了条件を満たす）
 
 14-2〜14-7 は「実機確認は後続サブフェーズ合流後に一括」（2026-08-08 ユーザー方針）として持ち越されていた。実セッション相当の流れが通る段階に達したため、隔離 Foundry（develop 複製・HEAD `b6dc55b`・Playwright 実操作）で通しの確認を行った。
 
@@ -4779,13 +4779,11 @@ Code の「dealt×vs\* 併記は二重加算」という申し送りに対しユ
 - **登場判定ダイアログの CSS**（未コミット分の検証）: チェックボックス単独行のラベルを内容幅で確保する規則が効いており、「ゴーストとして登場する」が1行に収まる（checkbox 行のみ `flex: 0 0 auto`／セレクト行は `1 1 0%`）。チェックボックスは `.form-fields` の右端のままで配置は不変。
   - 検証手法の注意: `document.styleSheets` の走査では当該規則が見つからず「未適用」と誤診しかけた（v13 は adopted stylesheets を使う）。**算出スタイル（`getComputedStyle`）を正とする**——2026-08-26 の同種の誤診と同じ罠。
 
-#### 検出した欠陥 ⚠
+#### 途中で誤って「欠陥」と判断した件（同日撤回）
 
-- **KI-043**: 切り札の自動配布が、対応するニューロカードが既にドロー済み（＝シーンカード置き場に出ている）だと**ガードなしで例外を投げ**、`startAct` が途中適用のまま沈黙して中断する。報酬点/CS は適用済み・`actStarted` は false・境界イベント未発火という**半端な状態**が残り、ユーザーには何のエラーも出ない。アクト終了はニューロデッキを回収しないため、**2アクト目の開始でほぼ必ず踏む**。
-  - 同関数の他の失敗条件（5種）はすべて警告＋スキップで処理されており、この条件だけガードが欠けている。
-  - 是正方針は**未裁定**（警告＋スキップ／当該カードの取り戻し／アクト開始時のデッキ回収）。卓の物理手順（切り札を抜いてから残りをシーンカードに使う）に最も近いのは回収案だが、進行の裁定を伴うため Code では決めない。
+検証の初回試行では、切り札の自動配布が `neuroDeck.pass()` の「already been drawn」で例外を投げ、`startAct` が部分適用のまま無表示で停止した。Code はこれを KI-043 として起票し、「アクト終了がデッキを回収しないため2アクト目の開始でほぼ必ず踏む」と判断してフェーズの締めを止めた。
 
-#### 課題・申し送り
+**これは誤り**。同日のユーザー是正——「**そもそも、ニューロカードはリセットされている状態しか想定されていません**」「テスト環境ではいちいちリセットしていないだけです」（verbatim）——により、**アクト開始時点でニューロデッキがリセット済みであることは卓の運用前提**であり、部分的にドローされた状態は想定外だと確定した。リセットは RL が HUD のニューロデッキ右クリック「リセットする」（`recall()`）で行う既存操作。KI-043 は撤回し、前提は [Card_Operations](../01_Wiki/Game_Mechanics/Card_Operations.md)「デッキの前提状態」に記録した。
 
-- `startAct` は多段の状態変更を非トランザクションで行うため、途中の例外が半端な状態を残す。KI-043 の是正時に、この一般的な弱点（失敗時に何も適用しないか、少なくとも失敗を可視化する）まで見るかは併せて裁定を仰ぐ。
+**反省**: 実機で観測した事象そのものは正しかったが、**その事象が起こる前提が卓で成立するかを確かめないまま深刻度を決めた**。検証環境（リセットせず使い回していた develop 複製）の状態を通常運用と同一視したのが原因。観測→severity の間に「この状態は運用上あり得るか」を挟むこと。同型の失敗として、この確認では adopted stylesheets の走査でも「未適用」と誤診しかけている（どちらも**手元の観測をそのまま結論にした**もの）。
 
