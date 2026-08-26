@@ -4046,3 +4046,19 @@ DialogV2(v13) の `.dialog-content.standard-form` は `display:flex; gap:16px` �
 
 - 純ロジック TDD +21＝2174 green（4系統・条件照合・重複排除・checkKind ゲート・行整形・区分導出・名前合成）・eslint/stylelint 新規指摘なし。
 - 隔離 Foundry E2E: 監査「2026-08-26 フェーズ14-9 是正3」の7観点・スクリーンショット目視（是正2件込み）。
+
+### 判定バフの社会下位区分キー（2026-08-26）
+
+**日付**: 2026-08-26
+**レビュー対象**: `scripts/data/item/helpers.mjs`・`tnx-check-flow.mjs`・`scripts/tnx.mjs`
+**ステータス**: 実装済・隔離 Foundry で検証済
+
+#### 設計判断
+
+- **既存文法への最小追加**: グループ参照の既存分岐(style/works)に society を並べただけで、パーサ・マッチャ・集計(`_gatherBonusSources`)は無改変。criteria.skills に `societyClass` を1フィールド足す形。
+- **非同期解決の置き場**: 辞典フォールバックは同期の `_computeCheckBonus` でなく、全判定が必ず通る `TnxCheckFlow.open` で1回だけ解決して ctx に載せる(判定中の再計算・HUD プレビューも同じ ctx を読む・再判定スナップショットへも自然に乗る)。
+- **候補 UI は実キー全列挙**: 下位区分は有限4値のため `<key>` 雛形でなく実キーで列挙(完全性規約)。
+
+#### 検証
+
+- 純ロジック +1＝2175 green・隔離実機3経路(監査エントリ参照)。

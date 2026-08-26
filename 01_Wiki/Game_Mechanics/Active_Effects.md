@@ -184,13 +184,14 @@
 | `check.<プレフィックス>*` | 技能判定（プレフィックス前方一致＝固有名詞技能の大分類はこれで束ねる。例 `check.society_*`） |
 | `check.style.<スタイル識別キー>` | **そのスタイルのスタイル技能すべて**（技能の `system.style` で照合。2026-07-10） |
 | `check.works.<組織識別キー>` | **そのワークスのワークス技能すべて**（技能の `system.special.works.organization` で照合。2026-07-10） |
+| `check.society.<下位区分キー>` | **その社会下位区分の技能すべて**（2026-08-26・キーは `nation`/`city`/`industry`/`organization`＝国家/都市/業界/団体社会）。照合は技能の `societyClass`——**キャストのコピーの値が優先・空なら辞典(+ワールド直下)の値**を判定起動時に解決して用いる（旧いコピーの無移行運用）。未分類の社会技能はどの下位区分キーにも合致しない（「あらゆる社会」はプレフィックス形 `check.society_*` が担う） |
 | `check.reason` / `.passion` / `.life` / `.mundane` | その能力値の能力値判定 |
 | `controlCheck.reason` / `.passion` / `.life` / `.mundane` | その能力値の制御判定（**能力値のみ**。グループ参照不可・`controlCheck.all` は現状なし＝必要時に追加） |
 | `check.cardValue` | **カード数字の上書き**（2026-07-13）: 判定に使用したカードの数字を **A〜K で上書き**する（値は AE 設定シートで選択式・自由入力なし・先勝ち）。以降の数字規約は上書き後の数字に従う（手札の絵札=10・A の21固定選択・山札の絵札=FUMBLE）。ジョーカー/切り札の宣言には適用しない。制御判定は対象外（用語規約）。結果カードに「数字上書き（元 → 後）」を明示 |
 | `check.suitChange` | **スート変更マーカー**（値不要・2026-07-12）: 判定で使用できないスートのカードを使用可能なスートに変更できる（[Check_Rules](../Game_Rules/Check_Rules.md)「スートの変更」）。他者バフの付与形＝用途の適用効果で対象へ付与。失効は当面手動（「1回の判定」Duration は時間管理フェーズで持続時間側に追加＝**持続時間と AE キーは独立**）。制御判定は対象外 |
 
 - 末尾にパラメータを付けない技能キー＝その技能の判定への加算（`.judgment` 等の接尾は不要）。
-- **グループ参照（`check.style.*` / `check.works.*`）**: 識別キーでなく技能の `system.style` / `system.special.works.organization` で束ねる。`parseEffectTargetKey` は `{scope:"skillCheck", group:"style"|"works", selector:<キー>}` を返し、`checkChangeMatches` は判定に使った技能のうち該当 style/organization を持つものがあれば適用。
+- **グループ参照（`check.style.*` / `check.works.*` / `check.society.*`）**: 識別キーでなく技能のフィールド（`system.style` / `system.special.works.organization` / `societyClass`）で束ねる。`parseEffectTargetKey` は `{scope:"skillCheck", group:"style"|"works"|"society", selector:<キー>}` を返し、`checkChangeMatches` は判定に使った技能のうち該当フィールドを持つものがあれば適用。society の辞典フォールバック値は `TnxCheckFlow.open` が起動時に `ctx.societyClassByKey` へ解決する（`_computeCheckBonus` は同期のため）。
 
 ### 2.8 ダメージバフ（ダメージ時・`damage.*`・この表が全数・2026-07-10〜12）
 
