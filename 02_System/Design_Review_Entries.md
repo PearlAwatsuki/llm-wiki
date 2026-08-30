@@ -4062,3 +4062,21 @@ DialogV2(v13) の `.dialog-content.standard-form` は `display:flex; gap:16px` �
 #### 検証
 
 - 純ロジック +1＝2175 green・隔離実機3経路(監査エントリ参照)。
+
+### 宣言の使用カードを解説カードへ統合（2026-08-30）
+
+**日付**: 2026-08-30
+**レビュー対象**: `scripts/item/item.mjs`（`postDescriptionCard`）・`scripts/actor/tnx-character-sheet-base.mjs`（`_useDeclarationUsage`）
+**ステータス**: 実装済・隔離 Foundry で検証済
+
+#### 設計判断
+
+- **専用カードを新設せず既存カードへ統合**（ユーザー指示・[[feedback-function-over-form-reuse]]）: 宣言の使用カード（旧 `cr-head` 様式のインライン HTML）を、用途なしアイテムのロールで出る解説カード `postDescriptionCard` に一本化。宣言は判定を行わず組み合わせが無いため「1カード＝1効果文」が成り立つ（判定系は複数技能の効果文を要するため対象外＝ユーザー裁定。将来必要になれば効果文の転載でなく参加技能名の `@UUID` リンク化が腹案）。
+- **`postDescriptionCard({ usageEffects })` の augment**: ペイロードがあればフラグに載せ、本文末尾に `tnx-usage-effect-area` を設けるだけ。ボタン注入は既存の `renderUsageEffectButton` フックのままで配線変更なし。旧様式の既存メッセージも同フックで発火し続ける（後方互換）。
+- **効果なし宣言もカード化**（ユーザー承認）: 旧・実行者ローカル通知（`ui.notifications.info`）は他クライアントに見えなかった。カードに一本化し宣言が卓全員に見えるように。
+- **解説が空なら本文ブロックを省く**: 空の `card-content` が余白帯＋二重境界線になるのを実機スクリーンショットで発見し是正。あわせて見出しのアイテム名を `escapeHTML` に。
+
+#### 検証
+
+- テスト 2297 green・eslint 0 error（CSS 変更なし）。
+- 隔離 Foundry E2E: 効果あり/なし × 解説あり/なし/長文 × 折りたたみ、ボタン押下→対象へ付与→適用済み表示への遷移、用途なしアイテムのロール（既存解説カードの回帰）をスクリーンショット目視込みで確認。
