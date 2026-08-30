@@ -4085,3 +4085,23 @@ DialogV2(v13) の `.dialog-content.standard-form` は `display:flex; gap:16px` �
 
 - **効果エリアを折りたたみの外へ**: 初版は効果エリアを `<details>` 内に置き、畳むとボタンも隠れた（「既定は開いているから支障ない」は誤判断——折りたたみは長い効果文を畳むためのもので、「効果を適用」は**まだ押されていない操作**。畳む動機とボタンが要る状況は同時に起きる）。カード枠をラッパー `.tnx-usage-use-card` に移し、`details`（見出し＋本文）と効果エリアを並置。CSS はラッパーが枠を持ち内側 `details` は枠なし（スコープ追加のみ）。ラッパーは適用効果があるときだけ＝素の解説カードは従来 DOM のまま。
 - 検証: 畳んだ状態で `btnVisible: true`・押下→付与→適用済み注記まで一巡・素の解説カード無変化。stylelint clean・テスト 2297 green。
+
+### 効果セクション（トレイ）再設計（2026-08-30）
+
+**日付**: 2026-08-30
+**レビュー対象**: `scripts/module/usage-effects.mjs`（全面）・`templates/parts/usage-effect-tray.hbs`（新）・`scripts/module/damage-flow.mjs`・`scripts/actor/tnx-character-sheet-base.mjs`・`scripts/module/usage-check-context.mjs`・`scripts/tnx.mjs`（AE 設定注入）・`scripts/module/tnx-usage-sheet.mjs`/`usage-sheet.hbs`・`css/tnx2.css`
+**ステータス**: 実装済・隔離 Foundry で検証済（宣言経路・攻撃/対決経路は純ロジックのみ＝実機は宣言/結果カード系で確認）
+
+#### 設計判断
+
+- **カードは状態を主張しない**（ユーザー裁定＝D&D 5e のトレイに倣う）: 「効果を適用」押下でセクションが畳まれるだけ（クライアントローカル）。適用済みフラグ（`applied`/`hitApplied`/`appliedTargets` 等）と messagePatch 委譲・成功報告文言（「適用済み」「自分へ付与済み」「付与しました」）を全廃。適用の正本は対象アクター上の AE で、カードの「済み」主張は適用漏れ・やり直しを塞ぐ嘘になりうる。旧カードもフラグを読まず常にセクション表示＝再適用可能化（データ持ちエントリの無い旧・自分のみカードのみ非表示）。
+- **対象行の常設**（ユーザー指摘＝ダイアログは閉じたら再アクセス不能）: 旧・除外ダイアログ `confirmEffectTargets` をカード内チェックボックス行（既定オン）へ置換。攻撃カードはフラグ更新で行ごと再描画されるため常に現在の命中対象（カバー付け替え追従）。
+- **代償効果はボタン同乗**（ユーザー裁定＝2026-07-13「解決時即時付与」を廃止）: `grantTarget:"self"` は「効果を適用」押下で通常効果と同時に使用者（`sourceActorUuid`）へ付与。単独ボタンも即時付与も持たない——「自動付与はどこにも無い」が例外なしになり、文言全廃後の不可視な自動付与も生じない。攻撃はリスト所属タイミングに同乗。
+- **命名不良の是正**: 「付与先: 対象/自分」→「効果種別: 通常効果/代償効果」（表示のみ・`grantTarget` フラグ無移行）。宛先のふりをした挙動スイッチという v3 当初からの命名不良が、対象=自身の自己バフでの誤設定（2026-08-29 顕在化）を招いた。用途シートのタグも「（自分に付与）」→「（代償）」。
+- **宣言の対象解決欠陥の是正**: `_useDeclarationUsage` も `resolveUsageTargetRefs`（決定表・自動セルフ）を通す（消費より前＝キャンセルで無消費中止）。
+- 描画は hbs 部品 `usage-effect-tray.hbs` ＋ `usageEffectTrayContext`（描画/適用で同じ文脈解決を共有）。CSS は `.tnx-usage-effect-block` 系にスコープ追加・廃止した `.tnx-usage-effect-note` は削除。
+
+#### 検証
+
+- 純ロジック +3＝2300 green（代償の self 伝搬・sourceActorUuid・代償のみは game 非依存）・eslint 0 error・stylelint clean。
+- 隔離 Foundry E2E: 自己宣言（自動セルフ→適用→畳み→再展開→再適用=置き換えリフレッシュ）・通常+代償の混載（1押下で対象と使用者へ同時付与・文言なし）・複数対象のチェック除外・旧形式カード（applied:true）のトレイ表示・旧自分のみカードの非表示・AE 設定「効果種別」ラベル、をスクリーンショット目視込みで確認。攻撃/ダメージ/対決カードの経路は分岐ロジックがテスト固定（`attackCardEffectMode`/`splitEffectsByTiming`/`hitEffectTargetRefs` 無改変）だが実機未確認＝次の戦闘系実機確認で併せて見る。
