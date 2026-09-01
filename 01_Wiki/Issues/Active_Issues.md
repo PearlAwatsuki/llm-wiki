@@ -2,7 +2,9 @@
 
 [Known_Issues_Detail.md](Known_Issues_Detail.md) から**現在有効**な項目のみ抽出。
 
-現在、機能的支障のある未解消 KI は無い（KI-040〜KI-042 は解消、KI-043 は前提の誤認により撤回 → [Resolved_Issues.md](Resolved_Issues.md)）。
+- **KI-047**: 複数対象攻撃で、対象依存のダメージ修正（対象条件・`@target.*` の式・`damage.vs*` AE）が**先頭の命中対象**の条件で全対象に適用される。単体対象では正しい。用途トグル「ウェットの対象には効果がない」は対象ごとに評価するため影響なし。**設計変更を要するためユーザー裁定待ち**（2026-09-01 起票・詳細は [Known_Issues_Detail.md](Known_Issues_Detail.md)）。
+
+（KI-040〜KI-042 は解消、KI-043 は前提の誤認により撤回、KI-044〜KI-046 は解消 → [Resolved_Issues.md](Resolved_Issues.md)）
 
 ## 軽微な残存 (機能的支障なし)
 
