@@ -56,7 +56,7 @@
 | [Troops.md](Game_Rules/Troops.md) | トループ・トループ級キャラクター（heads・エニグマポイント・分身・共通制約） |
 | [Scenario_Progress.md](Game_Rules/Scenario_Progress.md) | アクト進行（アンダー/プレ/メイン/ポスト・シーン進行・舞台裏・経験点） |
 | [Time_Management.md](Game_Rules/Time_Management.md) | 時間単位（メインプロセス/カット/シーン/アクト）・使用回数リセット・持続失効 |
-| [Miracle_Rules.md](Game_Rules/Miracle_Rules.md) | 神業（構造・機能タイプ・神業一覧・派生参照・自動化方針） |
+| [Miracle_Rules.md](Game_Rules/Miracle_Rules.md) | 神業（構造・神業一覧・派生神業の参照対応） |
 | [Appearance_Check.md](Game_Rules/Appearance_Check.md) | 登場判定（タイミング・使用技能・エリア別目標値・チーム免除・ゴースト） |
 | [Purchase_and_Modification.md](Game_Rules/Purchase_and_Modification.md) | 購入判定・改造判定（信用・購入値・改造技能×製作技能・分類別改造項目） |
 | [Bad_Status.md](Game_Rules/Bad_Status.md) | バッドステータス（状態異常の効果・回復・重複・強度。AE 設計の前提） |
