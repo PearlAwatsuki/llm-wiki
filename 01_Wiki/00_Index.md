@@ -105,7 +105,9 @@
 | [Phase_12_Implementation_Plan.md](Phases/Phase_12_Implementation_Plan.md) | フェーズ12 残作業の実装計画（T1〜T11・作業順序と依存） |
 | [Phase_13_Tasks_Detail.md](Phases/Phase_13_Tasks_Detail.md) | フェーズ13 完了記録（戦闘システム＝カット進行） |
 | [Phase_14_Tasks_Detail.md](Phases/Phase_14_Tasks_Detail.md) | フェーズ14 完了記録（セッション進行） |
-| [Phase_15_Tasks_Detail.md](Phases/Phase_15_Tasks_Detail.md) | フェーズ15 計画（時間・使用回数管理・設計確定/実装未着手） |
+| [Phase_15_Tasks_Detail.md](Phases/Phase_15_Tasks_Detail.md) | フェーズ15 完了記録（時間・使用回数管理） |
+| [Phase_16_Tasks_Detail.md](Phases/Phase_16_Tasks_Detail.md) | フェーズ16 完了記録（辞典ブラウザ＋購入・改造判定UI） |
+| [Phase_17_Tasks_Detail.md](Phases/Phase_17_Tasks_Detail.md) | フェーズ17 計画（神業・神業由来の印・打ち消し/防御・派生神業） |
 
 ## 関連
 
