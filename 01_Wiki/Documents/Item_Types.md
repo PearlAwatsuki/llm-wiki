@@ -49,7 +49,7 @@
 | type | mixin | 固有フィールド（主要） |
 |---|---|---|
 | **style** | base | isPersona, isKey, level(1-3), miracle, reason/passion/life/mundane (value/control) |
-| **miracle** | base + usage | furigana, usageCondition, isKill/Defence/All/Used, usageCount |
+| **miracle** | base + usage | furigana, usageCondition, isUsed, uses（isKill/isDefence/isAll はフェーズ17 で撤去・usageCount は uses へ一本化済み） |
 | **generalSkill** | base + usage + skillBase | generalSkillCategory, initialSkill, onomasticSkill |
 | **styleSkill** | base + usage + skillBase | unique, style, comboSkill[], timing[], target, range, confrontation[], uses, special/performance/secret/mystery, 自動取得（フェーズ10-2: acquiresOutfit, autoAcquireItems[], autoAcquireActors[], weaponUseMandatory）, 取得・経験点（フェーズ10-3: expFree, excludeFromCount, levelRef `{enabled, key}`） |
 | **weapon** | base + outfitBase + extensible | attack `{damageType, value}`, guardValue `{mode,value}`, range `{min,max}`, **isFleshChange**（生身変更装備・フェーズ10-6） |
