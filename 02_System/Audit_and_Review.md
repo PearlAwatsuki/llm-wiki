@@ -5314,3 +5314,32 @@ Time_Management の時間単位（メインプロセス中／カット中／シ�
 - 恒常: 技能（識別キー狙い +1）→ `levelTotal` 2→3・**技能上に転送コピー 0**。同じ供給元の武器狙い +2 → 攻撃力 7・**武器上に転送コピー 1**（エンチャント経路は不変）。
 - 旧データの掃除: 技能に旧経路の転送コピーを置くと 4（二重）→ 版番号を戻して再ロード → コンソールに「1 件除去」・`levelTotal` 3・コピー 0・版番号 1。develop 複製の初回ロードでは除去 0 件（ユーザーの実データ複製に残骸は無かった）。
 - 使用時付与: 技能 +2（シーン中）をチャットカードの「効果を適用」で付与 → **ダイアログなし**・付与コピーは**アクター上**（技能上には無い）・`levelTotal` 5 → 退場（シーン境界）で失効し 3。
+
+### 2026-09-03: 17-1 神業の起動一本化と神業由来の印
+
+**2026-09-03** / **関連実装** `scripts/module/miracle-logic.mjs`（新設・純ロジック）・`scripts/module/miracle-flow.mjs`（新設・投稿と既定使用）・`templates/chat/miracle-card.hbs`（新設）・`scripts/actor/tnx-character-sheet-base.mjs`（旧 `_onUseMiracle` 撤去・`_activateItemCheck` の神業分岐・`_useDeclarationUsage` の既定消費と神業カード）・`scripts/module/usage-check-context.mjs`（既定消費・ctx.miracle）・`scripts/module/tnx-check-flow.mjs`（結果カードの `miracle` フラグ）・`scripts/module/usage-effects.mjs`（付与コピーの `fromMiracle`）・`scripts/data/item/miracle.mjs`（`isKill`/`isDefence`/`isAll` 撤去）・`templates/actor/parts/header.hbs`・`tests/module/miracle-logic.test.mjs`（+17）・`tests/data/item/miracle.test.mjs` / **ステータス**: 実装済・隔離実機確認済（本体 `8976a08`）
+
+**メカニクス監査**:
+
+- ルールの位置づけ（ユーザー言語化 2026-09-03）: 神業はゴールデンルール「RL の絶対権限」のひとつ下に位置する強制力の強いルール。実装で採る形は「挙動は既存の用途の器で表現してよい。必要なのは**その用途が神業のものであるという印**」（ユーザー確認）。17-1 はこの印の出どころと伝播だけを作り、効き先（軽減・リアクション・治療・打ち消しのゲート）は 17-2/17-3 に置く。
+- **印の出どころはアイテムの型**。専用フィールドは持たない（判定条件を二重に持たない）。用途が0件でも印は立つ。
+- **用途は前提条件にしない**（Code 決定・ユーザーは一任）。用途0件の神業がロールで使用回数を消費して神業カードを出すのは、「使用＝回数消費」が神業の定義に含まれるため。宣言だけの神業（《天罰》《脱出》《真実》等）はこれで完成する。
+- **消費先が空の神業用途に自身の使用回数×1を既定消費する**のは、「消費は消費先の設定からのみ」の一般原則（コンボ参加技能の遠隔消費を廃した文脈）の適用範囲外と判断した。神業の使用が回数消費を伴うことはルールの定義であり、用途を作った途端に減らなくなるほうが誤り。補完は実行時のみで保存しない。
+- **形骸化フラグの撤去**（ユーザー裁定 verbatim「殺し神業、防御神業のような区分も無くしましょう。完全に形骸化しているフラグです」）。辞典31件はすべて false・読み手ゼロ・設定 UI 無し。DataModel から落とすと既存データの当該キーは次回保存時に捨てられる（副作用として明記済み・実害なし）。
+- 撤去した旧経路（`_onUseMiracle`）は用途システム・チャットカード統一・アイテムロール規範のいずれよりも前の実装で、素の HTML カードを出し、消費を自前で行い、万能神業をワールド直下のアイテムから選ばせていた。派生神業の選択は 17-5 で作り直す（選び方4つ・実行経路1つ）。
+
+**設計レビュー**:
+
+- 純ロジック（`miracleUseGate` / `miracleConsumeUpdate` / `withDefaultMiracleConsumption` / `miracleOriginOf` / `isMiracleOrigin` / `buildMiracleCardData`）を Foundry 非依存モジュールに分離し、TDD で先に赤を確認（`Failed to load url` → `is not a function`）してから実装。消費は既存の実効値読み（`usesMaxTotalOf`）に乗せ、尽きたときの `isUsed=true` は旧経路の挙動を維持（手動リセットの起点）。
+- 起動は唯一の起動関数に集約。神業ボタンは `startSkillCheck` へ付け替えるだけで、ハンドラは既存の `_onStartSkillCheck`。用途0件の分岐は「用途が無ければ解説カード」の手前に置いた。
+- 神業カードは送信カードの骨格（`.tnx-check-request` ＋ `cr-req-header/body`）を踏襲した専用テンプレート。ふりがなはルビで名前と同色（辞典カードの規約）。条件が空なら行ごと畳む。用途つきのときは解説カードと同じ器（`tnx-usage-use-card` ＋ 効果エリア）で包み、効果トレイの差し込みは既存フックのまま。
+- 印の伝播: `buildUsageCheckContext` の戻り値に `miracle`（神業でなければ null）→ `_postResultChat` が結果カードのフラグへ。`resolveUsageEffectData` は用途の親が神業なら付与コピーに `fromMiracle` を刻む（供給元が組み合わせ側でも「神業の用途から生じた効果」であることに変わりない）。ダメージカードへの刻印はダメージ付与そのものを作る 17-3 で行う。
+- **未検証**: 神業の用途を「判定」タイプにしたときの結果カードの `miracle` フラグは、実機ではカードプレイ（山札）を要するため Playwright で通していない。配線は 1 行のスプレッドで、宣言経路と同じ `miracleOriginOf` を読む。17-2（判定に対する打ち消し）の実機確認で通す。
+
+**実機確認（隔離 Foundry v13.351・develop 複製・Playwright・創作データのみ）**:
+
+- シートの神業ボタンが `startSkillCheck` で描画され、クリックで神業カード（タグ「神業」・ルビつき名前・効果文2段落・条件・残り使用回数 1 / 2）・消費済み1・`flags.miracle={itemId,name}`・発言者＝使用者・効果トレイなし。
+- 2回目で消費済み2・`isUsed=true`・残り 0 / 2。再描画でボタンが disabled。起動関数を直接呼んでも「これ以上使用できません」の警告で中止しカードは出ず消費済みも増えない。
+- 用途つき（宣言・消費先なし・自己効果）: 既定消費のダイアログ（「REPRO神業・用途」の使用回数を消費・残り 3/3）→実行→神業カード＋効果トレイ・消費済み1・残り 2 / 3・条件が空なら行が出ない・`usageEffects` フラグ。「効果を適用」で付与コピーに `fromMiracle=true`。
+- 撤去した `isKill`/`isDefence`/`isAll` を作成データに混ぜても system に残らない。テスト2465件グリーン・eslint/stylelint クリーン。
+
