@@ -5333,8 +5333,8 @@ Time_Management の時間単位（メインプロセス中／カット中／シ�
 - 純ロジック（`miracleUseGate` / `miracleConsumeUpdate` / `withDefaultMiracleConsumption` / `miracleOriginOf` / `isMiracleOrigin` / `buildMiracleCardData`）を Foundry 非依存モジュールに分離し、TDD で先に赤を確認（`Failed to load url` → `is not a function`）してから実装。消費は既存の実効値読み（`usesMaxTotalOf`）に乗せ、尽きたときの `isUsed=true` は旧経路の挙動を維持（手動リセットの起点）。
 - 起動は唯一の起動関数に集約。神業ボタンは `startSkillCheck` へ付け替えるだけで、ハンドラは既存の `_onStartSkillCheck`。用途0件の分岐は「用途が無ければ解説カード」の手前に置いた。
 - 神業カードは送信カードの骨格（`.tnx-check-request` ＋ `cr-req-header/body`）を踏襲した専用テンプレート。ふりがなはルビで名前と同色（辞典カードの規約）。条件が空なら行ごと畳む。用途つきのときは解説カードと同じ器（`tnx-usage-use-card` ＋ 効果エリア）で包み、効果トレイの差し込みは既存フックのまま。
-- 印の伝播: `buildUsageCheckContext` の戻り値に `miracle`（神業でなければ null）→ `_postResultChat` が結果カードのフラグへ。`resolveUsageEffectData` は用途の親が神業なら付与コピーに `fromMiracle` を刻む（供給元が組み合わせ側でも「神業の用途から生じた効果」であることに変わりない）。ダメージカードへの刻印はダメージ付与そのものを作る 17-3 で行う。
-- **未検証**: 神業の用途を「判定」タイプにしたときの結果カードの `miracle` フラグは、実機ではカードプレイ（山札）を要するため Playwright で通していない。配線は 1 行のスプレッドで、宣言経路と同じ `miracleOriginOf` を読む。17-2（判定に対する打ち消し）の実機確認で通す。
+- 印の伝播: 神業カードのフラグ `miracle`（`postMiracleCard`）。`resolveUsageEffectData` は用途の親が神業なら付与コピーに `fromMiracle` を刻む（供給元が組み合わせ側でも「神業の用途から生じた効果」であることに変わりない）。ダメージカードへの刻印はダメージ付与そのものを作る 17-3 で行う。
+- **是正（同日・本体 `3c31361`）**: 当初、判定経路（`buildUsageCheckContext` の `ctx.miracle`・結果カードのフラグ）にも印と既定消費を配線し「判定タイプの神業は未検証」と報告した。**神業は判定を行わない**（ユーザー明示 verbatim「神業で判定を行うことはありません」）ため到達しない死んだコードであり、効果文でなく器の側から書いた誤り。撤去した。あわせて既定消費の差し込みが宣言と判定の2か所に散っていて**治癒系の神業が通る治療（宣言形）の経路に届いていなかった**ため、用途が決まった直後の `_activateItemCheck` 1か所へ集約した（宣言・治療の宣言形・クリック待ち系のどれを通っても効く）。
 
 **実機確認（隔離 Foundry v13.351・develop 複製・Playwright・創作データのみ）**:
 
@@ -5342,4 +5342,5 @@ Time_Management の時間単位（メインプロセス中／カット中／シ�
 - 2回目で消費済み2・`isUsed=true`・残り 0 / 2。再描画でボタンが disabled。起動関数を直接呼んでも「これ以上使用できません」の警告で中止しカードは出ず消費済みも増えない。
 - 用途つき（宣言・消費先なし・自己効果）: 既定消費のダイアログ（「REPRO神業・用途」の使用回数を消費・残り 3/3）→実行→神業カード＋効果トレイ・消費済み1・残り 2 / 3・条件が空なら行が出ない・`usageEffects` フラグ。「効果を適用」で付与コピーに `fromMiracle=true`。
 - 撤去した `isKill`/`isDefence`/`isAll` を作成データに混ぜても system に残らない。テスト2465件グリーン・eslint/stylelint クリーン。
+- 是正後（`3c31361`）: 治療タイプ（宣言形・範囲=BS・消費先なし）の神業で、回復対象の確認→**既定消費のダイアログ（「REPRO神業・治療」の使用回数を消費・残り 2/2）**→BS 除去・消費済み1。クリック待ち系（宣言＋判定を修正・消費先なし）でも既定消費のダイアログ。A〜C の回帰も全件 OK。
 
