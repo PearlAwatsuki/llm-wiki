@@ -22,6 +22,7 @@
 | 固有フィールド | 型 | 備考 |
 |---|---|---|
 | ownerUserId / syncWithOwner | String / Boolean | User UUID — EXP 同期用（フェーズ2-1）と同期の有効化 |
+| host | SchemaField `{uuid, name}` | **宿主**（17-6・カゲムシャ。基底由来＝guest と共有）。RL がアクトごとに設定（シート見出し「宿主」・カゲムシャのスタイルを持つときだけ表示）。アクト終了の境界で消える。《神出鬼没》が読む。name は削除時のフォールバック表示のみ |
 | history | ObjectField | オブジェクトマップ `{ [id]: { date, title, exp, rl, players, origin, castUuid } }`。`origin` は**誰がこの行を作ったか**（同期 OFF 時の由来分離用）、`castUuid` は**そのセッションに連れて行ったキャスト**（キャストシートの履歴表示の絞り込み用・空＝紐づけ無し）。意味が違うため別フィールド |
 | exp | SchemaField | value, spent, total, additional |
 | lifePath | SchemaField | origin, experience, encounter — 各 `{itemUuid, name}` SchemaField。フェーズ6-5 実装済み |
