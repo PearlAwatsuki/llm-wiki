@@ -5518,3 +5518,11 @@ Time_Management の時間単位（メインプロセス中／カット中／シ�
 - **設計**: `asOther.mode` は `"choice"`（指定の選択肢から選んで固定）／`"log"` の2種。`choices[{label, uuid}]`（label＝区分の表示用ラベル・uuid＝参照先）と `selected`（選んだ効果の uuid）。神業シートに「効果」の select。使用時は `asOtherSelection` が `selected` を返す（未選択なら警告して中止・選択肢が1つなら自動）。技能の識別キー照合と辞典カスケードは神業側から撤去。旧 `refs`（同日中の未リリース形）は `migrateData` で `choices` へ移す。
 - 実機（本体 `1cfbc88`）: 選んだ効果《難攻不落》で防ぐ／シートの「効果」で《死の舞踏》に選び直して即死／未選択で警告／選択肢の追加・ドロップ・区分ラベル・削除。
 
+#### 追記 2026-09-04: 《不可知》の割り込みは完全な割り込み（AR を消費しない挿入メイン）
+
+ユーザー言語化（verbatim）:「不可知の割り込みはCSカレントも変わりません。完全な割り込みです。誰かがメインプロセスを行っていようと、例えば命中判定だけ済んでいてこれからリアクションの解決になるその直前にも割り込むことができます。」「一つ正確でない表現がありました。CSカレントが0になるのはARが消費されるからです。現に、追加行動技能による割り込みでは現状でも追加行動するキャラクターのARは消費されないはずです。」
+
+- **メカニクス**: 《不可知》の行動はカット進行の任意の時点に差し込める割り込みで、AR を消費しない。CSカレント 0 は AR 消費の帰結（一般則 AR−1⟺CS0）なので、AR を消費しない以上 CSカレントにも触れない＝追加行動の割り込み（consumesAr=偽）と同じ扱い。Combat_Flow の「将来の神業による割り込みの特別措置も用途側で例外を明示できる」（2026-07-26）がここで使われた。
+- **設計**: 宣言の効果 insensible は、印（次の行動）に加えて `applyInterruptGrantForUsage(actor, {grantsInterrupt: true, interruptConsumesAr: false}, {targetOverride: [自分]})` で自分の combatant に割り込み許可を立てる。開始・終了・AR 記帳は既存の挿入メイン（`startInterrupt`/`endInterrupt`・consumesAr）がそのまま担う。初版の「CSカレント 0 でプロセスを終える」独自処理（`insensibleFree`/`buildMajorChargeUpdate`/`_chargeMajor`）は撤去し、AR の記帳を一般則へ戻した（本体 `70fc65c`）。
+- **実機**: 宣言で許可（consumesAr=偽）が立つ→`startInterrupt`＝自分がメイン行動者・退避 1 段・許可は消費→攻撃（印の消費・リアクション不可・状態に印）→`endInterrupt` で AR も CSカレントも不変・元の位置へ復帰。
+
