@@ -5492,3 +5492,21 @@ Time_Management の時間単位（メインプロセス中／カット中／シ�
 - **使用ログ**はワールド設定（`sessionState`）に置き、`createChatMessage` をアクティブ GM が拾って直列に記帳（登場の記帳と同じ器）。記帳点＝神業カード/神業版ダメージカード。**防ぐ/打ち消し/回避の発動と神業の治癒は神業カードを出していなかった**ので出すようにした（神業の使用を卓に提示する 17-1 の原則にも合う）。
 - 隔離実機確認: 《万能道具》＋アーマー→《難攻不落》自動解決・防ぐ（印・神業カード・消費は万能道具）／ウェポン追加で3候補→《死の舞踏》→即死（台帳）／使用ログ／条件不成立の警告／《突然変異》: 登場したシーンの使用だけ・後から登場でも候補・他人の所持神業のコピー／シート（選び方・3行・追加/ドロップ/カスケード/削除）。17-1〜17-4 回帰 ALL OK。
 
+### 2026-09-04: 17-6 残りの神業の接続（《神出鬼没》《タイムリー》《買収》《不可知》）
+
+**2026-09-04** / **関連実装** `scripts/data/item/common/usage.mjs`（`miracleEffect`・`miracleInterference` を改名）・`scripts/module/miracle-logic.mjs`（`conditionSwapPlan`）・`scripts/module/miracle-flow.mjs`（`useMiracleSwap`/`applyMiracleSwap`/`useMiracleAcquire`/`useMiracleInsensible`・`renderMiracleEffectRows`）・`scripts/module/purchase-flow.mjs`（神業の入手の再入）・`scripts/module/tnx-dictionary-browser.mjs`（神業の選択モード）・`scripts/module/tnx-check-flow.mjs`（印の消費）・`scripts/module/attack-flow.mjs`（リアクション不可・制御値で即確定）・`scripts/module/damage-flow.mjs`（印の伝搬・`applyDamageToTarget` の `extraFlags`）・`scripts/module/combat-progression.mjs`＋`scripts/combat/tnx-combat.mjs`（`buildMajorChargeUpdate`・`_chargeMajor`）・`scripts/item/tnx-outfit-sheet.mjs`＋テンプレート / **ステータス**: 実装済・隔離実機確認済（本体 `75afda1`）・ユーザー実機確認待ち
+
+**メカニクス監査**:
+
+- 効果文が根拠: 《神出鬼没》「“宿主”が受けたあらゆるダメージや状況はカゲムシャが引き受けることになるし、その逆も発生する」＝両者の状態を**丸ごと**入れ替える（時点の入力は持たない＝ユーザー指摘 2026-09-03）。／《タイムリー》「得たアウトフィットは［常備化］できない」《買収》（一覧「入手品は常備化不可」）＝購入判定の入手と同じ器（`isCheckAcquired`＝経験点計上なし）に**神業由来の印**を足す。購入値・常備化経験点・外界の条件は問わない（「ルールブックに載っているアウトフィットでもよいし…」）。／《不可知》「神業を使用しない限り、一切のリアクションやアウトフィットの使用などを行うことはできない」「防具など常に効果を発揮しているアウトフィットや、制御値のみが有効」「アクションランクを消費しない」「神業によってしか治療を行えない」。
+- 《不可知》の実装形＝**次の行動に印を付ける**: 宣言で自分に印、次の判定の実行で消費。攻撃ではリアクション（カバー含む）の入口を出さず、対象は制御値で即確定（非対決と同じ経路）。神業の回避（対象行の捕捉）・打ち消し（達成値）はそのまま生きる。防具（恒久軽減）は効く。報酬点軽減はリアクション成立が条件なので自然に不可。非攻撃の判定に使った場合は印の消費のみ。
+- 《完全偽装》《不可触》の「社会戦ダメージをすべて/1つ消去」は防御タイプ「受けた後に消す」（範囲＝負傷（社会））で表す＝17-2 の器。新規実装なし。
+
+**設計レビュー**:
+
+- 宣言（神業）の設定を **1 つの select「宣言の効果」** に統合（17-4 の「干渉」select を改名。効果はどれも排他的な 1 挙動のため）。起動関数の分岐は 1 か所で値ごとに専用フローへ。
+- 入れ替えは純ロジック `conditionSwapPlan`（状態＝`conditionKind` を持つ効果・カスケードの子 `addedFrom` は消すだけ・移した親から `createActiveEffect` フックが再生）→ `toObject()` で複製し削除→生成。`receivedScene` は既存値があれば preCreate が上書きしないので保たれる。適用は RL か両者の操作者（相手のアクターへの書き込み権限）。
+- 入手は既存の購入ピッカー（`openOutfitPicker`）に `miracle` を載せ、`startPurchaseWithUsage` が購入の分岐を通さず宣言の効果へ再入（他の神業として使う参照先 `asOtherUuid` も運ぶ）。付与は `grantPurchasedItem`（1 機構）＋複製に `fromMiracle`。アウトフィットシートの常備化経験点欄は印があれば「常備化できない（神業で入手）」。
+- 《不可知》の AR 非消費: 実行時に `insensibleFree` を立て、プロセス終了の記帳 `_chargeMajor` が `buildMajorChargeUpdate(system, {arFree})`（CSカレント0 のみ）で読んで消す。純ロジックはテスト済み・**カット進行の実機は未確認**。
+- 隔離実機確認: 入れ替え（宿主の負傷＋カスケード→カゲムシャ・宿主は無傷・カード「（適用済み）」）／入手（ブラウザ題名「神業: アウトフィットの選択」・全ボタン有効・複製の `isCheckAcquired`＋`fromMiracle`・カードの「入手」行・シートの表示）／不可知（印と「次の行動」行・攻撃カードの印/命中確定/注記/行クリック無し/印の消費・ダメージカードの印・適用した状態 phys-10/faint が `fromMiracle`）。17-1〜17-5 の回帰 ALL OK。
+
