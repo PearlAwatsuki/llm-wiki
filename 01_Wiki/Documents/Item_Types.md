@@ -49,7 +49,7 @@
 | type | mixin | 固有フィールド（主要） |
 |---|---|---|
 | **style** | base | isPersona, isKey, level(1-3), miracle, reason/passion/life/mundane (value/control) |
-| **miracle** | base + usage | furigana, usageCondition, isUsed, uses（isKill/isDefence/isAll はフェーズ17 で撤去・usageCount は uses へ一本化済み）, **asOther** `{mode: ""\|refs\|log, refs[{skillDict, skillGroup, skillSub, name=条件技能の識別キー(空=無条件), uuid=参照先の神業}]}`（17-5・他の神業として使う: 《万能道具》《半身》=refs・《突然変異》=log） |
+| **miracle** | base + usage | furigana, usageCondition, isUsed, uses（isKill/isDefence/isAll はフェーズ17 で撤去・usageCount は uses へ一本化済み）, **asOther** `{mode: ""\|choice\|log, selected=選んだ効果の uuid, choices[{label=区分, uuid=参照先の神業}]}`（17-5・他の神業として使う: 《万能道具》《半身》《神意》=choice＝〈フォルム〉等を選ぶときに選んで固定・《突然変異》=log） |
 | **generalSkill** | base + usage + skillBase | generalSkillCategory, initialSkill, onomasticSkill |
 | **styleSkill** | base + usage + skillBase | unique, style, comboSkill[], timing[], target, range, confrontation[], uses, special/performance/secret/mystery, 自動取得（フェーズ10-2: acquiresOutfit, autoAcquireItems[], autoAcquireActors[], weaponUseMandatory）, 取得・経験点（フェーズ10-3: expFree, excludeFromCount, levelRef `{enabled, key}`） |
 | **weapon** | base + outfitBase + extensible | attack `{damageType, value}`, guardValue `{mode,value}`, range `{min,max}`, **isFleshChange**（生身変更装備・フェーズ10-6） |
