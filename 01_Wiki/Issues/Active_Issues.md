@@ -4,9 +4,8 @@
 
 現在、機能的支障のある未解消 KI は無い。
 
-- **KI-051**: アイテム削除時にコンソールへ `Cannot read properties of undefined (reading 'id')` が 1 件出る（2026-09-05 起票・卓の進行に影響なし・`deleteItem` フックの転送コピー除去が疑わしい）→ [詳細](Known_Issues_Detail.md)
 
-（KI-040〜KI-042 は解消、KI-043 は前提の誤認により撤回、KI-044〜KI-050 は解消 → [Resolved_Issues.md](Resolved_Issues.md)）
+（KI-040〜KI-042 は解消、KI-043 は前提の誤認により撤回、KI-044〜KI-051 は解消 → [Resolved_Issues.md](Resolved_Issues.md)）
 
 ## 軽微な残存 (機能的支障なし)
 
