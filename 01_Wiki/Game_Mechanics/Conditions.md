@@ -1,5 +1,7 @@
 # コンディション（BS・戦闘不能）の ActiveEffect 表現（フェーズ9-4 設計・確定）
 
+> **表記規約（2026-09-05 ユーザー指示）**: **戦闘不能のタグは必ず ［］ でくくって表示する**——［完全死亡］［精神崩壊］［抹殺］［気絶］［失神］［仮死］［昏睡］［行動不可］［支配］。ルールブックの表記に合わせる。BS と負傷（ダメージそのもの）は名前のまま（文中では 「」 でくくる既存の書式）。**実装は `conditions.mjs` の `conditionDisplayName(kind, {quote})` が単一の出どころ**で、状態を名前で出す箇所（カード・付与した効果の名前・`CONFIG.statusEffects`・用途シートの選択肢・回復候補・チャート本文・選択ダイアログ）は必ずこれを通す（本体 `7ed80fc`）。
+
 ダメージや技能で付与される**状態（condition）**を ActiveEffect として表現するモデル。バッドステータス（[Bad_Status.md](../Game_Rules/Bad_Status.md)）と戦闘不能ダメージ状態（[Damage_Rules.md](../Game_Rules/Damage_Rules.md) §戦闘不能ダメージ）を同一モデルで扱う。AE 適用の土台は [Active_Effects.md](Active_Effects.md)（v2）。
 
 > **ステータス**: 設計確定（2026-06-22、ユーザー承認）。付与 UI は Foundry 標準のステータスエフェクト（`CONFIG.statusEffects` / トークン HUD）。
