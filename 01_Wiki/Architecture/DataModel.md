@@ -106,7 +106,7 @@ CONFIG.Actor.dataModels.cast = CastDataModel;
 |---|---|
 | `history` | `ObjectField` — ランダム ID キーのオブジェクトマップ。EmbeddedDocument ではない |
 | `styleSkill` 配列 | template.json の `["blank"]` ではなく、シート実装を真実の源として SchemaField 定義 |
-| 命名正規化 | `RewritedTarget`→`RewrittenTarget` / `RewritingMiracle_ID`→`rewritingMiracleId` に正規化済み (KI-018/019 解消・参照ゼロのため移行不要) |
+| 神業書き換え | styleSkill の `miracleRewrite`(フェーズ17-7)。KI-018/019 で命名正規化した `RewrittenTarget` / `rewritingMiracleName` / `rewritingMiracleId` は読み手ゼロのまま残っていたため、この欄に置き換えて撤去した |
 | User | **DataModel 不可**。システムデータは flag のみ (フェーズ2) |
 
 ## 参照

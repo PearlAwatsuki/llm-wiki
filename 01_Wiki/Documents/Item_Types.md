@@ -51,7 +51,7 @@
 | **style** | base | isPersona, isKey, level(1-3), miracle, reason/passion/life/mundane (value/control) |
 | **miracle** | base + usage | furigana, usageCondition, uses（isKill/isDefence/isAll はフェーズ17 で撤去・usageCount は uses へ一本化済み・**isUsed は 2026-09-05 に廃止**＝残り使用回数と二重管理だった）, **asOther** `{mode: ""\|choice\|log, selected=選んだ効果の uuid, choices[{skillUuid=区分の技能, uuid=参照先の神業}]}`（17-5・他の神業として使う: 《万能道具》《半身》《神意》=choice＝〈フォルム〉等を選ぶときに選んで固定・《突然変異》=log。区分と参照先は**どちらもドロップ**で指定） |
 | **generalSkill** | base + usage + skillBase | generalSkillCategory, initialSkill, onomasticSkill |
-| **styleSkill** | base + usage + skillBase | unique, style, comboSkill[], timing[], target, range, confrontation[], uses, special/performance/secret/mystery, 自動取得（フェーズ10-2: acquiresOutfit, autoAcquireItems[], autoAcquireActors[], weaponUseMandatory）, 取得・経験点（フェーズ10-3: expFree, excludeFromCount, levelRef `{enabled, key}`） |
+| **styleSkill** | base + usage + skillBase | unique, style, comboSkill[], timing[], target, range, confrontation[], uses, special/performance/secret/mystery, 自動取得（フェーズ10-2: acquiresOutfit, autoAcquireItems[], autoAcquireActors[], weaponUseMandatory）, 取得・経験点（フェーズ10-3: expFree, excludeFromCount, levelRef `{enabled, key}`）, 神業書き換え（フェーズ17-7: miracleRewrite） |
 | **weapon** | base + outfitBase + extensible | attack `{damageType, value}`, guardValue `{mode,value}`, range `{min,max}`, **isFleshChange**（生身変更装備・フェーズ10-6） |
 | **armor** | base + outfitBase | defence `{mode,S_defence,P_defence,I_defence}`, controlMod `{mode,value}` |
 | **ianus** | base + outfitBase + extensible | controlMod `{mode,value}` |
@@ -78,7 +78,7 @@
 ## styleSkill 特有の注意
 
 - template.json 未定義の ★ フィールド 8 個を DataModel で明示定義
-- `RewrittenTarget` / `rewritingMiracleId` — 旧 typo 名（`RewritedTarget` / `RewritingMiracle_ID`）から正規化済み（KI-018/019 解消・参照ゼロのため移行不要）
+- `miracleRewrite` — 神業書き換え技能（区分 `unique = miracleChange`）の設定。`target{uuid,key,name}`（書き換える神業・空欄はどの神業でも）／`effect`（`ref`=別の神業と同じ・`own`=この技能の用途）／`refUuid`／`rewriteCondition`／`condition`。フェーズ17-7 で、配線されないまま残っていた旧 `RewrittenTarget` / `rewritingMiracleName` / `rewritingMiracleId`（KI-018/019 で正規化した3つ）を置き換えた
 - `unique` の initial は `"none"`（template.json の `""` は誤りを修正済み）
 - `timing[]` は styleSkill 固有（複数可の配列）。アウトフィットの単一 `timing` は 2026-07-19 に廃止（タイミングは用途側で管理）
 
