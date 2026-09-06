@@ -78,7 +78,7 @@
 ## styleSkill 特有の注意
 
 - template.json 未定義の ★ フィールド 8 個を DataModel で明示定義
-- `miracleRewrite` — 神業書き換え技能（区分 `unique = miracleChange`）の設定。`target{uuid,key,name}`（書き換える神業・空欄はどの神業でも）／`effect`（`ref`=別の神業と同じ・`own`=この技能の用途）／`refUuid`／`rewriteDescription`＋`description`（カードに出す効果文の出どころ・既定オン）／`rewriteCondition`＋`condition`（経験点の取得条件・既定オフ）。フェーズ17-7 で、配線されないまま残っていた旧 `RewrittenTarget` / `rewritingMiracleName` / `rewritingMiracleId`（KI-018/019 で正規化した3つ）を置き換えた
+- `miracleRewrite` — 神業書き換え技能（区分 `unique = miracleChange`）の設定。`target{uuid,key,name}`（書き換える神業・空欄はどの神業でも）／`effect`（`ref`=別の神業と同じ・`own`=この技能の用途）／`refUuid`／`description`（独自効果型の効果文＝効果文は必ず書き換わるため選択は持たない）／`rewriteCondition`＋`condition`（経験点の取得条件・既定オフ）。フェーズ17-7 で、配線されないまま残っていた旧 `RewrittenTarget` / `rewritingMiracleName` / `rewritingMiracleId`（KI-018/019 で正規化した3つ）を置き換えた
 - `unique` の initial は `"none"`（template.json の `""` は誤りを修正済み）
 - `timing[]` は styleSkill 固有（複数可の配列）。アウトフィットの単一 `timing` は 2026-07-19 に廃止（タイミングは用途側で管理）
 
