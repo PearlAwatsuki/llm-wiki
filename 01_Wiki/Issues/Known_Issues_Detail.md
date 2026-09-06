@@ -815,3 +815,19 @@ styleSkill の書き換え神業 ID 参照機能。現状は一貫して命名�
 - **解消**: 本体 `3bf3c57`。`preDeleteItem` / `preUpdateItem` を同期にし、止める判断を同期で行う（非同期の後始末は IIFE で流す）。母数の判定は純関数 `miracleRemovalUpdate`（テスト+3）。実機で「母数2→残って母数1」「母数1→削除」「コンソールエラー無し」を確認。
 - **教訓**: **Foundry の pre 系フックを async にしない**。止める（`return false`）判断は必ず同期で返す。
 - **関連**: KI-048〜KI-050（アイテム狙い AE の転送・失効）。当初は AE コピー除去を疑ったが別経路だった。
+
+---
+
+## KI-052: ダイアログのキャンセルが取りこぼされ、選択したことにして進む箇所がある
+
+- **起票**: 2026-09-07（神業の治癒「BS・ダメージ以外の不利な効果も解除」の実機確認中に、回復対象の選択ダイアログでキャンセルするとコンソールエラーになったことから発覚）
+- **原因**: `DialogV2` は **「コールバックの戻り値 ?? ボタンの action」** で解決する（`client/applications/api/dialog.mjs` の `_onSubmit`＝`(await button?.callback?.(...)) ?? button?.action`）。本システムの多くのダイアログはキャンセルに `callback: () => null` を置いているが、`null ?? "cancel"` ＝ **文字列 "cancel" が返る**。受け側の `if (!picked) return;` は文字列を truthy として通してしまう。
+- **既知だった**: `session-state.mjs`（アクト限定アイテムの掃除）に同じ罠の実機発覚メモ（2026-08-14）とガード（`Array.isArray`）がある。`tnx-usage-sheet.mjs` も `Array.isArray` で守っている。**規約として広がっていなかった**のが問題。
+- **実害のある箇所（2026-09-07 時点・確認済み）**:
+  - `recovery-flow.mjs` 回復対象の選択 → **解消済み**（本コミットで `typeof picked !== "object"` ガード）。旧コードでは「該当すべて」設定のときキャンセルしても**使用回数を消費してカードまで出ていた**（除去は0件）。
+  - `modification-flow.mjs` 改造項目の選択（`if (!pick) return;`）→ キャンセルで**判定が始まり**、成功すると `param: undefined` の改造行が書かれる。ドラッグ選択（`if (!drugIds) return;`）も同様に判定へ進む。
+  - `focus-system-request.mjs` 対象選択（`if (!res?.length) return null;`）→ `"cancel".length === 6` を通り、`res.map(...)` が **空エントリ6件**を作る。
+  - `condition-edit.mjs` コンディション編集（`if (!result) return;`）→ 文字列を展開して `{0:"c",1:"a",…}` を**フラグに書き込む**。
+  - 偶然助かっている例: `appearance-check.mjs`・`repair-flow.mjs`・`modification-flow.mjs` の対象選択・`tnx-rl-request-app.mjs`（後段の `items.get(...)`/`find(...)`/`?.skillId` が undefined になり中止される）。
+- **影響度**: 中（データを壊す経路が2つ＝改造行とコンディションのフラグ）。
+- **直し方（提案・未着手）**: キャンセルの `callback` に頼らず、**確定の戻り値の形で判定する**（オブジェクト／配列であること）。`action: "cancel"` を持つダイアログは 37 箇所あるため、共通ヘルパー（例: `dialogResult(value)` ＝ 期待する形でなければ null）を1つ置いて全数を掃引するのが妥当。**ユーザーの指示待ち**。
