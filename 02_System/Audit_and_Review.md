@@ -5429,6 +5429,11 @@ Time_Management の時間単位（メインプロセス中／カット中／シ�
 
 **17-2 の総括**: 用途タイプ「防御」の4動作（適用前に防ぐ／打ち消し／回避／受けた後に消す）が揃った。ユーザー実機確認は 17-6 で一括。
 
+##### 追記 2026-09-07（ユーザー指示）: 設定名を「BS・ダメージ以外の不利な効果も解除」へ
+
+- 用途シートのチェックボックス名を「スタイル技能の効果も解除できる」→ **「BS・ダメージ以外の不利な効果も解除」**（ユーザー指示「『解除できる』ではメモなので」）。旧名は《人命救助》の効果文の写しで、**設定欄が何をする欄かでなく1つの神業の言い回し**になっていた。
+- **未決**: 新しい名前は**現在の挙動より広い**。ゲートは今も「状態でない**付与コピー**で**供給元がスタイル技能**」のままで、一般技能・アウトフィット由来の付与コピーや手置きの効果は候補に出ない。効果文を見ると《人命救助》は「任意のスタイル技能の効果」だが、**《腹心》は「バッドステータスなど不利になる効果を受けている場合、それらも同時に解除できる」**＝スタイル技能に限っていない。設定欄は両方の神業が使う共通の器なので、**候補の範囲を「状態でない効果すべて（無効化済み・アイテム狙いの転送コピーは除く）」へ広げるかはユーザー裁定待ち**。あわせて、システムは「不利な効果」を機械的に判別できない（AE に有利/不利の印が無い）ため、広げると有利な効果も候補に並ぶ——「該当すべてを回復」との組み合わせをどう扱うかも同じ裁定に含める。
+
 ### 2026-09-04: 17-3 即死・社会戦・破壊タイプ
 
 **2026-09-04** / **関連実装** `scripts/module/miracle-logic.mjs`（`terminalKindFor`/`buildMiracleDamageFlag`/`miracleResultLabel`/`miracleTargetOutcome`・テスト+8）・`scripts/module/miracle-flow.mjs`（`useMiracleDamage`/結果の選択/`handleNegateMiracleDamageClick`/`useMiracleDestroy`/破壊の適用と描画）・`scripts/module/damage-flow.mjs`（`renderMiracleDamageCard`/`applyMiracleDamage`/`drawDamageValueFromDeck` 抽出・`openMitigationDialog` の分岐）・`scripts/module/condition-resolution.mjs`（`applyDamageChartResult` の `extraFlags`）・`scripts/tnx.mjs`（カスケードへの `fromMiracle` 伝播）・`scripts/data/item/common/usage.mjs`（`killCategory`/`socialDecide`）・用途シート・起動関数の分岐 / **ステータス**: 実装済・隔離実機確認済（本体 `20f897e`）
