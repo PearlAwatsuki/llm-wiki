@@ -38,6 +38,28 @@ npm run lint  # エラー 0
 
 `package.json`, `system.json` (README があれば同様)
 
+**`system.json` の `download` はバージョンを含む URL である**（フェーズ18 で記入）。Foundry の
+パッケージ規約では、download は「**そのマニフェストが指す版**の zip」を返さねばならない
+（"A public URL that provides a zip archive of the module for the manifest version which points to it"）。
+したがって版を上げるコミットでは `version` と一緒に `download` の `vX.Y.Z` も書き換える。
+`manifest` は常に latest を指す固定 URL なので触らない。
+
+| フィールド | 版ごとに書き換える | 内容 |
+|---|---|---|
+| `version` | ○ | `X.Y.Z` |
+| `download` | ○ | `.../releases/download/vX.Y.Z/…zip`（**その版の**zip） |
+| `manifest` | × | `.../releases/latest/download/system.json`（固定） |
+
+### 3b. 起動中のワールドを壊す変更の申し送り
+
+`system.json` の `styles` / `esmodules` / `packs` に**載っているファイル名を変える**（分割・改名・
+削除）と、**起動中の Foundry は必ず一度壊れる**。サーバーはマニフェストを起動時に読んで保持する
+ため、ブラウザの再読み込みでは直らず、消えたファイルに対して 404 の HTML が返り
+「MIME type ('text/html') is not a supported stylesheet MIME type」などのエラーになる。
+
+**この種の変更を行ったら、その場でユーザーに「Foundry サーバーの再起動が要る」と伝えること。**
+（2026-09-07 に CSS 分割で実際に起こし、事前告知が無かったため事故に見えた）
+
 ### 4. コミット
 
 ```

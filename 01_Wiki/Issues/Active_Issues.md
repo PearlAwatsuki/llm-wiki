@@ -2,10 +2,11 @@
 
 [Known_Issues_Detail.md](Known_Issues_Detail.md) から**現在有効**な項目のみ抽出。
 
-- **KI-052**: ダイアログのキャンセルが取りこぼされ、選択したことにして進む箇所がある（`DialogV2` は「コールバックの戻り値 ?? action」で解決するため、キャンセルの `() => null` は文字列 "cancel" になる）。回復対象の選択は 2026-09-07 に解消済み。**改造項目/ドラッグの選択・FS の対象選択・コンディション編集が未解消**（改造行とコンディションのフラグにゴミが書かれる）。→ [詳細](Known_Issues_Detail.md)
 
 
-（KI-040〜KI-042 は解消、KI-043 は前提の誤認により撤回、KI-044〜KI-051 は解消 → [Resolved_Issues.md](Resolved_Issues.md)）
+（KI-040〜KI-042 は解消、KI-043 は前提の誤認により撤回、KI-044〜KI-056 は解消 → [Resolved_Issues.md](Resolved_Issues.md)）
+
+**2026-09-07 時点で未解消の KI はない。**
 
 ## 軽微な残存 (機能的支障なし)
 
