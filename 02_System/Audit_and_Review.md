@@ -5770,3 +5770,26 @@ Time_Management の時間単位（メインプロセス中／カット中／シ�
 
 - テスト 2615 件グリーン・eslint 0 error・stylelint clean。
 - 隔離 Foundry＋Playwright（`T:/pw/verify-outcome-row.mjs`）で5経路を実測——A 神業の治癒（宣言）＝神業カード1枚に「〈対象〉の「動脈切断」・［気絶］を回復した」／B 神業以外の治療（宣言）＝解説カード1枚に帰結行／C 治療（判定）＝判定結果カードに帰結行・状態が実際に消える／D 修理（判定）＝帰結行・故障が実際に直る／E 改造（判定）＝「…の受け値＋2を適用した」。あわせて**別カードが出ないこと（カードは常に1枚）**・横はみ出しなし・囲みで閉じた語の行またぎなし・旧形式カードの描画をスクリーンショット目視込みで確認。
+
+### 2026-09-07: 神業の用途から「適用される効果」を削除
+
+**日付**: 2026-09-07 / **関連実装**: `templates/app/usage-sheet.hbs`・`scripts/actor/tnx-character-sheet-base.mjs`・`scripts/module/miracle-flow.mjs` / **ステータス**: 実装済（ユーザー実機確認待ち）
+
+#### 発端（ユーザー指示）
+
+「神業用途から『適用される効果』セクションを削除してください。何故か残ったままになっています」。
+
+#### メカニクス（ルール解釈）
+
+神業の効果は**効果文**と、神業専用タイプが持つ設定（宣言の効果・即死・防御・社会戦・破壊）で表す。ActiveEffect を用途に紐づけて付与する一般用途の仕組みは神業には当てはまらない——神業由来の状態は「神業でしか防げない・治せない」印つきの専用経路（17-2/17-6）で扱うため、AE の一般付与と二重の入口になっていた。神業専用タイプ5種の新設（17-2）でタイミング・目標値・対決を落としたときに、このセクションだけが落とし漏れて残っていた。
+
+#### 実装
+
+- 用途シート: 「適用される効果」の fieldset を `{{#unless isMiracleUsage}}` で囲む。**「ウェットの対象には効果がない」トグルも同じ fieldset の中**なので一緒に消える——神業のダメージカード（`buildMiracleDamageFlag`）は `noEffectVsWet` を読まず、このトグルの唯一の効き先が付与効果のペイロードだったため、神業では機能を持たない設定だった。データ（`usage.noEffectVsWet`・`usage.effects`）は**消さない**（欄が出ないフォーム送信は既存値を保つ＝[[feedback_no_silent_data_rewrite]]）。
+- `_useDeclarationUsage`: 神業は `prepareUsageEffectPayload` を呼ばない（UI から設定できないものが古いデータ由来で動く「幽霊設定」を作らない）。
+- `postMiracleCard`: 到達しなくなった `usageEffects` 引数・`tnx-usage-use-card` の器・`usageEffects` フラグを削除し、`handleNegateMiracleCardClick` の `usageEffects.negatedBy` 分岐も落とした。**`handleNegateTrayClick` は残す**——神業以外の宣言用途の解説カードに出る効果トレイの打ち消しは現役。過去ログのカードは投稿時の HTML とフラグのまま読める（クラス名は変えていない）。
+
+#### 検証
+
+- テスト 2616 件グリーン・eslint 0 error。Handlebars のブロック対応も検算（balanced）。
+- 開発ワールド（`worlds/develop`）の保存データを走査し、`usage.effects` が非空の用途は**1件も無い**ことを確認（神業に限らず全用途）＝この削除で失われる既存設定は無い。
