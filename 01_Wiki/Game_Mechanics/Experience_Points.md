@@ -71,7 +71,7 @@ newValue = (newTotal + 170) - (abilityExpCost + itemExpCost)
 
 ### cast ↔ User 紐付け
 
-- `cast.system.ownerUserId` — ownership 変更時に最初の非 GM User を記録 (2-1)
+- `cast.system.ownerUserId` — ownership の最初の非 GM User（OBSERVER 以上）を優先する。該当者がいなければ、個別に OWNER を設定された最初の GM User を記録する（2026-09-10、GM 所有キャストも同期するというユーザーの不具合報告に対応）。`default` や GM の暗黙の管理権限だけでは主体を設定しない。起動時の未記録キャストの補完も同じ選出関数を使う。
 - `cast.system.playerId` — 旧 player Actor 参照 (2-5 廃止予定)
 
 ## 履歴 UI
