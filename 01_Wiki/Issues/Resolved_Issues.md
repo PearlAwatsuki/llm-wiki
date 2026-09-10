@@ -494,3 +494,12 @@
 - **修正**: `init` の同期区間（コア設定登録より前）で公開の `UIConfig.schema.fields.chatNotifications.initial` を `pip` に設定する。新規クライアントと設定リセットに適用され、保存済みの選択は保持する。保存済みのチャットカード選択を変更したい場合は、そのブラウザのチャット通知を手動で通知バッジへ変更する。
 - **検証**: ローカルの Foundry 本体の UIConfig スキーマと DataField を Node 上で実行し、変更前 cards、変更後の既定値とリセット pip、明示保存済み cards と UI 倍率の維持を確認。画面基底クラスのみ代替。既存119ファイル・2793テストと ESLint 通過。
 - **公式参照**: [ClientSettings.register（保存スコープ）](https://foundryvtt.com/api/v13/classes/foundry.helpers.ClientSettings.html#register)、[UIConfig.schema](https://foundryvtt.com/api/v13/classes/foundry.applications.settings.menus.UIConfig.html#schema)。キー・スコープ・init後の登録順序はローカル v13 本体の `client/game.mjs`、`client/applications/settings/menus/ui-config.mjs` で照合。
+
+### KI-060: 固有名詞技能の接頭辞が閲覧モードで消える
+
+- **報告・修正日**: 2026-09-11。コード修正・回帰テスト完了、実機未確認。
+- **再現手順**: 一般技能を接頭辞なしの固有名詞で新規作成し、設定で固有名詞技能の区分（社会・コネなど）を選ぶ。編集ヘッダには区分ラベルが表示されるが、閲覧ヘッダには表示されない。
+- **原因**: 編集は prefix と suffix を分離表示する一方、閲覧は保存済み item.name を表示する。区分変更時の名前更新が「旧区分の全角接頭辞で始まる名前」に限定され、接頭辞なしの新規名はフル名として保存されなかった。
+- **修正**: 区分変更と同時にフル名を合成・保存する。既存の stripSkillCategory / composeOnomasticName を共用し、旧区分・新区分の接頭辞を外してから付け直す。全角・半角コロンに対応し、二重接頭辞を避ける。
+- **既存データ**: 一括移行は行わない。接頭辞なしで保存済みの技能は区分を設定し直すか、編集モードの名前欄を編集して保存するとフル名になる。
+- **検証**: 新規の社会・コネ、既存の全角/半角接頭辞、区分変更、既存の接頭辞なし名、閲覧名とアクション技能記号の維持を7ケースで検証。全120ファイル・2806テスト、ESLint通過。

@@ -840,3 +840,7 @@ styleSkill の書き換え神業 ID 参照機能。現状は一貫して命名�
 ## 2026-09-10: KI-059
 
 新規ブラウザのチャット通知の既定値を通知バッジへ修正。詳細・公式参照・検証範囲は [Resolved_Issues.md](Resolved_Issues.md) の KI-059 を参照。
+
+## 2026-09-11: KI-060
+
+固有名詞技能の区分選択時にフル名が保存されず、閲覧モードで接頭辞が消える問題を修正。詳細は [Resolved_Issues.md](Resolved_Issues.md) の KI-060。
