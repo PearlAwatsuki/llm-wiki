@@ -6,7 +6,7 @@
 
 （KI-040〜KI-042 は解消、KI-043 は前提の誤認により撤回、KI-044〜KI-056 は解消 → [Resolved_Issues.md](Resolved_Issues.md)）
 
-**2026-09-11 時点でコード上未解消の KI はない。** KI-057〜KI-061 は修正と自動検証を完了、Foundry のブラウザでの実機確認は未実施（→ [Resolved_Issues.md](Resolved_Issues.md)）。
+**2026-09-11 時点でコード上未解消の KI はない。** KI-057〜KI-062 は修正と自動検証を完了、Foundry のブラウザでの実機確認は未実施（→ [Resolved_Issues.md](Resolved_Issues.md)）。
 
 ## 軽微な残存 (機能的支障なし)
 
