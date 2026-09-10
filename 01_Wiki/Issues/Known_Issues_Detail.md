@@ -836,3 +836,7 @@ styleSkill の書き換え神業 ID 参照機能。現状は一貫して命名�
 ## 2026-09-10: KI-057・KI-058
 
 カード設定のタブ保持と GM 所有キャストの経験点同期を修正。原因・対応・検証範囲は [Resolved_Issues.md](Resolved_Issues.md) の KI-057・KI-058 を参照。実機確認は未実施。
+
+## 2026-09-10: KI-059
+
+新規ブラウザのチャット通知の既定値を通知バッジへ修正。詳細・公式参照・検証範囲は [Resolved_Issues.md](Resolved_Issues.md) の KI-059 を参照。

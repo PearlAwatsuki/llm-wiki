@@ -486,3 +486,11 @@
 - **修正**: 従来の非 GM 候補優先を維持し、候補がなければ個別の OWNER 設定を持つ GM を選ぶ。起動時補完も同じ選出関数へ統一。`syncing` はデータ再同期だけを遮断し、レコード再描画は行う。
 - **対象外**: `default` と GM の暗黙の管理権限だけでは主体を設定しない。既存の別 User からの変更確認は維持する。
 - **検証**: GM のまま所有者を記録、再評価の冪等性、起動時の既存履歴取り込み、初回同期時の再描画と再帰防止をテスト。一般ユーザー優先・GM の OBSERVER 除外も検証。
+
+### KI-059: 新規ブラウザのチャット通知が通知バッジにならない
+
+- **報告・修正日**: 2026-09-10。コード修正・自動検証完了、ブラウザでの実機操作は未確認。
+- **原因**: `registerSystemConfig` が v13 に存在しない `core.chatNotifications` の既定値を変更していた。実際は client スコープの `core.uiConfig.chatNotifications`。GM が保存しても他のブラウザへ共有されない。
+- **修正**: `init` の同期区間（コア設定登録より前）で公開の `UIConfig.schema.fields.chatNotifications.initial` を `pip` に設定する。新規クライアントと設定リセットに適用され、保存済みの選択は保持する。保存済みのチャットカード選択を変更したい場合は、そのブラウザのチャット通知を手動で通知バッジへ変更する。
+- **検証**: ローカルの Foundry 本体の UIConfig スキーマと DataField を Node 上で実行し、変更前 cards、変更後の既定値とリセット pip、明示保存済み cards と UI 倍率の維持を確認。画面基底クラスのみ代替。既存119ファイル・2793テストと ESLint 通過。
+- **公式参照**: [ClientSettings.register（保存スコープ）](https://foundryvtt.com/api/v13/classes/foundry.helpers.ClientSettings.html#register)、[UIConfig.schema](https://foundryvtt.com/api/v13/classes/foundry.applications.settings.menus.UIConfig.html#schema)。キー・スコープ・init後の登録順序はローカル v13 本体の `client/game.mjs`、`client/applications/settings/menus/ui-config.mjs` で照合。
