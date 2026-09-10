@@ -852,3 +852,7 @@ styleSkill の書き換え神業 ID 参照機能。現状は一貫して命名�
 - **修正**: `data-edit="img"` を追加し、コアの FilePicker と submitOnChange による保存を有効化。立ち絵とコマ画像を別々に表示し、編集権限がある場合にコアのトークン設定を開くボタンを追加した。
 - **保存先**: 立ち絵は既存の actor.img。通常アクターのコマ画像は prototypeToken.texture.src（以後配置するコマ）、非リンクトークンの合成アクターは actor.token の設定。配置済みのリンクトークンは盤面上のトークン設定で変更する。独自フィールド・移行処理なし。
 - **検証**: ローカル Foundry v13 の DocumentSheetV2.editImage、FormDataExtended の data-edit 収集、ActorSheetV2 の configurePrototypeToken / configureToken を照合。既存120ファイル・2806テスト、ESLint、Stylelint 通過。実機では画像選択・再表示、両画像の独立保存、配置後の画像、権限別操作を確認する。
+
+#### 2026-09-11 KI-061 表示操作の訂正
+
+ユーザー提示の D&D 画面に合わせ、画像を並べる方式から単一画像枠の切り替え方式へ変更。スイッチは編集モードのみ表示し、閲覧モードでは選択中の画像のみ表示。切り替えは DOM の表示変更のみで、未保存フォーム入力を保持する。選択状態はシートインスタンス内に保持。実際の切り替えメソッドを Node で実行して往復・編集モード外・編集権限なしを検証。ESLint・Stylelint通過、ブラウザ実機未確認。
