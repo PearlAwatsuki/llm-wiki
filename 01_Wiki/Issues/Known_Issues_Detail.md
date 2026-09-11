@@ -909,3 +909,11 @@ styleSkill の書き換え神業 ID 参照機能。現状は一貫して命名�
 ユーザー実機確認: レコードのフォーカス・ヘッダー固定は改善、キャスト履歴では未改善。キャストはタブを_onRenderで復帰するため、_syncPartState時点では履歴タブが非表示で、focus()が効かなかった。入力中のタブを新DOMの挿入前にactiveへ戻し、focus({preventScroll:true})でフォーカスを復元。対象はownerDocument.activeElementから取得する。キャストPARTSのスクロール復元対象へ履歴タブも追加し、復元の遅れによるスクロールの跳ねを軽減した。EXP保存・同期は変更しない。
 
 検証: Edgeヘッドレスの実DOMで非表示タブを含む置換を再現。旧実装はフォーカス消失・scrollTop=0、新実装はフォーカス保持・入力値/選択位置保持・scrollTop=180保持を確認（Foundry全体の実機操作ではなく、部品置換の再現ハーネス）。回帰1件追加、全126ファイル2856テスト・ESLint・git diff --check通過。前回のスタブテストは非表示タブへfocusできないブラウザ挙動を再現していなかった。
+
+
+### KI-067: チャット案内の見出しが暗色背景に埋もれる
+
+- **修正日**: 2026-09-11。
+- **原因**: Foundryの見出しは本文色ではなく見出し用カラー変数を参照する。チャットのthemed.theme-lightスコープがbodyのTNX変数を上書きし、暗色背景に暗い見出しが表示されていた。初回案内はコアNUEのh3.nueであり、TNX固有クラスを対象にした本文色指定では解消しない。
+- **修正**: css/09-apps.cssのチャット共通スコープでcolor-text-emphatic/primary/secondaryをTNXの文字色へ設定。通常のh1〜h6を使用するモジュール案内にも適用。個別の色指定は強制上書きしない。
+- **検証**: ローカルFoundryのNUE実装とCSSを確認。Edgeヘッドレスでコアとシステムの実CSSを読み込み、themed.theme-lightのチャットで修正前の暗い見出しと修正後のTNX文字色を確認。独自指定の緑色を保持。Stylelint・git diff --check通過。Foundry全体の実機表示は未確認。
