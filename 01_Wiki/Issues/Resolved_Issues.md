@@ -576,3 +576,12 @@
 - **原因**: Foundryの見出しは本文色ではなく見出し用カラー変数を参照する。チャットのthemed.theme-lightスコープがbodyのTNX変数を上書きし、暗色背景に暗い見出しが表示されていた。初回案内はコアNUEのh3.nueであり、TNX固有クラスを対象にした本文色指定では解消しない。
 - **修正**: css/09-apps.cssのチャット共通スコープでcolor-text-emphatic/primary/secondaryをTNXの文字色へ設定。通常のh1〜h6を使用するモジュール案内にも適用。個別の色指定は強制上書きしない。
 - **検証**: ローカルFoundryのNUE実装とCSSを確認。Edgeヘッドレスでコアとシステムの実CSSを読み込み、themed.theme-lightのチャットで修正前の暗い見出しと修正後のTNX文字色を確認。独自指定の緑色を保持。Stylelint・git diff --check通過。Foundry全体の実機表示は未確認。
+
+
+### KI-068: ゴースト登場のコマを所有者が操作できない
+
+2026-09-11、ユーザー承認によりゴースト表現をhiddenから半透明へ変更。Foundryのhiddenは所有者を含む非GMからコマを隠すため、操作できなくなっていた。
+
+refreshTokenでコアが不透明度を再設定した際だけ描画を50％にする。保存された不透明度は変更せず、解除時は元の濃さへ復帰。updateActorから全クライアントのトークン描画を更新する。新規登場コマはhidden=false。旧ゴーストのhiddenは同期登録時とcanvasReady時にactiveGMが解除する。通常の不可視コマはこの初期補正の対象外。登場・退場・CS修正のルールは変更しない。
+
+検証: コアのrefreshMesh/refreshStateとrefreshTokenフックを照合。プレイヤー側の描画、更新時の不透明度累積防止、解除、旧ゴーストの不可視解除を回帰3件で確認。全127ファイル2859テスト、ESLint、git diff --check通過。Foundry実機での操作は未確認。
