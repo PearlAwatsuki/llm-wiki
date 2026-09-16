@@ -1,6 +1,6 @@
 # Actor 型定義
 
-全 4 type（cast / guest / troop / extra）が `scripts/data/actor/` に DataModel 化済。
+キャラクター4 type（cast / guest / troop / extra）と車両 type（vehicle）が `scripts/data/actor/` に DataModel 化済。
 **player type は v0.3.1（フェーズ2）で廃止済み**。
 
 ## 共通 Template
@@ -12,6 +12,12 @@
 | actorBase | `common/actor-base.mjs` | （フィールドなし）手札・切り札の所有（handPileId / trumpCardPileId）・手札上限（handMaxSize）は **User flag の権威へ一本化済み**（フェーズ2 積み残し解消） |
 
 ## 各 Type
+
+### vehicle — ヴィークル（2026-09-13 初回実装・実機未確認）
+
+`scripts/data/actor/vehicle.mjs` の VehicleDataModel。キャラクター用の属性Mixinは継承しない。保存フィールドは `description`、正本Item参照 `outfitUuid`、乗員配列 `crew`（actorUuid/tokenUuid/role/operationMode）。性能は元アウトフィットから参照する。独立した手札・CS・AR・HPを持たない。専用シートは TokyoNovaVehicleSheet。
+
+登場時の配置、ターゲット、ドローンとゴーストの関係、および初回の制限は [Vehicle_Actor_Design.md](Vehicle_Actor_Design.md) の実装記録を参照。
 
 ### cast — プレイヤーキャラクター
 
