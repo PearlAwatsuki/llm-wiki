@@ -8,7 +8,8 @@
 - 式によるアウトフィットの値参照は識別キー指定を維持する。
 - 技能はアクターの能力。Itemとしての保存構造を属性キー・式キーへ露出しない。技能用の `item.<key>...` は新仕様から完全に除去する。
 - 混在効果は存在しない。分割機能は作らない。
-- 属性キーの先頭 `system.` は使用してよい（必須化の指示ではない）。通常スロットの公開記法は `slot.capacity` とし、`slot.normal` は使わない。
+- 全AE属性キーの先頭を `system.` に統一する（ユーザー確定）。check・damage・ignore・名称装飾等も例外にしない。式にはsystem接頭辞を付けない。通常スロットは `system.slot.capacity` とし、normalを公開しない。
+- AE属性の候補は、同一アクターに存在するアイテムの識別キーから具体的なキーを自動生成する。個別技能の候補を `<key>` だけで済ませない。
 - 前回までの確定事項も維持: 付与AEは状態関連機能なし／適用先は排他チェック／自動適用オンなら一方必須／オフで両方オフなら所持アウトフィット1個をチャットドロップで付与。
 - 判定1回持続は条件一致するキャラクターの判定確定後に失効し、中止では消費しない。未消費ならシーン終了で残り、アクト終了で失効する。武器別の判定消費条件を追加しない。
 
@@ -21,22 +22,22 @@
 
 ## 公開キー案
 
-保存用の配列番号を入力させず、意味上のパスを公開する。属性キーの先頭 `system.` は使用可能。以下の表は属性本体の表記であり、`system.` を禁止するものではない。正準表記として付けるかは全属性の対応表で統一し、任意の別名を増やす決定とはしない。式の先頭 `@` は読取を表す。属性キーと式は同じ語彙を使うが、許可する範囲は別に定義する。
+保存用の配列番号を入力させず、意味上のパスを公開する。全属性を `system.` で統一し、式は `@` の後に意味上のパスを書く。これは公開キーの規約であり、すべてが保存データ上のsystem直下に実在するという意味ではない。名称装飾の `system.name` はDocumentのnameに解決する専用処理とし、アクター名へ漏らさない。
 
 | 機能 | AE属性キー案 | 式キー案 |
 |---|---|---|
-| 技能の実効レベル | `skill.<key>.level`（通常AE） | `@skill.<key>.level` |
-| 付与先アウトフィットの攻撃力 | `attack.value`（付与AE） | `@outfit.<key>.attack.value` |
-| 付与先アウトフィットの受け値 | `guard.value`（付与AE） | `@outfit.<key>.guard.value` |
-| 付与先アウトフィットの防御力 | `defence.S` / `defence.P` / `defence.I`（付与AE） | `@outfit.<key>.defence.S` 等 |
+| 技能の実効レベル | `system.skill.<key>.level`（通常AE） | `@skill.<key>.level` |
+| 付与先アウトフィットの攻撃力 | `system.attack.value`（付与AE） | `@outfit.<key>.attack.value` |
+| 付与先アウトフィットの受け値 | `system.guard.value`（付与AE） | `@outfit.<key>.guard.value` |
+| 付与先アウトフィットの防御力 | `system.defence.S` / `system.defence.P` / `system.defence.I`（付与AE） | `@outfit.<key>.defence.S` 等 |
 | 付与先アウトフィットの名称装飾 | `name`（付与AE） | 数値式の参照候補には出さない |
-| 付与先アウトフィットの通常スロット容量 | `slot.capacity`（付与AE） | `@outfit.<key>.slot.capacity` |
-| 付与先アウトフィットの名前付きスロット容量 | `slot.<kind>.capacity`（付与AE） | `@outfit.<key>.slot.<kind>.capacity` |
+| 付与先アウトフィットの通常スロット容量 | `system.slot.capacity`（付与AE） | `@outfit.<key>.slot.capacity` |
+| 付与先アウトフィットの名前付きスロット容量 | `system.slot.<kind>.capacity`（付与AE） | `@outfit.<key>.slot.<kind>.capacity` |
 
 `outfit.<key>.*` をAE属性としては定義しない。たとえば `@outfit.myWeapon.attack.value` は読めるが、`outfit.myWeapon.attack.value` で変更することはできない。
-技能参照は単数形の `skill` を正準候補とし、Item表現を使わない。属性の `system.skill.<key>.level` は許容される案で、`system.` の有無は他の属性と合わせて統一する。
+技能参照は単数形の `skill` とし、Item表現を使わない。属性は `system.skill.<key>.level`、式は `@skill.<key>.level` に統一する。
 自分の技能のレベルを使う用途でも技能識別キーで指定する。旧 `@item.self.system.levelTotal` はその文脈の技能へ解決してから変換し、識別キーがない場合は未解決として報告する。技能名から識別キーを推測しない。
-`level` と `attack.value` 等は実効値。必要な素値参照は別の `base` を使う案とし、旧素値を実効値へ勝手に変換しない。
+`level` と `system.attack.value` 等は実効値。必要な素値参照は別の `base` を使う案とし、旧素値を実効値へ勝手に変換しない。
 
 ## アウトフィットのスロット
 
@@ -44,15 +45,15 @@
 
 | 日本語表示 | 属性キー案 | 値の例 |
 |---|---|---|
-| スロット → 容量 | `slot.capacity` | 加算 `1` |
-| スロット → 表層意識 → 容量 | `slot.surface.capacity` | 加算 `1` |
-| スロット → 深層意識 → 容量 | `slot.deep.capacity` | 加算 `1` |
-| スロット → 無意識 → 容量 | `slot.unconscious.capacity` | 加算 `1` |
-| スロット → ソフトウェア → 容量 | `slot.software.capacity` | 加算 `2` |
-| スロット → ハードウェア → 容量 | `slot.hardware.capacity` | 加算 `1` |
+| スロット → 容量 | `system.slot.capacity` | 加算 `1` |
+| スロット → 表層意識 → 容量 | `system.slot.surface.capacity` | 加算 `1` |
+| スロット → 深層意識 → 容量 | `system.slot.deep.capacity` | 加算 `1` |
+| スロット → 無意識 → 容量 | `system.slot.unconscious.capacity` | 加算 `1` |
+| スロット → ソフトウェア → 容量 | `system.slot.software.capacity` | 加算 `2` |
+| スロット → ハードウェア → 容量 | `system.slot.hardware.capacity` | 加算 `1` |
 
-例: 準備先のタップのソフトウェアスロットを2増やすなら、「準備先に適用」をオン、属性 `slot.software.capacity`、モード加算、値 `2`。キーに準備先の識別キーは書かない。
-通常スロットなら属性は `slot.capacity`（system接頭辞付きの案では `system.slot.capacity`）。内部のkind=normalへ解決する。全種別の合計や、対象によってsoftware等へ切り替わる省略指定ではない。
+例: 準備先のタップのソフトウェアスロットを2増やすなら、「準備先に適用」をオン、属性 `system.slot.software.capacity`、モード加算、値 `2`。キーに準備先の識別キーは書かない。
+通常スロットの属性は `system.slot.capacity`。内部のkind=normalへ解決する。全種別の合計や、対象によってsoftware等へ切り替わる省略指定ではない。
 式で特定タップの容量を読むなら `@outfit.<タップ識別キー>.slot.software.capacity`。
 
 `capacity` は保有容量を意味し、消費中の数・空き数ではない。`used`／`available` が必要なら読み取り専用の候補にするが、AEで直接変更する属性にはしない。
@@ -66,15 +67,15 @@
 
 | 現行の意味 | 現行キー | 新キー候補 |
 |---|---|---|
-| キャラクターの部位保有数 | `system.partSlot.<部位キー>` | `bodySlot.<部位キー>.capacity`（通常AE） |
-| 既存の部位に加えて占有 | `system.part.<部位キー>`、値 `and:2` | `equip.required.<部位キー>`、値 `2`（付与AE） |
-| 既存部位一式に代わる択一候補 | `system.part.<部位キー>`、値 `or:2` | `equip.alternative.<部位キー>`、値 `2`（付与AE） |
+| キャラクターの部位保有数 | `system.partSlot.<部位キー>` | `system.bodySlot.<部位キー>.capacity`（通常AE） |
+| 既存の部位に加えて占有 | `system.part.<部位キー>`、値 `and:2` | `system.equip.required.<部位キー>`、値 `2`（付与AE） |
+| 既存部位一式に代わる択一候補 | `system.part.<部位キー>`、値 `or:2` | `system.equip.alternative.<部位キー>`、値 `2`（付与AE） |
 
 後二者は部位追加の関係をキーで示し、値は消費数にする案。通常スロット容量の変更と同じものにはしない。既存のand/orの意味、重複制御と択一選択、失効時の復帰を維持する。モードの許可範囲は既存部位追加の意味に合わせて定義し、乗算等を根拠なく追加しない。
 
 ## 移行方針
 
-1. 技能の旧属性キー・式キーは、対象を技能として解決してから `skill.<key>...`／`@skill.<key>...` へ変換する。技能源Itemの内部保存構造は維持できる。
+1. 技能の旧属性キー・式キーは、対象を技能として解決してから `system.skill.<key>...`／`@skill.<key>...` へ変換する。技能源Itemの内部保存構造は維持できる。
 2. アウトフィットの旧式キーは `@outfit.<key>...` へ変換する。数字・ハイフンを含む識別キーや評価タイミングを維持する。
 3. アウトフィット識別キー付きの旧AE属性は**単純な文字列置換で変換しない**。対象アウトフィットへの付与AEと、定義の適用先・用途参照へ移す。以前は任意の識別キーへ常時転送できたが、新仕様の自身／準備先／使用時ドロップとは完全な一対一対応ではない。移行先の運用が一意に決まらない定義を、勝手に自身へ向けたりドロップ付与へ変えたりしない。棚卸しで具体的な該当データを提示する。
 4. 新仕様に旧キーを別名として恒久公開しない。旧データはバージョン付き移行・インポート変換で処理する。変換不能なら理由を表示し、旧式を新仕様として受理したように見せない。
@@ -82,6 +83,107 @@
 6. カテゴリでアウトフィット群を変更する旧キーは、今回明示された「特定アウトフィットの識別キー指定」とは別に棚卸しする。通常AEへ残すと付与AEへの責務移管に抜けが出るので、継続が必要な効果を実データで確認し、無断で複数付与機能へ拡張しない。
 
 ## 確認項目と次の設計作業
+
+### 通常AEの対応表（現行パーサと照合）
+
+以下の括弧・山括弧は仕様書の記法。実際の候補では有限の値とアクターから取得した識別キーへ展開する。能力キーは `reason` / `passion` / `life` / `mundane` の4種。
+
+| 現行 | 新キー案 | 適用先・時点 |
+|---|---|---|
+| `system.ability.<能力>` | `system.abilities.<能力>.value` | 能力値の実効値 |
+| `system.control.<能力>` | `system.abilities.<能力>.control` | 制御値の実効値 |
+| `system.cs.base` | 同じ | CSベース。既存の準備条件を維持 |
+| `system.cs.value` | 同じ | CS |
+| `system.cs.current` | 同じ | CSカレント |
+| `system.ar.max` | 同じ | 付与AR。既存の準備条件を維持 |
+| `system.baseAttack.damageType` | 同じ | 生身のダメージ種別 |
+| `system.baseAttack.value` / `.mod` | 同じ | 既存の標準適用経路との役割分担を維持 |
+| `system.handMaxSizeMod` | 同じ | 手札上限修正の既存経路を維持 |
+| `system.partSlot.<部位>` | `system.bodySlot.<部位>.capacity` | キャラクターの部位保有数 |
+| 技能を指す `item.<key>.system.level` / `.levelTotal` | `system.skill.<key>.level` | 技能の実効レベル |
+| `check.all` | `system.check.all` | 能力値判定と技能判定。制御判定には適用しない |
+| `check.<能力>` | `system.check.<能力>` | 該当能力値の判定 |
+| `check.<技能キー>` | `system.check.<技能キー>` | 該当技能を含む判定 |
+| `check.<prefix>*` | `system.check.<prefix>*` | 既存の技能キー前方一致 |
+| `check.style.<key>` | `system.check.style.<key>` | スタイルに属する技能の判定 |
+| `check.works.<key>` | `system.check.works.<key>` | ワークスに属する技能の判定 |
+| `check.society.<分類>` | `system.check.society.<分類>` | nation/city/industry/organizationの4種 |
+| `controlCheck.<能力>` | `system.controlCheck.<能力>` | 制御判定。allや技能指定を新設しない |
+| `check.cardValue` | `system.check.cardValue` | 判定カード値の上書き。A〜K選択と既存除外条件を維持 |
+| `check.suitChange` | `system.check.suitChange` | 判定時のスート変更許可。値不要 |
+| `damage.dealt` / `damage.dealt.<系統>` | `system.damage.dealt` / `system.damage.dealt.<系統>` | 攻撃者の与ダメージ補正 |
+| `damage.taken` / `damage.taken.<系統・種別>` | `system.damage.taken` / `system.damage.taken.<系統・種別>` | 受け手の被ダメージ補正。負が軽減 |
+| `damage.vsStyle.<key>` / `damage.vsWorks.<key>` | 各先頭に `system.` | 攻撃者の効果を対象のスタイル／ワークスと照合 |
+| `damage.fromStyle.<key>` / `damage.fromWorks.<key>` | 各先頭に `system.` | 受け手の効果を攻撃者のスタイル／ワークスと照合 |
+| `damage.vsWet` / `damage.vsNotWet`（系統指定を含む） | 各先頭に `system.` | 対象のウェット条件による補正 |
+| `damage.replaceTag.<タグ>` / `damage.addTag.<タグ>` | 各先頭に `system.` | 受け手のチャート適用時。値は状態タグ選択 |
+| `ignore.all` / `ignore.bs` / `ignore.bs.<BS>` | 各先頭に `system.` | 状態の作用を無視。状態自体は削除しない |
+| `ignore.damage` / `ignore.damage.<系統>` | 各先頭に `system.` | 該当ダメージ由来の作用を無視 |
+
+能力キーは `reason` / `passion` / `life` / `mundane`。系統は `physical` / `mental` / `social`。ダメージ種別は `S` / `P` / `I` / `X` で、takenの種別指定は肉体のみ。付与AEからステータス関連機能を除去する要件は、通常AEのタグ改変・状態無視を廃止する意味ではない。
+
+### 候補・値入力・適用処理を揃える定義
+
+属性ごとに「正準キー」「通常AE／付与AE」「日本語ラベル」「識別キーの取得元」「値型」「許可モード」「適用時点」「旧キー」を一つの定義へまとめる案。候補リストだけ先に新キーへ変えない。
+
+- 数値補正: 現行と同じ数値・決定的な式評価。リテラル先／式後の順序を維持する。
+- 状態タグ・ダメージ種別・カード値: 日本語選択肢から既存の保存値へ変換する。
+- 特性フラグ: オン／オフ入力。文字列・真偽の上書きは現行の意味を維持する。
+- スート変更・状態無視: 値不要のマーカー。数値加算用の入力を要求しない。
+- 名称装飾: `system.name` を文書名の装飾へ明示解決する。`system.name` という未使用フィールドを作る処理にしない。
+- 判定・ダメージ・無視のキーは、新しいsystem接頭辞でも恒常値への適用対象にはしない。
+
+### 動的候補の例
+
+同一アクターに識別キー `melee` と `eika` の技能がある場合:
+
+| 選択時に入力する値 | 検索に使う表示情報 |
+|---|---|
+| `system.skill.melee.level` | 当該技能の現在名、技能レベル、melee |
+| `system.check.melee` | 当該技能の現在名、判定補正、melee |
+| `system.skill.eika.level` | 当該技能の現在名、技能レベル、eika |
+| `system.check.eika` | 当該技能の現在名、判定補正、eika |
+
+スタイル候補は所持styleの識別キーに加え、技能のstyle所属を既存の解決処理で読む。ワークス候補は技能の所属組織を読む。Actor.itemsを単に全件連結するだけでは、所持アイテムとして独立していない所属キーを取りこぼすため。
+候補一覧は手入力可能な識別キーの全集合を制限するものではない。対象相手のスタイル等、自己の所持品にはない条件も入力できる。
+
+### 実装順と受け入れ条件の具体化
+
+1. 属性定義と旧→新正規化を実装し、現行パーサの各分岐に対応する解析テストを作る。廃止アウトフィット指定を通常の自己付与キーに誤変換しない。
+2. AE型ごとの適用経路に接続する。能力値・技能値と判定時補正が混ざらず、標準適用と二重にならないことを確認する。
+3. 同一アクター文脈の候補生成を純処理に切り出す。現物の識別キー、名前検索、所属、重複と欠損を検証する。
+4. 既存コンボボックスに接続し、所持品変更後の候補更新と入力保持を実機で確認する。
+5. 式の参照辞書も同じ文脈から生成し、属性用と読取専用の許可範囲を分離する。
+6. 保存・再読込・旧形式インポートを検証し、候補選択した新キーが実際の適用先へ届くことを確認してから既存データを変換する。
+
+アウトフィットの分類指定による一括変更は、まだ付与先方式への対応が未確定。通常AEへ残す／新規の複数付与にする等を推測せず、移行の未確定項目として管理する。
+
+### check・damage等の接頭辞統一
+
+| 現行 | 新仕様 |
+|---|---|
+| `check.all` | `system.check.all` |
+| `check.<技能キー>` | `system.check.<技能キー>` |
+| `controlCheck.reason` | `system.controlCheck.reason` |
+| `damage.dealt.physical` | `system.damage.dealt.physical` |
+| `damage.taken.S` | `system.damage.taken.S` |
+| `ignore.bs.poison` | `system.ignore.bs.poison` |
+| `name` | `system.name` |
+
+上表は接頭辞統一を確定する対応表。以前の `system.rolls.check.bonus` 案は採用確定ではないため、現段階の候補生成は既存のcheck・damageの意味を保った形で設計する。旧キーの解析・転送コピーの書換え・値入力補助・標準適用抑止も一緒に更新する。文字列を付け足すだけでは現在のパーサの分岐が変わるため、恒常補正として誤適用されない回帰検証が必要。
+
+### 同一アクターから具体的な候補を生成する
+
+1. AEがActor上ならそのActor、所持Item上なら所有Actorを参照する。非リンクTokenではそのTokenのActorを使い、元Actorの所持品へすり替えない。
+2. 所持Itemの識別キーを読み、技能は `system.skill.<実キー>.level` や `system.check.<実キー>` を生成する。スタイル／ワークスは対応するキー群に分類して展開する。すべてのItemキーをすべての属性に掛け合わせない。
+3. 候補には日本語の属性名と現在の技能名等を添える。検索は表示名と識別キーの双方で行い、選択時は具体的な属性キー文字列だけを入力する。
+4. 識別キーが同じ候補は重複表示しない。空の識別キーを名前から生成しない。候補の重複除去によって、実際の適用対象の解決ルールは変更しない。
+5. アクターに属さないワールドItem等では、存在しない所持品を推測しない。固定属性の候補と自由入力を維持する。対象側スタイル条件など、同一アクター外の識別キーも手入力できるようにする。
+6. 所持品の追加・削除・識別キー／名前変更後に候補を再生成する。入力中の値・カーソルを壊さず、次回表示でも古い候補が残らないようにする。
+7. アウトフィットの識別キーはAE属性候補に出さない。式の参照候補を生成する際に `@outfit.<実キー>...` へ展開する。技能も式では `@skill.<実キー>...` とする。
+8. 文書中の `<key>` は文法説明として残せるが、識別キーを取得できる編集画面では具体的な候補を表示する。固定キーと動的候補を同じ属性定義表から生成し、パーサと候補の不一致を防ぐ。
+
+検証: Actor上／所持Item上／非リンクToken／ワールドItemでの候補、技能名検索、重複・空キー、追加削除後の更新、廃止アウトフィット属性の非表示、選択したキーが実際に解析・適用できること。
 
 - 技能参照にItem表現が残らないこと。技能レベル・式・使用回数・用途の評価が旧仕様と一致すること。
 - アウトフィット識別キーの式参照は成功し、同じ対象指定をAE属性として新規作成できないこと。
