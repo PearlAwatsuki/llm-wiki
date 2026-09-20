@@ -2,6 +2,8 @@
 
 状態: ユーザー追加指示の記録と設計案。コード変更なし。基本移行計画への追補。
 
+更新: 技能・アウトフィット識別キー・スロットの最新設計は [AE_Public_Keys_Design_2026-09-20.md](AE_Public_Keys_Design_2026-09-20.md) を参照。下記の旧案よりこちらを優先する。
+
 ## 確定した追加要件
 
 - 通常AEと付与AEの混在効果は存在しない。分割機能は不要。
@@ -14,14 +16,16 @@
 - 効果時間に「次の1回の判定まで」を追加する。
 - 適用先チェックは排他。自動適用オン時は必ず一方のみtrue、オフ時は両方falseも許可し、その場合はチャットドロップ付与。両方trueは禁止。
 - 「次の1回の判定まで」は効果条件に一致する判定の確定後に消費する。中止では消費しない。
+- 未消費ならシーン終了で残り、アクト終了で失効する。判定主体はキャラクターであり、武器別の消費条件は追加しない。
+- ドロップ付与は用途1回につきキャラクターが所持するアウトフィット1個。ワールド／パック原本への直接付与は対象外。
 - 式のキーとAE属性キーを、最新版D&D 5eを参考にわかりやすく再設計する。
 
 ## 確認待ち
 
 1. 適用先チェックの条件と排他選択は確定済み。自動適用オンへの切替時に両方オフなら、適用先選択を求める案（暗黙の対象変更を避ける）。
 2. 判定確定後の消費は確定済み。複数対象への判定・判定後のダメージ処理をどこまで同一判定として扱うかは詳細設計対象。
-3. 付与AEの判定1回持続を、持ち主の条件に一致する判定で消費するか、そのアウトフィットを使用した条件一致判定で消費するか。判定をせずシーン／アクトが終了した場合の失効条件。
-4. ドロップ付与は用途1回につきアウトフィット何個か。所持品以外のワールド／パックの原本を対象にするか。提案は所持アウトフィットの実体を対象とし、権限を検証、他者所有は既存のGM処理経路を使う。個数・対象範囲はユーザー確定を待つ。
+3. 武器を判定主体とした確認は撤回済み。シーンで残る／アクトで失効する条件は確定済み。
+4. 対象は所持アウトフィット1個に確定済み。権限処理は既存経路と整合させる。
 
 ## D&D参照と採用方針
 
@@ -42,11 +46,11 @@
 |---|---|---|
 | 理性の実効能力値 | `@system.reason.total` | `@abilities.reason.value` |
 | 理性の実効制御値 | `@system.reason.totalControl` | `@abilities.reason.control` |
-| 保持元アイテムの実効技能レベル | `@item.self.system.levelTotal` | `@item.level` |
-| 識別キーで指定した技能の実効レベル | `@item.eika.system.levelTotal` | `@skills.eika.level` |
+| 技能の実効レベル | `@item.self.system.levelTotal` | `@skill.<技能識別キー>.level`（保持元技能の識別キーで移行） |
+| 識別キーで指定した技能の実効レベル | `@item.eika.system.levelTotal` | `@skill.eika.level` |
 | 効果保持先アウトフィットの実効攻撃力 | `@item.self.system.attack.total` | `@item.attack.value` |
 | 準備先の実効攻撃力 | `@item.parent.system.attack.total` | `@parent.attack.value` |
-| 指定アウトフィットの実効攻撃力 | `@item.weaponKey.system.attack.total` | `@outfits.weaponKey.attack.value` |
+| 指定アウトフィットの実効攻撃力 | `@item.weaponKey.system.attack.total` | `@outfit.weaponKey.attack.value` |
 | 対象キャラクターの能力値 | `@target.system.life.total` | `@target.abilities.life.value` |
 | 判定結果 | `@achievement` / `@diff` / `@card` | `@check.achievement` / `@check.margin` / `@check.card` |
 
@@ -62,7 +66,7 @@
 | 理性の制御値補正 | `system.control.reason` | `system.abilities.reason.control` |
 | 全判定の補正 | `check.all` | `system.rolls.check.bonus` |
 | アウトフィットの攻撃力 | `system.attack.value` | `system.attack.value`（維持） |
-| 技能レベル補正 | `item.eika.system.level` | `system.skills.eika.level` |
+| 技能レベル補正 | `item.eika.system.level` | `skill.eika.level` |
 
 公開語彙を揃えるが、「式で読める値はすべて変更可能」とはしない。変更可能な属性・型・許可モード・適用時期を属性定義として管理する。
 AE属性は保存データを無条件に直接変更するパスではなく、TNXの実効値適用先へ解決する。Foundry標準適用による二重適用を引き続き抑止する。
