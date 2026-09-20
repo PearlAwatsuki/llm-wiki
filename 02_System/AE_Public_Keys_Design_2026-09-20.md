@@ -4,6 +4,8 @@
 
 数値以外への拡張・既存対応状況は [AE_Outfit_Attribute_Inventory_2026-09-20.md](AE_Outfit_Attribute_Inventory_2026-09-20.md) を参照。
 
+重複不可の原則と用途の式欄への「重複可」追加は [AE_Formula_Duplication_Design_2026-09-20.md](AE_Formula_Duplication_Design_2026-09-20.md) を参照。既存制御の踏襲だけではなく、基礎能力値・カード・用途・AEを横断する照合が必要。
+
 ## 確定要件
 
 - 特定アウトフィットを識別キーで指定し、パラメータを変更するAE属性キーをすべて撤廃する。変更は付与AEに移管する。
