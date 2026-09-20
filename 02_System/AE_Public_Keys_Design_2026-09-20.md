@@ -2,6 +2,8 @@
 
 状態: ユーザー確定要件を反映した命名・移行案。具体的な綴りは提案であり、実装変更はしていない。
 
+実装開始後の進捗は [AE_Implementation_2026-09-20.md](AE_Implementation_2026-09-20.md) を参照。本ページの設計表全体が実装済みという意味ではない。
+
 数値以外への拡張・既存対応状況は [AE_Outfit_Attribute_Inventory_2026-09-20.md](AE_Outfit_Attribute_Inventory_2026-09-20.md) を参照。
 
 重複不可の原則と用途の式欄への「重複可」追加は [AE_Formula_Duplication_Design_2026-09-20.md](AE_Formula_Duplication_Design_2026-09-20.md) を参照。既存制御の踏襲だけではなく、基礎能力値・カード・用途・AEを横断する照合が必要。
