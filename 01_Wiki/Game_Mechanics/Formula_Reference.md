@@ -1,183 +1,143 @@
-# 式（フォーミュラ）で使えるキー一覧
+# Formula 参照キーリファレンス
 
-判定ボーナス・ダメージ修正・目標値・AE の「値」などの**式（`@` 参照）**で使えるデータの一覧（2026-07-10 作成）。正本は DataModel（`scripts/data/`）＝フィールドの増減はコードが権威。ここは実務用の索引。
+2026-09-27の作業ツリーの `buildFormulaData` に対応。Formulaは「値を読む式」で、参照には `@` を付ける。AEの変更先は [Active_Effects.md](Active_Effects.md) を参照。
 
-> **正本の分離（2026-07-13 ユーザー指摘で整理）**: **このページは式（`@` 参照）だけの正本**。AE の change キー（`system.*`・`item.*`・`check.*`・`damage.*` 等）の正本は [Active_Effects.md](Active_Effects.md)——キーの表をこのページに置かない。
+## 公開名前空間
 
----
-
-## 参照の3系統
-
-式は Foundry の Roll を**決定的評価**する（ダイス `d` を含む式は機械適用しない＝表示のみ）。参照キーは `@` で始める。
-
-| 系統 | 何を指すか | 例 |
+| 参照 | 内容 | 例 |
 |---|---|---|
-| **`@system.*`** | **判定を行うアクター**の system（＝AE がアクターに乗せる `system.*` キーと対応） | `@system.life.total` |
-| **`@item.<識別キー>.system.*`** | アクターが持つ**任意のアイテム**を**識別キー**で引いた system（＝AE がそのアイテムに乗せる `system.*` と対応） | `@item.<武器の識別キー>.system.attack.total` |
-| **`@target.*`** | **攻撃対象（防御側）**。**ダメージの式でのみ**供給（判定・AE 値では無い）。`@target.system.*`＝対象の実効値、`@target.style.<識別キー>` / `@target.works.<組織キー>`＝対象が持てば 1・なければ 0 | `@target.style.<スタイル識別キー> * 5` |
-| **`@diff` / `@achievement`** | 判定結果（差分値 / 達成値）。**ダメージ算出時のみ**確定（判定ボーナスは判定前のため不可） | `floor(@diff / 10)` |
-| **`@card`** | **判定に使用したカードの値**（N◎VA数字。21固定は A の数字＝11）。**カードプレイ後**＝判定ボーナス評価時から参照可（ダメージ側は命中判定のカード値・2026-07-11） | `@card + 3` |
+| `@abilities.<能力>.*` | 行為者の能力値・制御値 | `@abilities.life.value` |
+| `@skill.<key>.*` | 所持する一般技能・スタイル技能 | `@skill.melee.level` |
+| `@outfit.<key>.*` | 所持アウトフィット | `@outfit.weapon_key.attack.value` |
+| `@item.*` | 式の保持元アウトフィット自身（bearer） | `@item.attack.value` |
+| `@parent.*` | 保持元の準備先（parentItemId） | `@parent.attack.value` |
+| `@achievement` / `@diff` / `@card` | 評価時に渡された判定結果 | `@diff` |
+| `@target.*` | 対象が渡されるダメージ式の対象情報 | `@target.abilities.life.value` |
+| `@system.*` | 専用別名のないActorデータ等 | `@system.combatSpeed.displayTotal` |
 
-- **`.total`（実効値・AE 込み）を使う**のが原則。`value` などの素フィールドは AE 適用前の入力値。**アクターの値もアイテムの値も同じ**——各 `prepareDerivedData` で `total=base` を置いた後、**アクターの単一適用パス（`_applyEffectBuffs`・`legacyTransferral=false`）が全 buff を集めて total を改変**する（AE モデル v2）。判定/ダメージは実行時に走るので、その時点で `.total` は AE 込みの最終値になっている。
-  - アクター: 能力値 `reason.total`/`reason.totalControl`。 アイテム: `attack.total`・`defence.S_total`・`levelTotal`・`<param>.total`（素のパラメータキー `system.attack.value`／`system.category.weapon.attack` 等の AE がここへ着地・v3）。
-  - ※ **アイテムのパラメータが「キャラクターへ」与える修正**（制御値修正・CS 修正・危険値など）は AE でなく派生パイプラインが直接読む設計（[Active_Effects.md](Active_Effects.md) 大原則5）。ただしこれは「アイテム→キャラ」の話で、`@item.<識別キー>.system.<param>.total` が指す**アイテム自身の値**は上記どおり AE 込みで取れる。
-- `@item.<識別キー>` は**識別キーを持つアイテムだけ**引ける（辞典由来の技能・アウトフィットは持つ）。識別キーはアイテムの `system.identificationKey`。
-- どこで使えるか: 判定ボーナス（アクター・判定時）・ダメージ修正（攻撃者・ダメージ算出時）・**AE の「値」**（change.value にも式を書ける・2026-07-10）・**使用回数の最大値**（アイテムシートの「最大値」欄・2026-08-09。下記）。`@diff`/`@achievement` はダメージ算出時のみ（AE 値・判定ボーナスでは不可）。**`@target.*` はダメージ修正（攻撃者側）でのみ**供給。**`@card` は判定ボーナス（カードプレイ後に評価されるため可）とダメージ修正**（命中判定のカード値を攻撃→ダメージフラグで持ち回り）で使える（AE 値は判定文脈がないため不可）。
+`<key>` は `system.identificationKey`。名前・Document IDではない。一意な識別キーを使い、例の `weapon_key` 等は実際のキーに置き換える。FormulaではAEの前方一致 `*` を使わない。
 
-### `@target.*`（攻撃対象・ダメージの式でのみ・2026-07-10）
+新しい短縮形 `@item` はアウトフィット用。技能自身のレベルは `@skill.<key>.level` で参照する。識別キーがない技能の旧相対参照 `@item.self.system.levelTotal` は互換経路として残るが、`@item.level` への単純置換はできない。
 
-ダメージ修正欄の式で、**攻撃対象（防御側）**を参照する。「組み合わせた物理攻撃が〈スタイル名〉を対象とする場合～」のような**用途固有・式ベースの対象依存**を表現できる（キャラ恒常・フラットな対象依存は AE `damage.vs*` 側）。
+## 能力値・技能
 
-| キー | 意味 |
+`<能力>` は `reason`、`passion`、`life`、`mundane`。
+
+| 参照キー | 意味 |
 |---|---|
-| `@target.system.*` | 対象の実効値（AE 込み。対象の `getRollData`。例 `@target.system.life.total`） |
-| `@target.style.<スタイル識別キー>` | 対象がそのスタイル（`type:"style"` アイテム）を持てば **1**・なければ **0**（**未所持＝欠損キーも 0** に評価される） |
-| `@target.works.<組織識別キー>` | 対象がそのワークス（ワークス技能の組織）を持てば 1・なければ 0 |
-| `@target.isWet` | 対象が**ウェット**なら 1・でなければ 0（2026-09-01。判定は `isWetActor`＝準備中のアウトフィットに識別キー `background_wet`。電子妨害のウェット分岐と同一定義） |
+| `@abilities.<能力>.value` | 能力値の実効値（旧total） |
+| `@abilities.<能力>.base` | 能力値の素値（旧value） |
+| `@abilities.<能力>.control` | 制御値の実効値（旧totalControl） |
+| `@skill.<key>.level` | 技能の実効レベル（levelTotal、未生成ならlevel） |
+| `@skill.<key>.base` | 技能の素のレベル（level） |
+| `@skill.<key>.uses.maxTotal` / `.spent` | 使用回数の実効最大値／消費済み回数（対応する技能のみ） |
+| `@skill.<key>.suits.spade` / `.spadeTotal` | スートの素値／生成済みの実効値（heart、diamond、clubも同様） |
 
-- 例: 「組み合わせた物理攻撃が〈アヤカシ〉を対象とするなら +5」→ ダメージ修正の式 `@target.style.ayakashi * 5`。
-- 例: 「ウェットが対象ならこの値は 0」→ `5 * (1 - @target.isWet)`（式に修飾子として掛ける形。行そのものを無効化するなら**対象条件**＝下記の方が明示的で、内訳にも理由が出る）。
-- 防御側の軽減は軽減ダイアログの手動欄（用途タイプの軽減は廃止・2026-07-11）＝式からの対象参照はない。
+その他のsystemフィールドも供給するが、すべてが実効値に置換されるわけではない。AE変更先 `system.abilities.life.value` とFormula `@abilities.life.value` の対応も、保存スキーマのパスが同じという意味ではない。
 
-### 相対参照 `@item.self` / `@item.parent`（AE 値・用途の修正値）
+## アウトフィット
 
-**AE の値**と、**用途の判定ボーナス/ダメージ修正・用途自身の修正値**で使える相対参照:
+下表の `@outfit.<key>` は、保持元アウトフィットなら `@item`、準備先なら `@parent` に置き換えられる。保持元・準備先が渡されていない場面では相対参照を使わない。
 
-| キー | 意味 |
+| 参照キー | 意味 |
 |---|---|
-| `@item.self.system.*` | **AE 値**＝その効果が乗っているアイテム自身。**用途の式**＝その用途の親アイテム（用途が乗っているアイテム。識別キー不要で参照できる・2026-07-10） |
-| `@item.parent.system.*` | その親＝**装備先ホスト**（`parentItemId`。例: オプション→装備先の武器）。用途の式では親アイテムの `parentItemId` を指す |
+| `@outfit.<key>.attack.value` / `.base` | 攻撃力の実効値／素値 |
+| `@outfit.<key>.guard.value` / `.base` | 受け値の実効値／素値 |
+| `@outfit.<key>.defence.S` / `.P` / `.I` | 防御力の実効値 |
+| `@outfit.<key>.slot.capacity` | 通常スロット容量の実効値 |
+| `@outfit.<key>.slot.<種別>.capacity` | 名前付きスロット容量の実効値 |
+| `@outfit.<key>.buy.total` / `.hide.total` / `.preserveExp.total` | 購入値／隠匿値／常備化経験点 |
+| `@outfit.<key>.appearancePenalty.total` / `.hack.total` | 危険値／電脳制御値 |
+| `@outfit.<key>.controlMod.total` / `.combatSpeedMod.total` | 制御値修正／CS修正 |
+| `@outfit.<key>.speedFactor.total` / `.passenger.total` / `.cycle.total` | 移動力／乗員／サイクル |
+| `@outfit.<key>.FAValueTotal` | フルオート値の実効値 |
+| `@outfit.<key>.uses.maxTotal` / `.spent` | 使用回数の実効最大値／消費済み回数 |
+| `@outfit.<key>.ammo.maxTotal` / `.spent` | 装弾数の実効最大値／消費済み弾数 |
+| `@outfit.<key>.quantity.value` / `.max` | 数量 |
 
-- 例（AE 値）: オプションの AE 値を `@item.parent.system.attack.total` にすると、装備先アイテムの攻撃力を参照できる。
-- 例（用途）: 「この用途の判定修正値」に `@item.self.system.levelTotal`、「この用途のダメージ修正値」に `@item.self.system.attack.total`（＝用途の親アイテムのレベル/攻撃力）。用途の実行時は親アイテムを式に渡すため、識別キーの無いアイテムでも参照できる。
-- **AE 値は `prepareDerivedData` 内で評価**されるため、`.total` は「リテラル値の AE を先に適用した後」の値を参照する（リテラル先→式後の2フェーズ。式値どうしは相互参照しない前提）。判定/ダメージの用途式は実行時評価なので、参照先 `.total` は AE 完全適用済み（[Active_Effects.md](Active_Effects.md) §3）。
+短縮時に組み替えるのは `attack`・`guard`・`defence`・`slot`。その他は元のsystemの形を引き継ぐ。たとえば `.hack.value` は素値で、実効値は `.hack.total`。`uses.max` は式文字列を含み得るため、数値参照には `uses.maxTotal` を使う。
 
-### 使用回数の最大値（`uses.max`・2026-08-09）
+用途の式の `@item` は用途を持つアウトフィット、AEの値では評価に渡される保持元アウトフィット。付与・移設で保持元が変わる場合、元アイテムを読み続けたい式は一意な `@outfit.<key>` で指定する。
 
-「1シーンに**レベル回**」のような使用回数を表すため、アイテムシートの**「最大値」欄そのものが式を受ける**（数値も式も同じ1欄・用途の判定修正値欄と同じ流儀）。実効値は `uses.maxTotal`。
+## 判定結果と評価時点
 
-- 例（スタイル技能「1シーンにレベル回」）: 最大値欄に `@item.self.system.levelTotal`。`@item.self` ＝**その使用回数を持つアイテム自身**（識別キー不要）。
-- 例（アウトフィットが別技能のレベルに従う）: `@item.<技能の識別キー>.system.levelTotal`。
-- 端数は**切り捨て**・負値と評価不能（自由文・ダイス入り・構文エラー）は **0**。評価不能はシートの実効値バッジが「＝ ?」を出して 0 と区別する。
-- **順序境界（重要・2026-08-09 ユーザー裁定）**: 式は **AE 適用前**の値を読む。「レベル回」の使用回数は **AE でレベルが上がっても増えない**——これはルールとしての正解であり、実装順序の都合ではない。一方 `uses.max` を狙う AE 自身は実効値 `uses.maxTotal` に乗る（[Active_Effects.md](Active_Effects.md) §2.2）。
-- 神業の母数もこの欄だが、**スタイルレベル連動フックが機械維持する**ため式を入れても次のレベル変更で数値に上書きされる（式の運用対象はアウトフィットとスタイル技能）。
+| 参照キー | 意味 | 有効な時点 |
+|---|---|---|
+| `@card` | 判定に用いたカードの数値 | カードプレイ後の判定補正・判定結果を渡すダメージ式 |
+| `@achievement` | 達成値 | 判定確定後 |
+| `@diff` | 差分値 | 判定確定後 |
 
-### AE のキーで判定・ダメージそのものに干渉する
+この3つは判定結果が渡されるときに供給される。結果が渡されても未確定の項目は0になるため、0が存在しても、その場面で結果を参照できるという意味ではない。恒常AE・使用回数の式に確定後の値を使わない。判定ボーナスでは達成値・差分値は未確定。
 
-式の値参照とは別に、AE の **change キー**で判定の達成値・与えるダメージ・カードの数字/スート等に直接干渉できる（`check.*`／`controlCheck.*`／`damage.*`）。**キーの一覧と規約は [Active_Effects.md](Active_Effects.md) が正本**（このページには置かない）。
+目標値「その他」の回復判定では、呼出側が `@condition.magnitude`（状態の強度）・`@condition.woundValue`（負傷のダメージ値）を補う。全Formulaに常設される参照ではない。
 
----
+## ダメージ式の対象情報
 
-## アクター `@system.*`
-
-### 能力値・制御値（`reason` / `passion` / `life` / `mundane`）
-
-| キー | 意味 |
+| 参照キー | 意味 |
 |---|---|
-| `@system.<能力>.total` | **能力値の実効値**（例 `@system.life.total`） |
-| `@system.<能力>.totalControl` | **制御値の実効値**（＝生命の制御値など。例 `@system.reason.totalControl`） |
+| `@target.abilities.<能力>.value` / `.base` / `.control` | 対象の能力値・制御値 |
+| `@target.style.<key>` | 対象が指定スタイルを持てば1、なければ0 |
+| `@target.works.<key>` | 対象が指定組織のワークスを持てば1、なければ0 |
+| `@target.isWet` | 対象がウェットなら1、そうでなければ0 |
 
-（`value`/`control`/`growth`/`mod`/`styleA_value`… は素の入力。実効値は `.total`/`.totalControl`。能力＝理性 reason・感情 passion・生命 life・外界 mundane）
+対象を渡す呼出側でのみ利用できる。`@target.skill` / `@target.outfit` を一括公開する処理はない。対象条件による修正行の有効／無効も用途側で設定できる。
 
-### コンバットスピード（`combatSpeed`）・アクションランク（`actionRank`）
+## その他のActor参照
 
-| キー | 意味 |
+| 参照キー | 内容 |
 |---|---|
-| `@system.combatSpeed.displayTotal` | **表示CS**（カット中はカレント/それ以外はCS。initiative と同値） |
-| `@system.combatSpeed.valueTotal` / `.currentTotal` / `.baseTotal` | CS 各層の実効値 |
-| `@system.actionRank.maxTotal` | **付与AR（実効）** |
-| `@system.actionRank.value` | 現在AR（カット進行中のみ意味を持つ） |
+| `@system.combatSpeed.displayTotal` | 表示CS |
+| `@system.combatSpeed.baseTotal` / `.valueTotal` / `.currentTotal` | CS各層の実効値 |
+| `@system.actionRank.maxTotal` / `.value` | 付与ARの実効値／現在AR |
+| `@system.physicalDamage.value` / `@system.mentalDamage.value` / `@system.socialDamage.value` | ダメージ値 |
+| `@system.bounty` / `@system.bountyBase` | 現在／基本報酬点 |
+| `@system.appearanceModifier` / `@system.handMaxSizeMod` | 危険値の集計／手札上限修正 |
 
-### ダメージ・報酬点・生身・その他
+AE変更キーに機械的に `@` を付けない。CSの変更先は `system.cs.value`、参照先は `@system.combatSpeed.valueTotal`。
 
-| キー | 意味 |
+## 使用回数の最大値
+
+`uses.max` 欄は数値または式を受け付ける。技能レベル回なら `@skill.<key>.level`。
+
+この式はAE適用前に評価され、AEで増えたレベルを使用回数へ加算しない。その後、最大値へのAEが `uses.maxTotal` に適用される。端数は切り捨て、負値・評価不能は0。神業の母数はスタイルレベル連動で機械維持されるため、一般の式入力と同じ運用にはしない。
+
+## 式の例と重複
+
+| 目的 | 式 |
 |---|---|
-| `@system.physicalDamage.value` / `.min` / `.max` | 肉体ダメージ（同様に `mentalDamage`・`socialDamage`。max 初期 21） |
-| `@system.bounty` / `@system.bountyBase` | 報酬点（現在 / 基本） |
-| `@system.baseAttack.value` / `.mod` / `.damageType` | 生身の攻撃力 |
-| `@system.baseGuard.value` / `.mod` | 生身の受け値 |
-| `@system.baseDefence.S_defence` / `.P_defence` / `.I_defence` | 生身の防御力（S/P/I） |
-| `@system.appearanceModifier` | 危険値の合計（携帯中アウトフィット由来） |
-| `@system.handMaxSizeMod` | 手札上限への AE 修正 |
-| `@system.isGhost` | ゴースト状態か（真偽） |
-| `@system.outfitMod.control` / `.reason` / `.passion` / `.life` / `.mundane` / `.combatSpeed` | アウトフィット由来の制御値/能力値/CS 修正 |
+| 生命の実効値を加える | `@abilities.life.value` |
+| 保持元武器の攻撃力を加える | `@item.attack.value` |
+| 指定武器の攻撃力を加える | `@outfit.weapon_key.attack.value` |
+| 指定技能のレベルに2を加える | `@skill.skill_key.level + 2` |
+| 差分値の10分の1を切り捨てる | `floor(@diff / 10)` |
+| ウェット以外の対象に5を加える | `5 * (1 - @target.isWet)` |
 
----
+数値・算術式・参照を決定的に評価する。ダイス・自由文・構文エラーなど評価不能な式は数値として適用しない。追加行の「供給元」は表示上の帰属であり、参照アイテムを自動で切り替えない。
 
-## アイテム `@item.<識別キー>.system.*`
+判定・ダメージの合流処理では直接参照キーの重複を照合する。基礎能力値・カード等の基礎値を優先し、競合する修正欄は有利なものを採用。不採用欄は式全体を0にして理由を残す。新旧キー・相対参照は同じ参照先へ揃え、別Actorの値は区別する。「重複可」は指定した欄／効果にだけ適用する。差分値・達成値の内部依存を展開したり、同じ欄の中の繰り返し参照を禁止したりする処理ではない。
 
-`<識別キー>` はそのアイテムの `system.identificationKey`（辞典由来）。
+判定結果の正式な入力表記は `@achievement`・`@diff`・`@card`。実装には別名 `@check.achievement`・`@check.margin`・`@check.card` も残るが、この3つを置き換える必要はない。
 
-### 技能（generalSkill / styleSkill）
+## 旧表記との対応
 
-| キー                                                                 | 意味                      |
-| ------------------------------------------------------------------ | ----------------------- |
-| `@item.<key>.system.levelTotal`                                    | 技能レベルの実効値（`.level` は素値） |
-| `@item.<key>.system.suits.spade` / `.heart` / `.diamond` / `.club` | 使用可能スート（真偽）             |
-| `@item.<key>.system.isAction`                                      | アクション技能か（真偽）            |
+旧参照も互換用に残るが、新規入力は上記を使う。素値と実効値を取り違えない。
 
-### アウトフィット共通（全 outfit 型）
-
-`{mode, value}` 系はいずれも `.total`（AE 込み実効値）を持つ。
-
-| キー | 意味 |
+| 旧Formula | 現在の表記 |
 |---|---|
-| `@item.<key>.system.buy.total` | 購入値 |
-| `@item.<key>.system.hide.total` | 隠匿値 |
-| `@item.<key>.system.appearancePenalty.total` | **危険値** |
-| `@item.<key>.system.hack.total` | **電脳制御値** |
-| `@item.<key>.system.quantity.value` / `.max` | 数量 |
-| `@item.<key>.system.uses.maxTotal` / `.spent` | 使用回数（**最大値の実効値** / 消費済み。残り＝maxTotal−spent。`.max` は素値＝式そのものが入りうる） |
-| `@item.<key>.system.isPrepared` / `.isCarrying` | 準備済み / 携帯中（真偽） |
+| `@system.life.total` / `.value` / `.totalControl` | `@abilities.life.value` / `.base` / `.control` |
+| `@item.<技能キー>.system.levelTotal` / `.level` | `@skill.<技能キー>.level` / `.base` |
+| `@item.<武器キー>.system.attack.total` / `.value` | `@outfit.<武器キー>.attack.value` / `.base` |
+| `@item.<武器キー>.system.guardValue.total` | `@outfit.<武器キー>.guard.value` |
+| `@item.<防具キー>.system.defence.S_total` | `@outfit.<防具キー>.defence.S` |
+| `@item.self.system.attack.total` | `@item.attack.value` |
+| `@item.parent.system.attack.total` | `@parent.attack.value` |
 
-### 武器（weapon）
+技能・アウトフィット以外の旧Item参照に新しい専用名前空間を仮定しない。識別キー重複・参照先不明・移設時の相対参照などがある式は、移行処理でも推測で変換しない。
 
-| キー                                                     | 意味                                                  |
-| ------------------------------------------------------ | --------------------------------------------------- |
-| `@item.<key>.system.attack.total`                      | **攻撃力の実効値**（`.value` は素値・`.damageType` は種別 S/P/I/X） |
-| `@item.<key>.system.guardValue.total`                  | 受け値                                                 |
-| `@item.<key>.system.FAValue`                           | フルオート値（`.isFullAuto` が真のとき有効）                       |
-| `@item.<key>.system.uses.maxTotal` / `.spent`          | 使用回数（アウトフィットを「使用」する回数・最大値は実効値）              |
-| `@item.<key>.system.ammo.max` / `.spent`               | 残弾（装弾数/撃った数。使用回数とは別資源）                          |
-| `@item.<key>.system.range.min` / `.max`                | 射程                                                  |
+## 実装の参照先
 
-### 防具（armor）・義体（cyborg）・ヴィークル（vehicle）
-
-| キー | 意味 |
-|---|---|
-| `@item.<key>.system.defence.S_total` / `.P_total` / `.I_total` | 防御力の実効値（S/P/I。armor / cyborg / vehicle） |
-| `@item.<key>.system.attack.total` | 攻撃力（cyborg / vehicle） |
-| `@item.<key>.system.guardValue.total` | 受け値（cyborg） |
-| `@item.<key>.system.controlMod.total` | 制御値修正（armor / vehicle / ianus） |
-| `@item.<key>.system.speedFactor.total` / `.passenger.total` | 移動力（SF） / 乗員（vehicle） |
-| `@item.<key>.system.operateSkillKey` | 対応する操縦の識別キー（vehicle） |
-
-### タップ（tap）
-
-| キー | 意味 |
-|---|---|
-| `@item.<key>.system.cycle.total` | サイクル |
-| `@item.<key>.system.combatSpeedMod.total` | CS 修正 |
-
----
-
-## 使い方の例
-
-- 生命値をダメージに加算: ダメージ修正の式に `@system.life.total`。
-- 「選んだ武器の攻撃力」をダメージに加算: `@item.<武器の識別キー>.system.attack.total`（供給元にそのスタイル技能を選べば、チャットにその技能名で帰属表示される）。
-- 差分値の 1/10 を進行に（FS 進行判定・将来）: `floor(@diff / 10)`。
-
----
-
-## 注意
-
-- **正本は DataModel**（`scripts/data/actor/*` ・ `scripts/data/item/*`）。フィールドは各フェーズで増減するため、迷ったらスキーマを見る。
-- 実効値は `.total`（能力値は `.total`/`.totalControl`）。素フィールド（`value` 等）は AE 適用前。
-- `@item.<識別キー>` は識別キーを持つアイテムのみ。手作りアイテム（識別キー空）は式から引けない。
-- 評価は決定的（ダイスを含む式は機械適用されない＝表示のみ・手動修正で対応）。
-
-## 参照
-
-- 式の評価: `scripts/module/tnx-formula.mjs`（`buildFormulaData` / `evaluateFormula` / `evaluateBonusRows`）
-- 判定ボーナス/ダメージ修正: [Check_Rules.md](../Game_Rules/Check_Rules.md)「技能判定」 / [Damage_Rules.md](../Game_Rules/Damage_Rules.md)「ダメージ修正」 / [Usage_System.md](Usage_System.md)
-- AE モデル: [Active_Effects.md](Active_Effects.md)
+- データ構築・評価: `scripts/rules/tnx-formula.mjs`
+- 能力値の公開データ: `scripts/rules/ae-public-keys.mjs`
+- 重複照合: `scripts/rules/formula-duplicates.mjs`
+- 旧式の変換計画: `scripts/core/formula-key-migration.mjs`
+- 使用欄: [Usage_System.md](Usage_System.md)、[Check_Rules.md](../Game_Rules/Check_Rules.md)、[Damage_Rules.md](../Game_Rules/Damage_Rules.md)
