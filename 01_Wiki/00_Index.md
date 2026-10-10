@@ -32,6 +32,7 @@
 |---|---|
 | [Actor_Types.md](Documents/Actor_Types.md) | Actor 型のフィールドと役割 |
 | [Item_Types.md](Documents/Item_Types.md) | Item 型・共通 template |
+| [Outfit_Category_Keys.md](Documents/Outfit_Category_Keys.md) | アウトフィット大分類8種・小分類40種の保存キー、特殊値、AE指定 |
 | [Card_Types.md](Documents/Card_Types.md) | Card 型・Cards API 連携 |
 
 ### UI — シートとインターフェース

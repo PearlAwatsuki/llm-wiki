@@ -29,15 +29,17 @@
 | isDerivedData / hasDerivedData / derivedDataRefs | Boolean/Array | 派生データ（フェーズ10-2）: 本体＝常備化経験点を消費しない／派生元＝取得時に `derivedDataRefs`（uuid+name）から自動生成 |
 | quantity | SchemaField | `{value, max}` — 消費アイテムの現在/最大個数 |
 | buy | SchemaField | `{mode: none/value/reference, value}` — 購入値 |
-| preserveExp | SchemaField | `{mode: none/value, value}` — 常備化経験点 |
+| preserveExp | SchemaField | `{mode: none/value/reference, value}` — 常備化経験点 |
 | hide | SchemaField | `{mode: none/value/reference/control, value}` — 隠匿値 |
-| appearancePenalty | SchemaField | `{mode: none/value, value}` — 危険値 |
-| hack | SchemaField | `{mode: none/value, value}` — 電脳制御値 |
+| appearancePenalty | SchemaField | `{mode: none/value/reference, value}` — 危険値 |
+| hack | SchemaField | `{mode: none/value/reference, value}` — 電脳制御値 |
 | exclusive | ArrayField | 専用（フェーズ10-2 で自由記述→**辞典参照の配列** `{type: style/organization, key}` へ。指定のみで enforcement なし） |
-| part | ArrayField | 部位行（フェーズ10-1 で種別ベースへ拡張）: `{kind: none/bodyPart/option/reference/other, value, slots, hostMajor, hostMinor, hostMinorExclude, hostFeature, hostName, refSubKind}`。兄弟フィールド `partRelation`（and/or）・`partOrChoice`（or 時の占有行）・`partOptional`（部位全体に効く任意フラグ・占有非カウント） |
+| part | ArrayField | `{rowId, kind, requirement, optional, value, partKey, slots, hostMajor, hostMinor, hostMinorExclude, hostFeature, hostKey, refSubKind}`。`requirement` は `and`（必須）／`or`（選択候補）、`optional` は行単位の任意。`partOrChoice` は選択候補の行番号。`partRelation` / `partOptional` は旧データの互換用。詳細は [装備部位](../Game_Rules/Outfits.md) |
 | uses | SchemaField | `{isLimit, type, max, spent}` — 使用回数（spent=消費済み・D&D 方式）。**max は StringField で数値も式も受ける**（2026-08-09「1シーンにレベル回」）。実効値は派生 `uses.maxTotal`＝式を解いた結果に AE が乗ったもので、**消費・表示は必ず実効値を読む**（`usesMaxTotalOf`・`scripts/data/item/uses.mjs`） |
 | majorCategory | StringField | 大分類（choices 付き）|
-| minorCategory | StringField | 小分類（choices 付き、大分類と Item type で絞込） |
+| minorCategory | StringField | 小分類キー。大分類と連動。解説参照・その他にも対応 |
+| majorCategoryOther / minorCategoryOther | StringField | 主分類「その他」の自由記述 |
+| additionalCategories | ArrayField | `{rowId, major, minor, majorOther, minorOther}`。分類キーの全一覧は [Outfit_Category_Keys.md](Outfit_Category_Keys.md) |
 | identificationKey | StringField | 識別キー（全アイテム型共通） |
 | parentItemId / parentSlotKind | StringField | 親アウトフィットの ID／スロット種別（オプション品用） |
 | combineGroupId | StringField | コンバイン連携グループ ID |
@@ -91,8 +93,8 @@
 
 ## アウトフィット系の modeValueField
 
-`{mode: "none"|"value", value: Number}` 構造を `modeValueField()` ヘルパー（`helpers.mjs`）で統一。
-「0」と「そもそもない」を区別するため、none 時はシートで「-」表示。
+`{mode: "none"|"value"|"reference", value: Number}` 構造を `modeValueField()` ヘルパー（`helpers.mjs`）で統一。
+「0」と「そもそもない」を区別するため、none 時はシートで「-」表示。reference は「解説参照」と表示し、数値入力を隠す。
 
 ## extensible スロット
 
