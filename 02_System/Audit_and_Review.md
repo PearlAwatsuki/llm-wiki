@@ -1,4 +1,4 @@
-﻿# 監査と設計レビュー
+# 監査と設計レビュー
 
 2種類の品質管理を**混同しない**。
 
@@ -6013,3 +6013,67 @@ PLコントロールパネルと専用閲覧アプリの「公開」を、既存
 ### 2026-09-13 未コミット差分の確認・コミット
 
 ユーザー指示により既存の未コミット差分を確認し、内容別にコミット。辞典ブラウザ/ツールチップの文字縮小・横圧縮を撤去し、長文はカード内スクロールと折り返しで表示する変更、および不可知の神業カードから「次の行動」「割り込み」の補足行を削除する変更。今回コードへの追加修正なし。全134ファイル、2940テスト通過・1件スキップ、ESLint・Stylelint・差分空白チェック通過。実機未確認。
+
+
+### 2026-11-16 用途設定の個別移行ダイアログ修正と比較検証
+
+**対象**: 本体 `6c159b6` の仕上げ。技能定義・用途固有設定・実効値の分離方針は変更していない。現行設計は [Usage_System.md](../01_Wiki/Game_Mechanics/Usage_System.md)、判断経緯は [Design_Review_Entries.md](Design_Review_Entries.md) を参照。
+
+**今回修正した不具合**: `UsageSettingsMigrationDialog.prompt()` の選択肢が `</option value="keep">` / `</option value="skill">` となっていた。DOMには空の選択肢しか生成されず、保持・技能から導出を選べなかった。開始タグ `<option>` と終了タグ `</option>` を分けて修正した。移行の意味や保存形式は変更していない。
+
+**操作テスト**: `tests/module/usage-settings-migration-dialog.test.mjs` に8件追加。生成HTMLをJSDOMへ挿入し、実際のselectの選択値変更・changeイベント・ボタンクリックを通す。`prompt()` の返却値はモックせず、本番のコールバック→用途シートの操作→移行関数→保存→復元関数を使用する。FoundryのDialogV2ホストと文書保存先のみテスト用に置き換える。
+
+- 3選択肢（未選択・保持・技能から導出）の値と表示文を検証。
+- 用途固有の式・修正行・条件・バックアップの保持を検証。
+- 一部の値と行を技能からの導出へ切替。同じsourceの別行を保持でき、技能変更が実効値へ反映されることを検証。
+- 選択後のキャンセル／閉じる、未確認の欄を残した送信では保存しない。
+- 移行後の編集を含む用途全体の復元、復元確認の拒否／閉じるを検証。他の用途は変更しない。
+
+**修正前の再現**: 追加テスト8件すべてが、DOMの選択肢が `['']` しかなく `['', 'keep', 'skill']` と一致しないため失敗。修正後は8件すべて通過。
+
+**全体比較**: `6c159b6` の独立したdetached worktreeと、修正後の作業ツリーを同じNode・依存パッケージで検証。VitestのJSON結果をファイル名・テスト名で照合し、ESLintのJSON結果を相対ファイル名・行・列・ルール・重大度・メッセージで照合した。
+
+| 検証 | 基準 `6c159b6` | 修正後 | 判定 |
+| --- | --- | --- | --- |
+| 全テスト | 3,330成功・26失敗・3スキップ（3,359件） | 3,338成功・26失敗・3スキップ（3,367件） | 追加8件成功。失敗26件のテスト名と失敗理由は同じ |
+| ESLint 全体 | 12エラー・11警告 | 12エラー・11警告 | 診断内容まで一致。今回の追加エラー・警告なし |
+| Stylelint | CSS 9ファイル、指摘0 | CSS 9ファイル、指摘0 | 両方通過 |
+
+実行コマンド（npm scriptsと同じ実行対象。比較用にJSON出力を追加）:
+
+```text
+node node_modules/vitest/vitest.mjs run --reporter=json --outputFile=<report>
+node node_modules/eslint/bin/eslint.js . --format json --output-file <report>
+node node_modules/stylelint/bin/stylelint.mjs "css/**/*.css" --formatter json --output-file <report>
+```
+
+**基準コミットにも存在するテスト失敗**（今回の修正による新規失敗は0件）:
+
+| `tests/` 以下のファイル | 件数 | 主な失敗内容 |
+| --- | ---: | --- |
+| `conventions.test.mjs` | 3 | 未参照export、テストのみ参照export、DialogV2直接呼出数61が上限53超過 |
+| `import-integrity.test.mjs` | 1 | `canRemainPreparedWithDrone` のexport不整合 |
+| `core/active-effect.test.mjs` | 1 | AE適用後の攻撃力の期待値不一致 |
+| `data/actor/common/apply-effect-buffs.test.mjs` | 3 | 部位・装弾数・付与AEの適用結果不一致 |
+| `data/item/helpers.test.mjs` | 3 | 判定キーの照合・転送AEフラグ・キー解析結果の不一致 |
+| `rules/next-check-expiry.test.mjs` | 1 | 次回判定効果の対象判定不一致 |
+| `module/appearance-logic.test.mjs` | 2 | `canStartAppearanceCheck` 未定義 |
+| `module/effect-kind-ui.test.mjs` | 1 | 自動適用中の選択切替結果不一致 |
+| `module/effects-sheet-rollback.test.mjs` | 1 | 付与AEの生成データ不一致 |
+| `module/ending-appearance.test.mjs` | 1 | 登場処理の呼出引数不一致 |
+| `module/ghost-token-display.test.mjs` | 1 | 失敗通知の期待文言不一致 |
+| `module/ghost-v6-regression.test.mjs` | 1 | テストのactorに `updateEmbeddedDocuments` がない |
+| `module/history-input-state.test.mjs` | 6 | 未定義値の `toLowerCase` 参照 |
+| `module/vehicle-dynamic-preparation.test.mjs` | 1 | `canRemainPreparedWithDrone` が関数として存在しない |
+
+**基準コミットにも存在するLintエラー**:
+
+| ファイル | 件数 | ルール |
+| --- | ---: | --- |
+| `script.cjs` | 5 | `no-useless-escape` |
+| `script3.cjs` | 2 | `no-useless-escape` |
+| `scripts/actor/tnx-character-sheet-base.mjs` | 1 | `no-dupe-class-members` |
+| `scripts/app/tnx-record-sheet.mjs` | 1 | `no-useless-escape` |
+| `tests/module/appearance-logic.test.mjs` | 3 | `no-undef` |
+
+既存失敗の判定は今回のHTML修正前である `6c159b6` との比較であり、それ以前の各改修が原因かまで断定するものではない。別機能の失敗をこの仕上げ作業で修正してはいない。Foundry実機のダイアログ描画・サーバー保存・複数クライアント操作は未検証。
