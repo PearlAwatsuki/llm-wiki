@@ -6077,3 +6077,39 @@ node node_modules/stylelint/bin/stylelint.mjs "css/**/*.css" --formatter json --
 | `tests/module/appearance-logic.test.mjs` | 3 | `no-undef` |
 
 既存失敗の判定は今回のHTML修正前である `6c159b6` との比較であり、それ以前の各改修が原因かまで断定するものではない。別機能の失敗をこの仕上げ作業で修正してはいない。Foundry実機のダイアログ描画・サーバー保存・複数クライアント操作は未検証。
+
+
+## リアクション用途統合・行動資格・AE分類（2026-11-21）
+
+**メカニクス監査**: 2026-11-20提示仕様および2026-11-21訂正に照合。用途は能力を行動に構成するインスタンスとして維持し、タイプのみ `reaction` に統合。資格は技能本体と実参加する組み合わせから導出する。ベースはアクション技能、追加資格は一時的。対決手段・不可マスク・必須技能・操縦置換・本人/代理の防御合成・パリーの受け値・受動有利を維持する。
+
+AE分類は能動側行動と選択済み手段から決定する。UIの共通modeや選択肢の数で分類が消失するという開発中の前提はユーザー訂正により撤回。`check.mentalReaction` / `check.socialReaction` / 移動・離脱妨害 / `check.dodge` / `check.parry` / `check.reaction` の旧キーを保持し、通常修正と次回判定効果の照合に同じ分類を使用する。その他・オープン・旧カード再判定も検証した。
+
+**設計レビュー**: 純粋な資格検証を候補探索と実行で共有し、既存技能チェーン解決を利用。手札・山札・切り札消費前の検証、固定値判定の資格検証と完了継続、パリー文脈での受け値取得を接続。移行は実mixin順序を通すテストで、旧タイプから資格を抽出できることと冪等性を確認。用途設定の個別復元でも技能資格と統合タイプを維持し、バックアップ原本は変更しない。
+
+**検証結果**:
+
+- 関連12ファイル **208件成功**。資格、候補探索、移行、用途選択、資格編集DOM、パリー、対決、技能チェーン、設定復元を含む。
+- 全体 **3,416件: 3,387成功・26失敗・3スキップ**。改修前 `8bbdb55` の結果と失敗テスト名の集合を比較し、追加失敗・解消とも0。新規テスト49件。
+- ESLint **12エラー・11警告**、改修前と同じ。主な既存問題は `script.cjs` / `script3.cjs` の不要エスケープ、キャラクターシートの重複 `_preRender`、記録シートのエスケープ、登場判定テストの未定義関数。変更対象に新たなエラー・警告なし。
+- Stylelint **9ファイル成功**。両リポジトリの `git diff --check` 成功。
+- Foundry実機・複数クライアントでの描画と対決操作は未実施。一般/スタイルの資格編集、辞典・アクター所持文書の再読込、複数用途、車両準備変更、本人/代理パリー、AE条件の実セッション動作を確認対象とする。
+
+既存の失敗内訳（今回の修正対象へ混入させない）:
+
+| テストファイル | 失敗数 |
+| --- | --- |
+| `conventions.test.mjs` | 3 |
+| `import-integrity.test.mjs` | 1 |
+| `core/active-effect.test.mjs` | 1 |
+| `rules/next-check-expiry.test.mjs` | 1 |
+| `module/appearance-logic.test.mjs` | 2 |
+| `module/effect-kind-ui.test.mjs` | 1 |
+| `module/effects-sheet-rollback.test.mjs` | 1 |
+| `module/ending-appearance.test.mjs` | 1 |
+| `module/ghost-token-display.test.mjs` | 1 |
+| `module/ghost-v6-regression.test.mjs` | 1 |
+| `module/history-input-state.test.mjs` | 6 |
+| `module/vehicle-dynamic-preparation.test.mjs` | 1 |
+| `data/item/helpers.test.mjs` | 3 |
+| `data/actor/common/apply-effect-buffs.test.mjs` | 3 |

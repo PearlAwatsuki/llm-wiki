@@ -1,5 +1,7 @@
 ﻿# DataModel 設計
 
+> **2026-11-20 更新**: リアクション用途を `reaction` に統合し、技能の `actionQualifications` と独立した対決手段から資格を解決する。旧タイプによる資格判定の記述は履歴。現行仕様・移行・検証範囲は [用途システム](../Game_Mechanics/Usage_System.md) 冒頭を参照。技能定義・用途固有設定・実効値の分離は維持する。
+
 フェーズB (v0.2.0) で `template.json` から Foundry v13 推奨の **TypeDataModel** へ完全移行済。
 
 ## 概要
