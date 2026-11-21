@@ -585,3 +585,13 @@
 refreshTokenでコアが不透明度を再設定した際だけ描画を50％にする。保存された不透明度は変更せず、解除時は元の濃さへ復帰。updateActorから全クライアントのトークン描画を更新する。新規登場コマはhidden=false。旧ゴーストのhiddenは同期登録時とcanvasReady時にactiveGMが解除する。通常の不可視コマはこの初期補正の対象外。登場・退場・CS修正のルールは変更しない。
 
 検証: コアのrefreshMesh/refreshStateとrefreshTokenフックを照合。プレイヤー側の描画、更新時の不透明度累積防止、解除、旧ゴーストの不可視解除を回帰3件で確認。全127ファイル2859テスト、ESLint、git diff --check通過。Foundry実機での操作は未確認。
+
+## KI-069: 通常判定ダイアログの追加技能から数値修正を再導出しない
+
+2026-11-21、本体44fcc5cで再現。`TnxCheckFlow._rebuildDialogSkillContext` の数値再導出が `ctx.isRecheck` 内にあるため、通常判定では追加した技能の判定・攻撃ダメージ修正が入らない。参加技能自体は更新される。`skill-numeric-provision-review.test.mjs` の期待失敗2件で再現。第一段階では調査のみ。再導出と再判定専用の消費処理を分離し、入口の追加修正も保全する案。参照: [再検証報告](../Game_Mechanics/Skill_Numeric_Provision_Review.md)。
+
+## KI-070: 部分フォーム送信で用途固有の受け値修正行が失われる
+
+2026-11-21、本体44fcc5cで再現。`submitUsageForm` はreaction用途で `collectBonusRows(raw, "guardBonus")` を無条件に代入するため、guard行を含まない部分送信で保存済み `guardBonuses` が空になる。通常の全フォーム送信で常に発生するという意味ではない。`skill-numeric-provision-review.test.mjs` の期待失敗1件で再現。第一段階では未修正だった。入力欠落と意図的な全行削除を区別して保全する案。参照: [再検証報告](../Game_Mechanics/Skill_Numeric_Provision_Review.md)。
+
+2026-11-21解消: KI-069は通常／再判定共通の再解決と入口修正の保持で対応。KI-070は受け値行の入力欠落時に保存行を保全して対応。期待失敗3件を通常回帰へ変更し成功。Foundry実機は未確認。

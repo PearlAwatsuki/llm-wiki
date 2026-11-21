@@ -439,3 +439,7 @@ PLが目標値を手入力するフローは採用しない（Foundry VTT のデ
 - [Check_System.md](../Game_Mechanics/Check_System.md) — 実装設計（UIフロー・データ構造）
 - [Card_Operations.md](../Game_Mechanics/Card_Operations.md) — カード物理操作
 - [Bounty_Points.md](Bounty_Points.md) — 報酬点の詳細ルール
+
+## 数値供給の実装補足（2026-11-21）
+
+ダメージ修正の適用先は技能の `damageBonusCategories` で物理・精神・社会を独立に指定する。`attackMethod`・対象条件・ダメージ種別とは別軸。パリー受け値の技能寄与は既存の成立判定・武器受け値・修正式評価・参照重複選択を通す。通常判定でも参加技能変更から数値を再解決する。リアクションの分類・AE適用条件は変更しない。保存形式と互換性は [Usage_System](../Game_Mechanics/Usage_System.md) の数値供給拡張を参照。

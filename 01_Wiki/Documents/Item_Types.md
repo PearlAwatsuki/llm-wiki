@@ -115,3 +115,7 @@ kind 6 種（`SLOT_KINDS`、`scripts/data/item/common/extensible.mjs`）：`norm
 - カテゴリ定義: `scripts/data/item/outfit-categories.mjs`
 - 装備品ルール: [Outfits.md](../Game_Rules/Outfits.md)
 - 設計レビュー: [Design_Review_Entries.md](../../02_System/Design_Review_Entries.md)（B-5〜B-7 / 6-0〜6-6）
+
+## スタイル技能の数値供給フィールド（2026-11-21追加）
+
+`StyleSkillDataModel` に `damageBonusCategories`（physical/mental/socialのBoolean、各initial=true）、`guardBonusSelf`（式文字列、initial空）、`guardBonusSelfStackable`（Boolean、initial=false）を追加。前者は既存 `damageBonusSelf` の供給先制限、後二者はパリー受け値への寄与。技能編集画面で設定する。既存 `dealsDamage` / `attackMethod` の意味と保存値は維持。用途の既存guardフィールドを再利用し、新しい受け値計算機構は追加しない。
