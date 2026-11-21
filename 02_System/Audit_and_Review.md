@@ -6113,3 +6113,8 @@ AE分類は能動側行動と選択済み手段から決定する。UIの共通m
 | `module/vehicle-dynamic-preparation.test.mjs` | 1 |
 | `data/item/helpers.test.mjs` | 3 |
 | `data/actor/common/apply-effect-buffs.test.mjs` | 3 |
+
+
+## 技能数値修正の再検証（2026-11-21・第一段階）
+
+[調査・テスト・最小改修案](../01_Wiki/Game_Mechanics/Skill_Numeric_Provision_Review.md) を追加。製品コード・保存モデル・ルールの変更は行っていない。関連126件は通常成功123・期待失敗3。通常判定の追加技能の再導出と受け値行の部分送信保全に不足を再現し、Issuesへ起票した。指定ZIP/XLSXは未入手のため、元の27ケースとの対応・6不一致の個別分類は未完了。
